@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config>
+    <vector3 name="controlWindowPosition">
+        <x>-204.999878</x>
+        <y>3</y>
+        <z>625</z>
+    </vector3>
+    <vector3 name="editorWindowPosition">
+        <x>-764.999573</x>
+        <y>-36</y>
+        <z>625</z>
+    </vector3>
+    <vector2 name="editorWindowSize">
+        <x>346</x>
+        <y>289</y>
+    </vector2>
+    <vector3 name="uiSettingsWindowPosition">
+        <x>-934.400024</x>
+        <y>451.200012</y>
+        <z>625</z>
+    </vector3>
+    <vector3 name="presetsWindowPosition">
+        <x>-615.399902</x>
+        <y>419.900024</y>
+        <z>625</z>
+    </vector3>
+    <double name="UIAlphaValue">0.80000001192092896</double>
+    <double name="UIScaleValue">1</double>
+    <bool name="useEC">1</bool>
+    <bool name="useBlizzyToolbar">0</bool>
+</config>

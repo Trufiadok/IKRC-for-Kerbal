@@ -1,0 +1,1497 @@
+ship = CA2 Canadarm2 for IKRC
+version = 1.4.3
+description = No Description.
+type = None
+size = 1.279742,3.14416122,1.74416435
+persistentId = 1885246166
+rot = 0,0,0,0
+missionFlag = 
+vesselType = Debris
+PART
+{
+	part = TRF.CA2.LEE_4294329740
+	partName = Part
+	persistentId = 2912102277
+	pos = 0.130907044,12.7461252,0.999240398
+	attPos = 0,0,0
+	attPos0 = 0.130907044,12.7461252,0.999240398
+	rot = 0,0,1,0
+	attRot = 0,0,0.999999881,0
+	attRot0 = 0,0,0,1
+	mir = 1,1,1
+	symMethod = Radial
+	autostrutMode = Off
+	rigidAttachment = False
+	istg = 0
+	resPri = 0
+	dstg = 0
+	sidx = -1
+	sqor = -1
+	sepI = 0
+	attm = 0
+	modCost = 0
+	modMass = 0
+	modSize = 0,0,0
+	link = TRF.CA2.ARoll_4294329682
+	attN = bottom,TRF.CA2.ARoll_4294329682_0|0|0
+	EVENTS
+	{
+	}
+	ACTIONS
+	{
+	}
+	PARTDATA
+	{
+	}
+	MODULE
+	{
+		name = ModuleCommand
+		isEnabled = True
+		hibernation = False
+		hibernateOnWarp = False
+		stagingEnabled = True
+		EVENTS
+		{
+		}
+		ACTIONS
+		{
+			MakeReferenceToggle
+			{
+				actionGroup = None
+			}
+			HibernateToggle
+			{
+				actionGroup = None
+				active = False
+			}
+		}
+		UPGRADESAPPLIED
+		{
+		}
+	}
+	MODULE
+	{
+		name = ModuleDockingNode
+		isEnabled = True
+		crossfeed = True
+		stagingEnabled = False
+		state = Ready
+		dockUId = 0
+		dockNodeIdx = 0
+		EVENTS
+		{
+		}
+		ACTIONS
+		{
+			UndockAction
+			{
+				actionGroup = None
+			}
+			DecoupleAction
+			{
+				actionGroup = None
+			}
+			MakeReferenceToggle
+			{
+				actionGroup = None
+			}
+			EnableXFeedAction
+			{
+				actionGroup = None
+			}
+			DisableXFeedAction
+			{
+				actionGroup = None
+			}
+			ToggleXFeedAction
+			{
+				actionGroup = None
+			}
+		}
+		UPGRADESAPPLIED
+		{
+		}
+	}
+	MODULE
+	{
+		name = ModuleAnimateGeneric
+		isEnabled = True
+		aniState = LOCKED
+		animSwitch = False
+		animTime = 1
+		animSpeed = 10
+		deployPercent = 100
+		animationIsDisabled = False
+		stagingEnabled = True
+		EVENTS
+		{
+		}
+		ACTIONS
+		{
+			ToggleAction
+			{
+				actionGroup = None
+			}
+		}
+		UPGRADESAPPLIED
+		{
+		}
+	}
+	RESOURCE
+	{
+		name = ElectricCharge
+		amount = 10000
+		maxAmount = 10000
+		flowState = True
+		isTweakable = True
+		hideFlow = False
+		isVisible = True
+		flowMode = Both
+	}
+}
+PART
+{
+	part = TRF.CA2.ARoll_4294329682
+	partName = Part
+	persistentId = 3212095854
+	pos = 0.130907044,12.9525251,0.999240398
+	attPos = 0,0,0
+	attPos0 = 0,-0.206399918,0
+	rot = -1,0,0,0
+	attRot = -0.999999881,0,0,0
+	attRot0 = 0,1,0,0
+	mir = 1,1,1
+	symMethod = Radial
+	autostrutMode = Off
+	rigidAttachment = False
+	istg = 0
+	resPri = 0
+	dstg = 0
+	sidx = -1
+	sqor = -1
+	sepI = 0
+	attm = 0
+	modCost = 0
+	modMass = 0
+	modSize = 0,0,0
+	link = TRF.CA2.AYaw_4294329640
+	attN = left,TRF.CA2.LEE_4294329740_0|0.2064|0
+	attN = bottom,TRF.CA2.AYaw_4294329640_0.258|0|0
+	EVENTS
+	{
+	}
+	ACTIONS
+	{
+	}
+	PARTDATA
+	{
+	}
+	MODULE
+	{
+		name = MuMechToggle
+		isEnabled = True
+		servoName = TRF-Rb
+		pitchSet = 1
+		soundSet = 0.5
+		freeMoving = False
+		isMotionLock = False
+		limitTweakable = False
+		limitTweakableFlag = False
+		maxTweak = 360
+		minTweak = 0
+		rotateLimits = False
+		rotateMax = 360
+		rotateMin = 0
+		rotation = 0
+		translateMax = 3
+		translateMin = 0
+		translation = 0
+		defaultPosition = 0
+		customSpeed = 1
+		invertAxis = False
+		torqueMax = 30
+		torqueTweak = 1
+		speedTweak = 1
+		accelTweak = 0.5
+		presetPositionsSerialized = 
+		groupName = New Group
+		forwardKey = 
+		reverseKey = 
+		stagingEnabled = True
+		EVENTS
+		{
+		}
+		ACTIONS
+		{
+			MotionLockToggle
+			{
+				actionGroup = None
+			}
+			MoveNextPresetAction
+			{
+				actionGroup = None
+			}
+			MovePrevPresetAction
+			{
+				actionGroup = None
+			}
+			MovePlusAction
+			{
+				actionGroup = None
+			}
+			MoveMinusAction
+			{
+				actionGroup = None
+			}
+			MoveCenterAction
+			{
+				actionGroup = None
+			}
+		}
+		UPGRADESAPPLIED
+		{
+		}
+	}
+}
+PART
+{
+	part = TRF.CA2.AYaw_4294329640
+	partName = Part
+	persistentId = 3196939288
+	pos = 0.595306933,12.9525251,0.999240398
+	attPos = 0,0,0
+	attPos0 = 0.464399934,0,0
+	rot = -0.5,0.5,0.5,0.5
+	attRot = -0.49999994,0.49999994,0.49999994,0.49999994
+	attRot0 = 0.5,-0.5,0.5,0.5
+	mir = 1,1,1
+	symMethod = Radial
+	autostrutMode = Off
+	rigidAttachment = False
+	istg = 0
+	resPri = 0
+	dstg = 0
+	sidx = -1
+	sqor = -1
+	sepI = 0
+	attm = 0
+	modCost = 0
+	modMass = 0
+	modSize = 0,0,0
+	link = TRF.CA2.APitch_4294329598
+	attN = left,TRF.CA2.ARoll_4294329682_0|0.2064|0
+	attN = bottom,TRF.CA2.APitch_4294329598_0.258|0|0
+	EVENTS
+	{
+	}
+	ACTIONS
+	{
+	}
+	PARTDATA
+	{
+	}
+	MODULE
+	{
+		name = MuMechToggle
+		isEnabled = True
+		servoName = TRF-Rb
+		pitchSet = 1
+		soundSet = 0.5
+		freeMoving = False
+		isMotionLock = False
+		limitTweakable = False
+		limitTweakableFlag = False
+		maxTweak = 360
+		minTweak = 0
+		rotateLimits = False
+		rotateMax = 360
+		rotateMin = 0
+		rotation = 0
+		translateMax = 3
+		translateMin = 0
+		translation = 0
+		defaultPosition = 0
+		customSpeed = 1
+		invertAxis = False
+		torqueMax = 30
+		torqueTweak = 1
+		speedTweak = 1
+		accelTweak = 0.5
+		presetPositionsSerialized = 
+		groupName = New Group
+		forwardKey = 
+		reverseKey = 
+		stagingEnabled = True
+		EVENTS
+		{
+		}
+		ACTIONS
+		{
+			MotionLockToggle
+			{
+				actionGroup = None
+			}
+			MoveNextPresetAction
+			{
+				actionGroup = None
+			}
+			MovePrevPresetAction
+			{
+				actionGroup = None
+			}
+			MovePlusAction
+			{
+				actionGroup = None
+			}
+			MoveMinusAction
+			{
+				actionGroup = None
+			}
+			MoveCenterAction
+			{
+				actionGroup = None
+			}
+		}
+		UPGRADESAPPLIED
+		{
+		}
+	}
+}
+PART
+{
+	part = TRF.CA2.APitch_4294329598
+	partName = Part
+	persistentId = 3345487491
+	pos = 0.595306933,12.9525251,0.534840524
+	attPos = 0,0,0
+	attPos0 = 0.464399934,0,0
+	rot = 0.5,0.5,0.5,0.5
+	attRot = 0.49999997,0.49999997,0.49999997,0.49999997
+	attRot0 = 0.5,-0.5,0.5,0.5
+	mir = 1,1,1
+	symMethod = Radial
+	autostrutMode = Off
+	rigidAttachment = False
+	istg = 0
+	resPri = 0
+	dstg = 0
+	sidx = -1
+	sqor = -1
+	sepI = 0
+	attm = 0
+	modCost = 0
+	modMass = 0
+	modSize = 0,0,0
+	link = TRF.CA2.ARM200_4294329556
+	attN = left,TRF.CA2.AYaw_4294329640_0|0.2064|0
+	attN = bottom,TRF.CA2.ARM200_4294329556_0.258|0|0
+	EVENTS
+	{
+	}
+	ACTIONS
+	{
+	}
+	PARTDATA
+	{
+	}
+	MODULE
+	{
+		name = MuMechToggle
+		isEnabled = True
+		servoName = TRF-Rb
+		pitchSet = 1
+		soundSet = 0.5
+		freeMoving = False
+		isMotionLock = False
+		limitTweakable = False
+		limitTweakableFlag = False
+		maxTweak = 360
+		minTweak = 0
+		rotateLimits = False
+		rotateMax = 360
+		rotateMin = 0
+		rotation = 0
+		translateMax = 3
+		translateMin = 0
+		translation = 0
+		defaultPosition = 0
+		customSpeed = 1
+		invertAxis = False
+		torqueMax = 30
+		torqueTweak = 1
+		speedTweak = 1
+		accelTweak = 0.5
+		presetPositionsSerialized = 
+		groupName = New Group
+		forwardKey = 
+		reverseKey = 
+		stagingEnabled = True
+		EVENTS
+		{
+		}
+		ACTIONS
+		{
+			MotionLockToggle
+			{
+				actionGroup = None
+			}
+			MoveNextPresetAction
+			{
+				actionGroup = None
+			}
+			MovePrevPresetAction
+			{
+				actionGroup = None
+			}
+			MovePlusAction
+			{
+				actionGroup = None
+			}
+			MoveMinusAction
+			{
+				actionGroup = None
+			}
+			MoveCenterAction
+			{
+				actionGroup = None
+			}
+		}
+		UPGRADESAPPLIED
+		{
+		}
+	}
+}
+PART
+{
+	part = TRF.CA2.ARM200_4294329556
+	partName = Part
+	persistentId = 2358760046
+	pos = 0.595306933,13.2105265,0.534840524
+	attPos = 0,0,0
+	attPos0 = 0.258000374,-2.98023224E-08,0
+	rot = 0,0,0,1
+	attRot = 0,0,0,1
+	attRot0 = -0.5,-0.5,-0.5,0.5
+	mir = 1,1,1
+	symMethod = Radial
+	autostrutMode = Off
+	rigidAttachment = False
+	istg = 0
+	resPri = 0
+	dstg = 0
+	sidx = -1
+	sqor = -1
+	sepI = 0
+	attm = 0
+	modCost = 0
+	modMass = 0
+	modSize = 0,0,0
+	link = TRF.CA2.AHinge_4294329522
+	attN = top,TRF.CA2.AHinge_4294329522_0|2.064|0
+	attN = bottom,TRF.CA2.APitch_4294329598_0|0|0
+	EVENTS
+	{
+	}
+	ACTIONS
+	{
+	}
+	PARTDATA
+	{
+	}
+	MODULE
+	{
+		name = FlagDecal
+		isEnabled = True
+		flagDisplayed = True
+		stagingEnabled = True
+		EVENTS
+		{
+		}
+		ACTIONS
+		{
+		}
+		UPGRADESAPPLIED
+		{
+		}
+	}
+}
+PART
+{
+	part = TRF.CA2.AHinge_4294329522
+	partName = Part
+	persistentId = 1422084579
+	pos = 0.80170691,15.3777266,0.534840584
+	attPos = 0,0,0
+	attPos0 = 0.206399918,2.16720009,-1.1920929E-07
+	rot = 0.707106829,7.4505806E-09,-0.707106829,0
+	attRot = 0,0.707106769,0,0.707106769
+	attRot0 = 0,0.707106829,0,0.707106829
+	mir = 1,1,1
+	symMethod = Radial
+	autostrutMode = Off
+	rigidAttachment = False
+	istg = 0
+	resPri = 0
+	dstg = 0
+	sidx = -1
+	sqor = -1
+	sepI = 0
+	attm = 0
+	modCost = 0
+	modMass = 0
+	modSize = 0,0,0
+	link = TRF.CA2.ARM200_4294329476
+	attN = top,TRF.CA2.ARM200_4294329476_0|0.1032|-0.2064
+	attN = bottom,TRF.CA2.ARM200_4294329556_0|-0.1032|-0.2064
+	EVENTS
+	{
+	}
+	ACTIONS
+	{
+	}
+	PARTDATA
+	{
+	}
+	MODULE
+	{
+		name = MuMechToggle
+		isEnabled = True
+		servoName = TRF-H
+		pitchSet = 1
+		soundSet = 0.5
+		freeMoving = False
+		isMotionLock = False
+		limitTweakable = False
+		limitTweakableFlag = True
+		maxTweak = 180
+		minTweak = 0
+		rotateLimits = True
+		rotateMax = 180
+		rotateMin = 0
+		rotation = 180
+		translateMax = 3
+		translateMin = 0
+		translation = 0
+		defaultPosition = 0
+		customSpeed = 1
+		invertAxis = False
+		torqueMax = 30
+		torqueTweak = 1
+		speedTweak = 1
+		accelTweak = 4
+		presetPositionsSerialized = 
+		groupName = New Group
+		forwardKey = 
+		reverseKey = 
+		stagingEnabled = True
+		EVENTS
+		{
+		}
+		ACTIONS
+		{
+			MotionLockToggle
+			{
+				actionGroup = None
+			}
+			MoveNextPresetAction
+			{
+				actionGroup = None
+			}
+			MovePrevPresetAction
+			{
+				actionGroup = None
+			}
+			MovePlusAction
+			{
+				actionGroup = None
+			}
+			MoveMinusAction
+			{
+				actionGroup = None
+			}
+			MoveCenterAction
+			{
+				actionGroup = None
+			}
+		}
+		UPGRADESAPPLIED
+		{
+		}
+	}
+}
+PART
+{
+	part = TRF.CA2.ARM200_4294329476
+	partName = Part
+	persistentId = 1111883351
+	pos = 1.0081073,15.2745256,0.534840584
+	attPos = 0,0,0
+	attPos0 = -2.086162E-07,0.103200912,-0.206400096
+	rot = 0,0,-1,0
+	attRot = 0,0,0,1
+	attRot0 = 0,-0.707106829,0,0.707106829
+	mir = 1,1,1
+	symMethod = Radial
+	autostrutMode = Off
+	rigidAttachment = False
+	istg = 0
+	resPri = 0
+	dstg = 0
+	sidx = -1
+	sqor = -1
+	sepI = 0
+	attm = 0
+	modCost = 0
+	modMass = 0
+	modSize = 0,0,0
+	link = TRF.CA2.CElbow_4294329442
+	attN = top,TRF.CA2.CElbow_4294329442_0|2.064|0
+	attN = bottom,TRF.CA2.AHinge_4294329522_0|0|0
+	EVENTS
+	{
+	}
+	ACTIONS
+	{
+	}
+	PARTDATA
+	{
+	}
+	MODULE
+	{
+		name = FlagDecal
+		isEnabled = True
+		flagDisplayed = True
+		stagingEnabled = True
+		EVENTS
+		{
+		}
+		ACTIONS
+		{
+		}
+		UPGRADESAPPLIED
+		{
+		}
+	}
+}
+PART
+{
+	part = TRF.CA2.CElbow_4294329442
+	partName = Part
+	persistentId = 2014082475
+	pos = 1.0081073,12.952527,0.534840524
+	attPos = 0,0,0
+	attPos0 = -2.38418664E-07,2.3219986,2.84217162E-14
+	rot = -0.5,-0.5,0.5,0.5
+	attRot = 0.49999994,-0.49999994,0.49999994,-0.49999994
+	attRot0 = 0.5,-0.5,0.5,-0.5
+	mir = 1,1,1
+	symMethod = Radial
+	autostrutMode = Off
+	rigidAttachment = False
+	istg = 0
+	resPri = 0
+	dstg = 0
+	sidx = -1
+	sqor = -1
+	sepI = 0
+	attm = 0
+	modCost = 0
+	modMass = 0
+	modSize = 0,0,0
+	link = TRF.CA2.ELBOW3_4294329400
+	attN = left,TRF.CA2.ELBOW3_4294329400_0|0.2064|0
+	attN = bottom,TRF.CA2.ARM200_4294329476_0.258|0|0
+	EVENTS
+	{
+	}
+	ACTIONS
+	{
+	}
+	PARTDATA
+	{
+	}
+	MODULE
+	{
+		name = MuMechToggle
+		isEnabled = True
+		servoName = TRF-R
+		pitchSet = 1
+		soundSet = 0.5
+		freeMoving = False
+		isMotionLock = False
+		limitTweakable = False
+		limitTweakableFlag = False
+		maxTweak = 360
+		minTweak = 0
+		rotateLimits = False
+		rotateMax = 360
+		rotateMin = 0
+		rotation = 0
+		translateMax = 3
+		translateMin = 0
+		translation = 0
+		defaultPosition = 0
+		customSpeed = 1
+		invertAxis = False
+		torqueMax = 30
+		torqueTweak = 1
+		speedTweak = 1
+		accelTweak = 0.5
+		presetPositionsSerialized = 
+		groupName = New Group
+		forwardKey = 
+		reverseKey = 
+		stagingEnabled = True
+		EVENTS
+		{
+		}
+		ACTIONS
+		{
+			MotionLockToggle
+			{
+				actionGroup = None
+			}
+			MoveNextPresetAction
+			{
+				actionGroup = None
+			}
+			MovePrevPresetAction
+			{
+				actionGroup = None
+			}
+			MovePlusAction
+			{
+				actionGroup = None
+			}
+			MoveMinusAction
+			{
+				actionGroup = None
+			}
+			MoveCenterAction
+			{
+				actionGroup = None
+			}
+		}
+		UPGRADESAPPLIED
+		{
+		}
+	}
+}
+PART
+{
+	part = TRF.CA2.ELBOW3_4294329400
+	partName = Part
+	persistentId = 1485877820
+	pos = 1.00810719,12.952527,0.122024238
+	attPos = 0,0,0
+	attPos0 = 0,0.412799925,-2.98023224E-08
+	rot = 0.707106829,0,0.707106829,-7.4505806E-09
+	attRot = 0,0.707106709,0,-0.707106709
+	attRot0 = 0.707106829,-0.707106829,0,0
+	mir = 1,1,1
+	symMethod = Radial
+	autostrutMode = Off
+	rigidAttachment = False
+	istg = 0
+	resPri = 0
+	dstg = 0
+	sidx = -1
+	sqor = -1
+	sepI = 0
+	attm = 0
+	modCost = 0
+	modMass = 0
+	modSize = 0,0,0
+	link = TRF.CA2.ARM200_4294329360
+	attN = left,TRF.CA2.CElbow_4294329442_0.2064|0|0
+	attN = bottom,TRF.CA2.ARM200_4294329360_0|-0.258|0
+	EVENTS
+	{
+	}
+	ACTIONS
+	{
+	}
+	PARTDATA
+	{
+	}
+}
+PART
+{
+	part = TRF.CA2.ARM200_4294329360
+	partName = Part
+	persistentId = 1535928835
+	pos = 1.00810719,15.2745266,0.122008801
+	attPos = 0,0,0
+	attPos0 = -1.49011612E-07,-2.3219986,-5.9604659E-08
+	rot = 0,0,-1.00000024,0
+	attRot = 0,0,0,1
+	attRot0 = 0,-0.707106829,0,-0.707106829
+	mir = 1,1,1
+	symMethod = Radial
+	autostrutMode = Off
+	rigidAttachment = False
+	istg = 0
+	resPri = 0
+	dstg = 0
+	sidx = -1
+	sqor = -1
+	sepI = 0
+	attm = 0
+	modCost = 0
+	modMass = 0
+	modSize = 0,0,0
+	link = TRF.CA2.BHinge_4294329326
+	attN = top,TRF.CA2.ELBOW3_4294329400_0|2.064|0
+	attN = bottom,TRF.CA2.BHinge_4294329326_0|0|0
+	EVENTS
+	{
+	}
+	ACTIONS
+	{
+	}
+	PARTDATA
+	{
+	}
+	MODULE
+	{
+		name = FlagDecal
+		isEnabled = True
+		flagDisplayed = True
+		stagingEnabled = True
+		EVENTS
+		{
+		}
+		ACTIONS
+		{
+		}
+		UPGRADESAPPLIED
+		{
+		}
+	}
+}
+PART
+{
+	part = TRF.CA2.BHinge_4294329326
+	partName = Part
+	persistentId = 2325827784
+	pos = 0.801697195,15.3777275,0.122007847
+	attPos = 0,0,0
+	attPos0 = 0.206399933,-0.103200912,-9.23872221E-07
+	rot = 0.707107186,-2.98023224E-08,0.707106709,-3.65749742E-08
+	attRot = 0.707106709,0,0.707106709,0
+	attRot0 = 0.707106829,0,0.707106829,0
+	mir = 1,1,1
+	symMethod = Radial
+	autostrutMode = Off
+	rigidAttachment = False
+	istg = 0
+	resPri = 0
+	dstg = 0
+	sidx = -1
+	sqor = -1
+	sepI = 0
+	attm = 0
+	modCost = 0
+	modMass = 0
+	modSize = 0,0,0
+	link = TRF.CA2.ARM200_4294329280
+	attN = top,TRF.CA2.ARM200_4294329280_0|0.1032|-0.2064
+	attN = bottom,TRF.CA2.ARM200_4294329360_0|-0.1032|-0.2064
+	EVENTS
+	{
+	}
+	ACTIONS
+	{
+	}
+	PARTDATA
+	{
+	}
+	MODULE
+	{
+		name = MuMechToggle
+		isEnabled = True
+		servoName = TRF-H
+		pitchSet = 1
+		soundSet = 0.5
+		freeMoving = False
+		isMotionLock = False
+		limitTweakable = False
+		limitTweakableFlag = True
+		maxTweak = 180
+		minTweak = 0
+		rotateLimits = True
+		rotateMax = 180
+		rotateMin = 0
+		rotation = 180
+		translateMax = 3
+		translateMin = 0
+		translation = 0
+		defaultPosition = 0
+		customSpeed = 1
+		invertAxis = False
+		torqueMax = 30
+		torqueTweak = 1
+		speedTweak = 1
+		accelTweak = 4
+		presetPositionsSerialized = 
+		groupName = New Group
+		forwardKey = 
+		reverseKey = 
+		stagingEnabled = True
+		EVENTS
+		{
+		}
+		ACTIONS
+		{
+			MotionLockToggle
+			{
+				actionGroup = None
+			}
+			MoveNextPresetAction
+			{
+				actionGroup = None
+			}
+			MovePrevPresetAction
+			{
+				actionGroup = None
+			}
+			MovePlusAction
+			{
+				actionGroup = None
+			}
+			MoveMinusAction
+			{
+				actionGroup = None
+			}
+			MoveCenterAction
+			{
+				actionGroup = None
+			}
+		}
+		UPGRADESAPPLIED
+		{
+		}
+	}
+}
+PART
+{
+	part = TRF.CA2.ARM200_4294329280
+	partName = Part
+	persistentId = 175610666
+	pos = 0.595282376,13.210453,0.121980309
+	attPos = 0,0,0
+	attPos0 = -1.1920929E-06,2.1672008,-0.206400111
+	rot = 2.98023224E-08,3.87430191E-07,-5.96046448E-08,1.00000048
+	attRot = 0,0,0,1
+	attRot0 = -0.707106829,0,-0.707106829,0
+	mir = 1,1,1
+	symMethod = Radial
+	autostrutMode = Off
+	rigidAttachment = False
+	istg = 0
+	resPri = 0
+	dstg = 0
+	sidx = -1
+	sqor = -1
+	sepI = 0
+	attm = 0
+	modCost = 0
+	modMass = 0
+	modSize = 0,0,0
+	link = TRF.CA2.BPitch_4294329246
+	attN = top,TRF.CA2.BHinge_4294329326_0|2.064|0
+	attN = bottom,TRF.CA2.BPitch_4294329246_0|0|0
+	EVENTS
+	{
+	}
+	ACTIONS
+	{
+	}
+	PARTDATA
+	{
+	}
+	MODULE
+	{
+		name = FlagDecal
+		isEnabled = True
+		flagDisplayed = True
+		stagingEnabled = True
+		EVENTS
+		{
+		}
+		ACTIONS
+		{
+		}
+		UPGRADESAPPLIED
+		{
+		}
+	}
+}
+PART
+{
+	part = TRF.CA2.BPitch_4294329246
+	partName = Part
+	persistentId = 285762925
+	pos = 0.595282018,12.9524355,0.121978879
+	attPos = 0,0,0
+	attPos0 = -2.38418295E-07,-0.258002192,-1.43051147E-06
+	rot = 0.499999881,0.5,-0.500000238,-0.500000358
+	attRot = 0.49999994,0.49999994,-0.49999994,-0.49999994
+	attRot0 = 0.5,0.5,-0.5,-0.5
+	mir = 1,1,1
+	symMethod = Radial
+	autostrutMode = Off
+	rigidAttachment = False
+	istg = 0
+	resPri = 0
+	dstg = 0
+	sidx = -1
+	sqor = -1
+	sepI = 0
+	attm = 0
+	modCost = 0
+	modMass = 0
+	modSize = 0,0,0
+	link = TRF.CA2.BYaw_4294329204
+	attN = left,TRF.CA2.BYaw_4294329204_0|0.2064|0
+	attN = bottom,TRF.CA2.ARM200_4294329280_0.258|0|0
+	EVENTS
+	{
+	}
+	ACTIONS
+	{
+	}
+	PARTDATA
+	{
+	}
+	MODULE
+	{
+		name = MuMechToggle
+		isEnabled = True
+		servoName = TRF-R
+		pitchSet = 1
+		soundSet = 0.5
+		freeMoving = False
+		isMotionLock = False
+		limitTweakable = False
+		limitTweakableFlag = False
+		maxTweak = 360
+		minTweak = 0
+		rotateLimits = False
+		rotateMax = 360
+		rotateMin = 0
+		rotation = 0
+		translateMax = 3
+		translateMin = 0
+		translation = 0
+		defaultPosition = 0
+		customSpeed = 1
+		invertAxis = False
+		torqueMax = 30
+		torqueTweak = 1
+		speedTweak = 1
+		accelTweak = 0.5
+		presetPositionsSerialized = 
+		groupName = New Group
+		forwardKey = 
+		reverseKey = 
+		stagingEnabled = True
+		EVENTS
+		{
+		}
+		ACTIONS
+		{
+			MotionLockToggle
+			{
+				actionGroup = None
+			}
+			MoveNextPresetAction
+			{
+				actionGroup = None
+			}
+			MovePrevPresetAction
+			{
+				actionGroup = None
+			}
+			MovePlusAction
+			{
+				actionGroup = None
+			}
+			MoveMinusAction
+			{
+				actionGroup = None
+			}
+			MoveCenterAction
+			{
+				actionGroup = None
+			}
+		}
+		UPGRADESAPPLIED
+		{
+		}
+	}
+}
+PART
+{
+	part = TRF.CA2.BYaw_4294329204
+	partName = Part
+	persistentId = 4202441788
+	pos = 0.595291972,12.9524336,-0.342443466
+	attPos = 0,0,0
+	attPos0 = -1.90734863E-06,0.464401245,-5.96046448E-08
+	rot = 0.500000298,-0.5,0.5,0.500000477
+	attRot = 0.49999994,-0.49999994,0.49999994,0.49999994
+	attRot0 = -0.500000119,0.5,0.5,-0.5
+	mir = 1,1,1
+	symMethod = Radial
+	autostrutMode = Off
+	rigidAttachment = False
+	istg = 0
+	resPri = 0
+	dstg = 0
+	sidx = -1
+	sqor = -1
+	sepI = 0
+	attm = 0
+	modCost = 0
+	modMass = 0
+	modSize = 0,0,0
+	link = TRF.CA2.BRoll_4294329162
+	attN = left,TRF.CA2.BRoll_4294329162_0|0.2064|0
+	attN = bottom,TRF.CA2.BPitch_4294329246_0.258|0|0
+	EVENTS
+	{
+	}
+	ACTIONS
+	{
+	}
+	PARTDATA
+	{
+	}
+	MODULE
+	{
+		name = MuMechToggle
+		isEnabled = True
+		servoName = TRF-R
+		pitchSet = 1
+		soundSet = 0.5
+		freeMoving = False
+		isMotionLock = False
+		limitTweakable = False
+		limitTweakableFlag = False
+		maxTweak = 360
+		minTweak = 0
+		rotateLimits = False
+		rotateMax = 360
+		rotateMin = 0
+		rotation = 0
+		translateMax = 3
+		translateMin = 0
+		translation = 0
+		defaultPosition = 0
+		customSpeed = 1
+		invertAxis = False
+		torqueMax = 30
+		torqueTweak = 1
+		speedTweak = 1
+		accelTweak = 0.5
+		presetPositionsSerialized = 
+		groupName = New Group
+		forwardKey = 
+		reverseKey = 
+		stagingEnabled = True
+		EVENTS
+		{
+		}
+		ACTIONS
+		{
+			MotionLockToggle
+			{
+				actionGroup = None
+			}
+			MoveNextPresetAction
+			{
+				actionGroup = None
+			}
+			MovePrevPresetAction
+			{
+				actionGroup = None
+			}
+			MovePlusAction
+			{
+				actionGroup = None
+			}
+			MoveMinusAction
+			{
+				actionGroup = None
+			}
+			MoveCenterAction
+			{
+				actionGroup = None
+			}
+		}
+		UPGRADESAPPLIED
+		{
+		}
+	}
+}
+PART
+{
+	part = TRF.CA2.BRoll_4294329162
+	partName = Part
+	persistentId = 1394223054
+	pos = 0.13084586,12.9524479,-0.342426777
+	attPos = 0,0,0
+	attPos0 = -2.43954651E-06,0.464400172,1.78813912E-06
+	rot = 1.00000036,-5.96046448E-08,-3.87430191E-07,2.98023224E-08
+	attRot = 0.99999994,0,0,0
+	attRot0 = 0.50000006,-0.50000006,-0.49999994,0.50000006
+	mir = 1,1,1
+	symMethod = Radial
+	autostrutMode = Off
+	rigidAttachment = False
+	istg = 0
+	resPri = 0
+	dstg = 0
+	sidx = -1
+	sqor = -1
+	sepI = 0
+	attm = 0
+	modCost = 0
+	modMass = 0
+	modSize = 0,0,0
+	link = TRF.CA2.LEE.wCam_4294329120
+	attN = left,TRF.CA2.LEE.wCam_4294329120_0|0.2064|0
+	attN = bottom,TRF.CA2.BYaw_4294329204_0.258|0|0
+	EVENTS
+	{
+	}
+	ACTIONS
+	{
+	}
+	PARTDATA
+	{
+	}
+	MODULE
+	{
+		name = MuMechToggle
+		isEnabled = True
+		servoName = TRF-R
+		pitchSet = 1
+		soundSet = 0.5
+		freeMoving = False
+		isMotionLock = False
+		limitTweakable = False
+		limitTweakableFlag = False
+		maxTweak = 360
+		minTweak = 0
+		rotateLimits = False
+		rotateMax = 360
+		rotateMin = 0
+		rotation = 0
+		translateMax = 3
+		translateMin = 0
+		translation = 0
+		defaultPosition = 0
+		customSpeed = 1
+		invertAxis = False
+		torqueMax = 30
+		torqueTweak = 1
+		speedTweak = 1
+		accelTweak = 0.5
+		presetPositionsSerialized = 
+		groupName = New Group
+		forwardKey = 
+		reverseKey = 
+		stagingEnabled = True
+		EVENTS
+		{
+		}
+		ACTIONS
+		{
+			MotionLockToggle
+			{
+				actionGroup = None
+			}
+			MoveNextPresetAction
+			{
+				actionGroup = None
+			}
+			MovePrevPresetAction
+			{
+				actionGroup = None
+			}
+			MovePlusAction
+			{
+				actionGroup = None
+			}
+			MoveMinusAction
+			{
+				actionGroup = None
+			}
+			MoveCenterAction
+			{
+				actionGroup = None
+			}
+		}
+		UPGRADESAPPLIED
+		{
+		}
+	}
+}
+PART
+{
+	part = TRF.CA2.LEE.wCam_4294329120
+	partName = Part
+	persistentId = 183645328
+	pos = 0.130847648,12.7460346,-0.342428684
+	attPos = 0,0,0
+	attPos0 = -8.39662221E-07,0.206402704,1.8328426E-06
+	rot = -3.57627869E-07,0,-1.00000036,0
+	attRot = 0,0,-0.999999881,0
+	attRot0 = 0,-1,0,0
+	mir = 1,1,1
+	symMethod = Radial
+	autostrutMode = Off
+	rigidAttachment = False
+	istg = 0
+	resPri = 0
+	dstg = 0
+	sidx = -1
+	sqor = -1
+	sepI = 1
+	attm = 0
+	modCost = 0
+	modMass = 0
+	modSize = 0,0,0
+	attN = bottom,TRF.CA2.BRoll_4294329162_0|0|0
+	EVENTS
+	{
+	}
+	ACTIONS
+	{
+	}
+	PARTDATA
+	{
+	}
+	MODULE
+	{
+		name = Ca2LeeCam
+		isEnabled = True
+		stagingEnabled = True
+		EVENTS
+		{
+		}
+		ACTIONS
+		{
+		}
+		UPGRADESAPPLIED
+		{
+		}
+	}
+	MODULE
+	{
+		name = ModuleCommand
+		isEnabled = True
+		hibernation = False
+		hibernateOnWarp = False
+		stagingEnabled = True
+		EVENTS
+		{
+		}
+		ACTIONS
+		{
+			MakeReferenceToggle
+			{
+				actionGroup = None
+			}
+			HibernateToggle
+			{
+				actionGroup = None
+				active = False
+			}
+		}
+		UPGRADESAPPLIED
+		{
+		}
+	}
+	MODULE
+	{
+		name = ModuleDockingNode
+		isEnabled = True
+		crossfeed = True
+		stagingEnabled = False
+		state = Ready
+		dockUId = 0
+		dockNodeIdx = 0
+		EVENTS
+		{
+		}
+		ACTIONS
+		{
+			UndockAction
+			{
+				actionGroup = None
+			}
+			DecoupleAction
+			{
+				actionGroup = None
+			}
+			MakeReferenceToggle
+			{
+				actionGroup = None
+			}
+			EnableXFeedAction
+			{
+				actionGroup = None
+			}
+			DisableXFeedAction
+			{
+				actionGroup = None
+			}
+			ToggleXFeedAction
+			{
+				actionGroup = None
+			}
+		}
+		UPGRADESAPPLIED
+		{
+		}
+	}
+	MODULE
+	{
+		name = ModuleAnimateGeneric
+		isEnabled = True
+		aniState = LOCKED
+		animSwitch = False
+		animTime = 1
+		animSpeed = 10
+		deployPercent = 100
+		animationIsDisabled = False
+		stagingEnabled = True
+		EVENTS
+		{
+		}
+		ACTIONS
+		{
+			ToggleAction
+			{
+				actionGroup = None
+			}
+		}
+		UPGRADESAPPLIED
+		{
+		}
+	}
+	RESOURCE
+	{
+		name = ElectricCharge
+		amount = 10000
+		maxAmount = 10000
+		flowState = True
+		isTweakable = True
+		hideFlow = False
+		isVisible = True
+		flowMode = Both
+	}
+}

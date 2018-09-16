@@ -1,0 +1,5 @@
+D:\_Trufiadok\KSP\TRF_Base\_Unity Projects\Unity Project 2017\IkRobotController\IkRobotController\IkRobotController\bin\Debug\IkRobotController.dll
+D:\_Trufiadok\KSP\TRF_Base\_Unity Projects\Unity Project 2017\IkRobotController\IkRobotController\IkRobotController\bin\Debug\IkRobotController.pdb
+D:\_Trufiadok\KSP\TRF_Base\_Unity Projects\Unity Project 2017\IkRobotController\IkRobotController\IkRobotController\obj\Debug\IkRobotController.dll
+D:\_Trufiadok\KSP\TRF_Base\_Unity Projects\Unity Project 2017\IkRobotController\IkRobotController\IkRobotController\obj\Debug\IkRobotController.pdb
+D:\_Trufiadok\KSP\TRF_Base\_Unity Projects\Unity Project 2017\IkRobotController\IkRobotController\IkRobotController\obj\Debug\IkRobotController.csprojResolveAssemblyReference.cache

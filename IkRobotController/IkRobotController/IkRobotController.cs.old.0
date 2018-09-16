@@ -1,0 +1,893 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using UnityEngine;
+using UnityEngine.UI;
+using KSP.IO;
+
+namespace IkRobotController
+{
+    [KSPAddon(KSPAddon.Startup.Flight, true)]
+    public class IkRobotController : PartModule
+    {
+        private static Rect windowRectangle;
+        private static Vector2 windowPosition = new Vector2(10, 10);
+        private static Vector2 windowSize = new Vector2(360, 550);
+        private static Rect inputRect;
+        private static ConfigNode nodeInner;
+        private static bool IK_active = false;
+        private static bool ircWindowActive = true;
+        private static float Yoffset = 0;
+
+        private static string iterateString = "500";
+        private static string learningRateString = "1";
+        private static string learningRatePosString = "5";
+        private static string learningRateOriString = "0.33";
+        private static string samplingAngleString = "0.05";
+        private static string DistanceThresholdString = "0.1";
+        private static string AngleThresholdString = "0.2";
+        private static string MaxPosErrString = "10";
+        private static string MaxOriErrString = "180";
+        private static string[] axisString = { "-2", "1", "-3", "3", "3", "1", "-2", "0"};
+        private static int[] axisNumber = { -2, 1, -3, 3, 3, 1, -2, 0};
+
+        public class VectorSM
+        {
+            public Vector3 Translation;
+            public Quaternion Rotation;
+
+            public VectorSM()
+            {
+                Translation = new Vector3();
+                Rotation = Quaternion.identity;
+            }
+        }
+
+        public class LocationRotationDiff
+        {
+            public float LocationDiff;
+            public float RotationDiff;
+
+            public LocationRotationDiff()
+            {
+            }
+        }
+
+        public class Buttons
+        {
+            public Vector3 Translation;
+            public Quaternion Rotation;
+
+            public Buttons()
+            {
+                Translation = new Vector3();
+                Rotation = Quaternion.identity;
+            }
+        }
+
+        Buttons buttons;
+
+        //public class Servo
+        //{
+        //    public Vector3 StartOffset;
+        //    public Vector3 Position;
+        //    public Vector3 Rotation;
+        //    public Quaternion baseRotation;
+        //    public Quaternion baseTransformRotation;
+        //    public Vector3 Axis;
+        //    public Transform ServoTransform;
+        //    public string name;
+        //    public float MinAngle = -270f;
+        //    public float MaxAngle = 270f;
+
+        //    public Servo(Transform servoTransform, string name, Vector3 Position, Vector3 Rotation)
+        //    {
+        //        ServoTransform = servoTransform;
+        //        this.name = name;
+        //        this.Position = Position;
+        //        this.Rotation = Rotation;
+        //    }
+        //}
+
+        public class IKservo
+        {
+            public Part part;
+            public IRWrapper.IServo iservo;
+            public Vector3 StartOffset;
+            public Vector3 Position;
+            public Vector3 Rotation;
+            public Quaternion baseRotation;
+            public Quaternion baseTransformRotation;
+            public Vector3 Axis;
+            public Transform ServoTransform;
+            public string name;
+            public float MinAngle = -270f;
+            public float MaxAngle = 270f;
+
+            public Vector3 StartRotOffset;
+
+            public IKservo(Part part, IRWrapper.IServo iservo)
+            {
+                this.part = part;
+                this.iservo = iservo;
+            }
+
+            public IKservo(Part part)
+            {
+                this.part = part;
+            }
+        }
+
+        //List<Servo> Servos;
+        static List<IRWrapper.IServo> allServos;
+        static List<IKservo> AllIkServo;
+        static List<IKservo> SortIkServo;
+        static List<Part> listOfChildrenPart;
+        static Part lastPart;
+
+        string[] JointList = { "TRF.CA2.ARoll", "TRF.CA2.AYaw", "TRF.CA2.APitch", "TRF.CA2.CElbow", "TRF.CA2.BPitch", "TRF.CA2.BYaw", "TRF.CA2.BRoll", "TRF.CA2.LEE" };
+        Vector3[] JointsAxis = { new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(0, 0, 0) };
+        Vector3[] JointsRealAxis = { new Vector3(0, -1, 0), new Vector3(1, 0, 0), new Vector3(0, 0, -1), new Vector3(0, 0, 1), new Vector3(0, 0, 1), new Vector3(1, 0, 0), new Vector3(0, -1, 0), new Vector3(0, 0, 0) };
+        public static float[] theta = new float[8];
+
+        public static bool[] blocking = new bool[8];
+        public static float distance;
+        public static float angle;
+        public static bool Success = false;
+        public static bool IKsuccess = false;
+        public static bool Bug = true;
+
+        public static Vector3 globalPosition;
+        public static Quaternion globalQuaternion;
+
+        public static int iterateNumber;
+        public static float LearningRate;
+        public static float LearningRatePos;
+        public static float LearningRateOri;
+        public static float SamplingAngle;
+
+        public static float DistanceThreshold;
+        public static float Distance;
+        public static float AngleThreshold;
+        public static float Angle;
+
+        public static float MaxPosErr;
+        public static float MaxOriErr;
+
+        public static float DinLearningRatePos;
+        public static float DinLearningRateOri;
+
+
+        // Use this for initialization
+        public void Start()
+        {
+            // Set base angle of joints = 0 degree
+            theta[0] = theta[1] = theta[2] = theta[3] = theta[4] = theta[5] = theta[6] = theta[7] = 0.0f;
+            blocking[0] = blocking[1] = blocking[2] = blocking[3] = blocking[4] = blocking[5] = blocking[6] = blocking[7] = false;
+            // Init Buttons
+            buttons = new Buttons();
+
+            // Set start position and  start orientation of EndEffector
+            //globalPosition = new Vector3(3.4f, -0.25f, 0.0f);
+            globalPosition = new Vector3(0f, 0f, 0f);
+            globalQuaternion = Quaternion.Euler(0f, 0f, 0f);
+
+            //Servos = new List<Servo>();
+            //GetChildTransformRecursive(Servos, transform);
+            //DumpServoStructure(transform, Servos);
+
+            //windowRectangle = new Rect(windowPosition.x, windowPosition.y, windowSize.x, windowSize.y);
+
+            Debug.Log(string.Format("[TRF] {0} IRWrapper.InitWrapper() START", 1));
+            IRWrapper.InitWrapper();
+            Debug.Log(string.Format("[TRF] {0} IRWrapper.InitWrapper() END", 2));
+
+            if (IRWrapper.APIReady)
+            {
+                Debug.Log(string.Format("[TRF] {0} - IRWrapper.APIReady", 21));
+                AllIkServo = new List<IKservo>();
+                allServos = new List<IRWrapper.IServo>();
+                SortIkServo = new List<IKservo>();
+
+                // get parts of vessel
+                List<Part> parts = vessel.Parts;
+
+                // Get all servo
+                foreach (IRWrapper.IControlGroup group in IRWrapper.IRController.ServoGroups)
+                {
+                    allServos.AddRange(group.Servos);
+                }
+
+                Debug.Log(string.Format("[TRF] {0} - Get all servo ({1})", 22, allServos.Count));
+
+                if (allServos.Count > 0)
+                {
+                    // Scanning all servos
+                    foreach (IRWrapper.IServo iservo in allServos)
+                    {
+                        foreach (Part part in parts)
+                        {
+                            // if vessel contain servo and not hinge then add to IKservos
+                            if (iservo.HostPart.name == part.name && !iservo.HostPart.name.Contains("Hinge"))
+                            {
+                                AllIkServo.Add(new IKservo(part, iservo));
+                            }
+                        }
+                    }
+
+                    Debug.Log(string.Format("[TRF] {0} - AllIkServo ({1})", 23, AllIkServo.Count));
+
+                    // Sort IKservos by JointList
+                    for (int i = 0; i < JointList.Length; i++)
+                    {
+                        foreach (IKservo ikServo in AllIkServo)
+                        {
+                            if (ikServo.part.name == JointList[i])
+                            {
+                                SortIkServo.Add(ikServo);
+                                Debug.Log(string.Format("[TRF] {0} - ikServo " + ikServo.part.name, 24 + i));
+                            }
+                        }
+                    }
+
+                    // Get last part
+                    listOfChildrenPart = new List<Part>();
+                    GetChildPartRecursive(part);
+                    int elementCount = listOfChildrenPart.Count();
+                    lastPart = listOfChildrenPart[elementCount - 1];
+
+                    Debug.Log(string.Format("[TRF] {0} - lastPart " + lastPart.name, 40));
+
+                    // Add EndEffector/LEE/ (last part) to SortIkServo - problem -> if LEE hold other element that will last part
+                    SortIkServo.Add(new IKservo(lastPart));
+
+                    // if have all IKservo than calculate IK parameters of IKservos 
+                    if (SortIkServo.Count == JointList.Length)
+                    {
+                        Vector3 StartPos = part.transform.position;
+                        Quaternion StartRot = part.transform.rotation;
+                        Part StartPart = part;
+                        int i = 0;
+                        // dumping servo structure
+                        foreach (IKservo ikServo in SortIkServo)
+                        {
+                            //ikServo.StartOffset = ikServo.part.transform.position - StartPos;
+                            ikServo.ServoTransform = ikServo.part.transform;
+                            ikServo.StartOffset = Quaternion.Inverse(StartRot) * (ikServo.ServoTransform.position - StartPos);
+                            //ikServo.StartRotOffset = StartPart.transform.InverseTransformDirection(ikServo.part.transform.rotation.eulerAngles);
+                            //ikServo.Axis = JointsAxis[i];
+                            ikServo.Axis = JointsRealAxis[i];
+                            ikServo.baseRotation = ikServo.ServoTransform.localRotation;
+                            ikServo.baseTransformRotation = ikServo.ServoTransform.rotation;
+                            //StartPart = ikServo.part;
+                            StartPos = ikServo.Position;
+                            StartRot = Quaternion.Euler(ikServo.Rotation);
+                            i++;
+                        }
+
+                        //***//int i = 0;
+
+                        //***//Vector3 StartPos = baseTransform.position;
+                        //***//Quaternion StartRot = baseTransform.rotation;
+
+                        ////// dumping servo structure
+                        //***//foreach (Servo childServo in Servos)
+                        ////{
+                        //***//    childServo.StartOffset = Quaternion.Inverse(StartRot) * (childServo.ServoTransform.position - StartPos);
+                        //***//    childServo.Axis = JointsRealAxis[i];
+                        //***//    childServo.baseRotation = childServo.ServoTransform.localRotation;
+                        //***//    childServo.baseTransformRotation = childServo.ServoTransform.rotation;
+                        //***//    StartPos = childServo.Position;
+                        //***//    StartRot = Quaternion.Euler(childServo.Rotation);
+                        //***//    i++;
+                        ////}
+                    }
+                }
+            }
+
+            // set position of last part for global position
+            //globalPosition = lastPart.transform.position;
+            globalPosition = SortIkServo[SortIkServo.Count - 1].ServoTransform.position;
+        }
+
+        // Update is called once per frame
+        public void Update()
+        {
+            if (IK_active)
+            {
+                // calculate global position of aim
+                //globalPosition = globalPosition + globalQuaternion * spaceMouse.Translation;
+                globalPosition = globalPosition + globalQuaternion * buttons.Translation;
+
+                //Debug.Log(string.Format("[TRF] {0} - globalPosition " + VectorToString(globalPosition, "0.00"), 101));
+
+                // global orientation
+                //globalQuaternion = globalQuaternion * spaceMouse.Rotation;
+                globalQuaternion = globalQuaternion * buttons.Rotation;
+
+                //Debug.Log(string.Format("[TRF] {0} - globalRotation " + VectorToString(globalQuaternion.eulerAngles, "0.00"), 102));
+
+                // clear buttons.Translation & .Rotation
+                ButtonsReleased();
+
+                //distance = Vector3.Distance(Servos[Servos.Count - 1].ServoTransform.position, globalPosition);
+                //angle = Quaternion.Angle(Quaternion.Euler(Servos[Servos.Count - 1].ServoTransform.rotation.eulerAngles - new Vector3(0, 270, 0)), globalQuaternion);
+
+                //Debug.Log(string.Format("[TRF] {0} - SortIkServo.Count " + SortIkServo.Count.ToString(), 103));
+
+                distance = Vector3.Distance(SortIkServo[SortIkServo.Count - 1].ServoTransform.position, globalPosition);
+
+                //Debug.Log(string.Format("[TRF] {0} - distance " + distance.ToString("0.00"), 104));
+
+                angle = Quaternion.Angle(Quaternion.Euler(SortIkServo[SortIkServo.Count - 1].ServoTransform.rotation.eulerAngles - new Vector3(270, 270, 30)), globalQuaternion);
+
+                //Debug.Log(string.Format("[TRF] {0} - Eff Rotation " + VectorToString(SortIkServo[SortIkServo.Count - 1].ServoTransform.rotation.eulerAngles, "0.00"), 105));
+                //Debug.Log(string.Format("[TRF] {0} - angle " + angle.ToString("0.00"), 106));
+
+                if (distance > DistanceThreshold || angle > AngleThreshold)
+                {
+                    //Debug.Log(string.Format("[TRF] {0} - distance " + Distance.ToString("0.00"), 200));
+                    //Debug.Log(string.Format("[TRF] {0} - angle " + Angle.ToString("0.00"), 201));
+                    Success = false;
+
+                    // iterate angle of joints
+                    for (int i = 0; i < iterateNumber; i++)
+                        IKsuccess = InverseKinematics(globalPosition, globalQuaternion, theta);
+
+                    // implement angle of joints
+                    Bug = !ImplementServoRotation(SortIkServo, theta);
+                }
+                else
+                {
+                    Success = true;
+                }
+                //Debug.Log(string.Format("[TRF] {0} - Update() END ", 107));
+            }
+            else
+            {
+                // clear buttons.Translation & .Rotation
+                ButtonsReleased();
+
+                for (int i = 0; i < 7; i++)
+                {
+                    if (blocking[i])
+                    {
+                        SortIkServo[i].MaxAngle = 0f;
+                        SortIkServo[i].MinAngle = 0f;
+                    }
+                    else
+                    {
+                        SortIkServo[i].MaxAngle = 270f;
+                        SortIkServo[i].MinAngle = -270f;
+                    }
+
+                    switch (axisNumber[i])
+                    {
+                        case 1:
+                            JointsRealAxis[i] = new Vector3(1, 0, 0);
+                            break;
+                        case -1:
+                            JointsRealAxis[i] = new Vector3(-1, 0, 0);
+                            break;
+                        case 2:
+                            JointsRealAxis[i] = new Vector3(0, 1, 0);
+                            break;
+                        case -2:
+                            JointsRealAxis[i] = new Vector3(0, -1, 0);
+                            break;
+                        case 3:
+                            JointsRealAxis[i] = new Vector3(0, 0, 1);
+                            break;
+                        case -3:
+                            JointsRealAxis[i] = new Vector3(0, 0, -1);
+                            break;
+                    }
+                }
+            }
+        }
+
+
+        [KSPEvent(guiActive = true, guiName = "Turn on IRC")]
+        public void TurnOnIRCEvent()
+        {
+            // This will hide the TurnOnIRCEvent event, and show the TurnOffIRCEvene event.
+            Events["TurnOnIRCEvent"].active = false;
+            Events["TurnOffIRCEvent"].active = true;
+            ircWindowActive = true;
+        }
+
+        [KSPEvent(guiActive = true, guiName = "Turn off IRC", active = false)]
+        public void TurnOffIRCEvent()
+        {
+            // This will hide the TurnOffIRCEven event, and show the TurnOnIRCEvent event.
+            Events["TurnOnIRCEvent"].active = true;
+            Events["TurnOffIRCEvent"].active = false;
+            ircWindowActive = false;
+            OnSave(nodeInner);
+        }
+
+        public override void OnSave(ConfigNode node)
+        {
+            PluginConfiguration config = PluginConfiguration.CreateForType<IkRobotController>();
+
+            windowPosition.x = windowRectangle.x;
+            windowPosition.y = windowRectangle.y;
+            config.SetValue("IRC Window Position", windowPosition);
+            config.save();
+        }
+
+        public override void OnLoad(ConfigNode node)
+        {
+            PluginConfiguration config = PluginConfiguration.CreateForType<IkRobotController>();
+
+            config.load();
+            windowPosition = config.GetValue<Vector2>("IRC Window Position");
+            windowRectangle = new Rect(windowPosition.x, windowPosition.y, windowSize.x, windowSize.y);
+            ircWindowActive = false;
+            nodeInner = node;
+        }
+
+        public void OnDisable()
+        {
+            IK_active = false;
+            ircWindowActive = false;
+        }
+
+        public void Destroy()
+        {
+            IK_active = false;
+            ircWindowActive = false;
+        }
+
+        public void ButtonsReleased()
+        {
+            buttons.Translation = new Vector3(0f, 0f, 0f);
+            buttons.Rotation = Quaternion.identity;
+        }
+
+        public void OnGUI()
+        {
+            if (ircWindowActive)
+            {
+                // Draw window
+                windowRectangle = GUILayout.Window(10, windowRectangle, OnWindow, "IK Robot Controller");
+            }
+        }
+
+        public void OnWindow(int windowID)
+        {
+            GUILayout.BeginHorizontal();
+
+            // Translation buttons
+            if (GUI.RepeatButton(new Rect(10, 70, 30, 30), "◄"))
+                buttons.Translation.x = 0.05f;
+            if (GUI.RepeatButton(new Rect(80, 70, 30, 30), "►"))
+                buttons.Translation.x = -0.05f;
+            if (GUI.RepeatButton(new Rect(45, 35, 30, 30), "▲"))
+                buttons.Translation.z = -0.05f;
+            if (GUI.RepeatButton(new Rect(45, 105, 30, 30), "▼"))
+                buttons.Translation.z = 0.05f;
+            if (GUI.RepeatButton(new Rect(10, 105, 30, 30), "●"))
+                buttons.Translation.y = 0.05f;
+            if (GUI.RepeatButton(new Rect(80, 35, 30, 30), "•"))
+                buttons.Translation.y = -0.05f;
+
+            // Rotation buttons
+            if (GUI.RepeatButton(new Rect(120, 70, 30, 30), "˅ʘ"))
+                buttons.Rotation = Quaternion.Euler(0f, -1f, 0f);
+            if (GUI.RepeatButton(new Rect(190, 70, 30, 30), "ʘ˅"))
+                buttons.Rotation = Quaternion.Euler(0f, 1f, 0f);
+            if (GUI.RepeatButton(new Rect(155, 35, 30, 30), "˄"))
+                buttons.Rotation = Quaternion.Euler(1f, 0f, 0f);
+            if (GUI.RepeatButton(new Rect(155, 105, 30, 30), "˅"))
+                buttons.Rotation = Quaternion.Euler(-1f, 0f, 0f);
+            if (GUI.RepeatButton(new Rect(120, 105, 30, 30), "˂"))
+                buttons.Rotation = Quaternion.Euler(0f, 0f, 1f);
+            if (GUI.RepeatButton(new Rect(190, 35, 30, 30), "˃"))
+                buttons.Rotation = Quaternion.Euler(0f, 0f, -1f);
+
+            // IK active toggle
+            IK_active = GUI.Toggle(new Rect(15, 15, 70, 20), IK_active, " IK active");
+
+            // Close window button
+            if (GUI.Button(new Rect(280, 3, 17, 15), "x"))
+            {
+                ircWindowActive = false;
+                // This will hide the TurnOffIRCEven event, and show the TurnOnIRCEvent event.
+                Events["TurnOnIRCEvent"].active = true;
+                Events["TurnOffIRCEvent"].active = false;
+                ircWindowActive = false;
+                OnSave(nodeInner);
+            }
+
+            // Success value
+            GUI.Toggle(new Rect(210, 330, 80, 20), Success, " Success");
+
+            // IK_Success value
+            GUI.Toggle(new Rect(210, 350, 80, 20), IKsuccess, " IK Success");
+
+            // Bug value
+            GUI.Toggle(new Rect(210, 370, 80, 20), Bug, " Bug");
+
+            // Theta values
+            Yoffset = 0;
+            inputRect = new Rect(210, 140, 50, 20);
+            for (int i = 0; i < 7; i++)
+            {
+                AddOutputValue(inputRect, "Ɵ[" + i.ToString() + "]", theta[i], 30f);
+            }
+
+            //Theta blocker
+            blocking[0] = GUI.Toggle(new Rect(300, 140, 20, 20), blocking[0], "");
+            blocking[1] = GUI.Toggle(new Rect(300, 160, 20, 20), blocking[1], "");
+            blocking[2] = GUI.Toggle(new Rect(300, 180, 20, 20), blocking[2], "");
+            blocking[3] = GUI.Toggle(new Rect(300, 200, 20, 20), blocking[3], "");
+            blocking[4] = GUI.Toggle(new Rect(300, 220, 20, 20), blocking[4], "");
+            blocking[5] = GUI.Toggle(new Rect(300, 240, 20, 20), blocking[5], "");
+            blocking[6] = GUI.Toggle(new Rect(300, 260, 20, 20), blocking[6], "");
+
+            // Axis
+            Yoffset = 0;
+            inputRect = new Rect(325, 140, 20, 20);
+            AddInputValue(inputRect, axisString[0], out axisString[0], "", out axisNumber[0], 0f);
+            AddInputValue(inputRect, axisString[1], out axisString[1], "", out axisNumber[1], 0f);
+            AddInputValue(inputRect, axisString[2], out axisString[2], "", out axisNumber[2], 0f);
+            AddInputValue(inputRect, axisString[3], out axisString[3], "", out axisNumber[3], 0f);
+            AddInputValue(inputRect, axisString[4], out axisString[4], "", out axisNumber[4], 0f);
+            AddInputValue(inputRect, axisString[5], out axisString[5], "", out axisNumber[5], 0f);
+            AddInputValue(inputRect, axisString[6], out axisString[6], "", out axisNumber[6], 0f);
+
+            // IK values
+            Yoffset = 0;
+            inputRect = new Rect(10, 140, 40, 20);
+            AddInputValue(inputRect, iterateString, out iterateString, "IK_iterate", out iterateNumber, 150f);
+            AddInputValue(inputRect, learningRateString, out learningRateString, "IK_learningRate", out LearningRate, 150f);
+            AddInputValue(inputRect, learningRatePosString, out learningRatePosString, "IK_learningRatePos", out LearningRatePos, 150f);
+            AddInputValue(inputRect, learningRateOriString, out learningRateOriString, "IK_learningRateOri", out LearningRateOri, 150f);
+            AddInputValue(inputRect, samplingAngleString, out samplingAngleString, "IK_samplingAngle", out SamplingAngle, 150f);
+            AddInputValue(inputRect, DistanceThresholdString, out DistanceThresholdString, "IK_DistanceThreshold", out DistanceThreshold, 150f);
+            AddOutputValue(inputRect, "IK_Distance", Distance, 150f);
+            AddInputValue(inputRect, AngleThresholdString, out AngleThresholdString, "IK_AngleThreshold", out AngleThreshold, 150f);
+            AddOutputValue(inputRect, "IK_Angle", Angle, 150f);
+            AddInputValue(inputRect, MaxPosErrString, out MaxPosErrString, "IK_MaxPosErr", out MaxPosErr, 150f);
+            AddInputValue(inputRect, MaxOriErrString, out MaxOriErrString, "IK_MaxOriErr", out MaxOriErr, 150f);
+            AddOutputValue(inputRect, "IK_DinLearningRatePos", DinLearningRatePos, 150f);
+            AddOutputValue(inputRect, "IK_DinLearningRateOri", DinLearningRateOri, 150f);
+            AddOutputValue(inputRect, "IK_globalPosition", globalPosition, 150f, 90f);
+            AddOutputValue(inputRect, "IK_globalRotation", globalQuaternion.eulerAngles, 150f, 90f);
+            AddOutputValue(inputRect, "EFF_Position", SortIkServo[SortIkServo.Count - 1].ServoTransform.position, 150f, 90f);
+            AddOutputValue(inputRect, "EFF_Rosition", SortIkServo[SortIkServo.Count - 1].ServoTransform.rotation.eulerAngles, 150f, 90f);
+            AddOutputValue(inputRect, "distance", distance, 150f);
+            AddOutputValue(inputRect, "angle", angle, 150f);
+
+            GUILayout.EndHorizontal();
+
+            GUI.DragWindow();
+        }
+
+        public void AddInputValue(Rect rectangle, string valueInString, out string valueOutString, string name, out int valueInt, float labelLength)
+        {
+            GUI.Label(new Rect(rectangle.x, rectangle.y + Yoffset, labelLength, rectangle.height), name);
+            valueOutString = GUI.TextField(new Rect(rectangle.x + labelLength, rectangle.y + Yoffset, rectangle.width, rectangle.height), valueInString);
+            try
+            {
+                valueInt = int.Parse(valueOutString);
+            }
+            catch
+            {
+                valueOutString = valueInString;
+                valueInt = int.Parse(valueOutString);
+            }
+            Yoffset += 20f;
+        }
+
+        public void AddInputValue(Rect rectangle, string valueInString, out string valueOutString, string name, out float valueFloat, float labelLength)
+        {
+            GUI.Label(new Rect(rectangle.x, rectangle.y + Yoffset, labelLength, rectangle.height), name);
+            valueOutString = GUI.TextField(new Rect(rectangle.x + labelLength, rectangle.y + Yoffset, rectangle.width, rectangle.height), valueInString);
+            try
+            {
+                valueFloat = float.Parse(valueOutString);
+            }
+            catch
+            {
+                valueOutString = valueInString;
+                valueFloat = float.Parse(valueOutString);
+            }
+            Yoffset += 20f;
+        }
+
+        public void AddOutputValue(Rect rectangle, string name, float valueFloat, float labelLength)
+        {
+            GUI.Label(new Rect(rectangle.x, rectangle.y + Yoffset, labelLength, rectangle.height), name);
+            GUI.TextField(new Rect(rectangle.x + labelLength, rectangle.y + Yoffset, rectangle.width, rectangle.height), valueFloat.ToString("0.000"));
+            Yoffset += 20f;
+        }
+
+        private void AddOutputValue(Rect rectangle, string name, Vector3 valueVector3, float labelLength, float fieldLength)
+        {
+            GUI.Label(new Rect(rectangle.x, rectangle.y + Yoffset, labelLength, rectangle.height), name);
+            GUI.TextField(new Rect(rectangle.x + labelLength, rectangle.y + Yoffset, rectangle.width + fieldLength, rectangle.height), VectorToString(valueVector3, "0.00"));
+            Yoffset += 20f;
+        }
+
+
+        //private bool ImplementServoRotation(List<Servo> Servos, float[] theta)
+        //{
+        //    bool success = true;
+
+        //    //for (int j = 0; j < theta.Length; j++)
+        //    //    if (!double.IsNaN(theta[j]))
+        //    //    {
+        //    //        if (Servos[j].ServoTransform.tag == "inverse")
+        //    //            foreach (Transform child in Servos[j].ServoTransform)
+        //    //            {
+        //    //                if (!child.name.Contains("servo") && !child.name.Contains("passziv"))
+        //    //                {
+        //    //                    child.localPosition = child.GetComponent<ChildRotation>().baseLocalPosition;
+        //    //                    child.localEulerAngles = child.GetComponent<ChildRotation>().baseLocalRotation;
+        //    //                    child.RotateAround(Servos[j].ServoTransform.position, Servos[j].ServoTransform.up, -1f * theta[j]);
+        //    //                }
+        //    //            }
+        //    //        Servos[j].ServoTransform.localRotation = Servos[j].baseRotation * Quaternion.AngleAxis(theta[j], JointsAxis[j]);
+        //    //    }
+        //    //    else
+        //    //        success = false;
+        //    return success;
+        //}
+
+        private bool ImplementServoRotation(List<IKservo> Servos, float[] theta)
+        {
+            bool success = true;
+
+            //    for (int i = 0; i < (SortIkServo.Count - 1); i++)
+            //    {
+            //        //Debug.Log(string.Format("[TRF] {0} i - {1}", debugNumber++, i));
+            //        if (!double.IsNaN(theta[i]))
+            //        {
+            //            //Debug.Log(string.Format("[TRF] {0} theta - {1}", debugNumber++, theta[i]));
+            //            SortIkServo[i].iservo.MoveTo(theta[i], 0.25f);
+            //            //Debug.Log(string.Format("[TRF] {0} i - {1} rotated", debugNumber++, i));
+            //        }
+            //    }
+
+            //for (int j = 0; j < theta.Length; j++)
+            for (int j = 0; j < SortIkServo.Count - 1; j++)
+                if (!double.IsNaN(theta[j]))
+                {
+                    SortIkServo[j].iservo.MoveTo(theta[j], 0.25f);
+
+                    //        if (Servos[j].ServoTransform.tag == "inverse")
+                    //            foreach (Transform child in Servos[j].ServoTransform)
+                    //            {
+                    //                if (!child.name.Contains("servo") && !child.name.Contains("passziv"))
+                    //                {
+                    //                    child.localPosition = child.GetComponent<ChildRotation>().baseLocalPosition;
+                    //                    child.localEulerAngles = child.GetComponent<ChildRotation>().baseLocalRotation;
+                    //                    child.RotateAround(Servos[j].ServoTransform.position, Servos[j].ServoTransform.up, -1f * theta[j]);
+                    //                }
+                    //            }
+                    //        Servos[j].ServoTransform.localRotation = Servos[j].baseRotation * Quaternion.AngleAxis(theta[j], JointsAxis[j]);
+                }
+                else
+                    success = false;
+            return success;
+        }
+
+        //private void DumpServoStructure(Transform baseTransform, List<Servo> Servos)
+        //{
+        //    int i = 0;
+
+        //    Vector3 StartPos = baseTransform.position;
+        //    Quaternion StartRot = baseTransform.rotation;
+
+        //    // dumping servo structure
+        //    foreach (Servo childServo in Servos)
+        //    {
+        //        childServo.StartOffset = Quaternion.Inverse(StartRot) * (childServo.ServoTransform.position - StartPos);
+        //        childServo.Axis = JointsRealAxis[i];
+        //        childServo.baseRotation = childServo.ServoTransform.localRotation;
+        //        childServo.baseTransformRotation = childServo.ServoTransform.rotation;
+        //        StartPos = childServo.Position;
+        //        StartRot = Quaternion.Euler(childServo.Rotation);
+        //        i++;
+        //    }
+        //}
+
+        //private void GetChildServoTransformRecursive(List<Servo> Servos, Transform obj)
+        //{
+        //    // *** Get all servo
+        //    // *** get parts of vessel
+        //    // *** Scanning all servos if vessel contain servo and not hinge then add to IKservos
+        //    // *** Sort IKservos by JointList
+        //    // *** Get last part
+        //    // *** Add EndEffector/LEE/ (last part) to SortIkServo - problem -> if LEE hold other element that will last part
+        //    // *** if have all IKservo than calculate IK parameters of IKservos - "DumpServoStructure"
+
+        //    if (null == obj)
+        //        return;
+
+        //    foreach (Transform child in obj)
+        //    {
+        //        if (null == child)
+        //            continue;
+        //        if (child.name.Contains("servo"))
+        //            Servos.Add(new Servo(child, child.name, child.position, child.rotation.eulerAngles));
+        //        GetChildServoTransformRecursive(Servos, child);
+        //    }
+        //}
+
+        //private void GetChildTransformRecursive(List<Servo> Servos, Transform obj)
+        //{
+        //    if (null == obj)
+        //        return;
+
+        //    foreach (Transform child in obj)
+        //    {
+        //        if (null == child)
+        //            continue;
+        //        if (child.name.Contains("servo"))
+        //            Servos.Add(new Servo(child, child.name, child.position, child.rotation.eulerAngles));
+        //        GetChildTransformRecursive(Servos, child);
+        //    }
+        //}
+
+        public bool InverseKinematics(Vector3 targetPosition, Quaternion targetOrientation, float[] angles)
+        {
+            // calculate different of distance and -rotation
+            LocationRotationDiff locRotDiff = DistanceAndAngleFromTarget(targetPosition, targetOrientation, angles);
+
+            Distance = locRotDiff.LocationDiff;
+            Angle = locRotDiff.RotationDiff;
+
+            // if different lower than threshold (distance and rotation) then stop
+            if (locRotDiff.LocationDiff < DistanceThreshold && locRotDiff.RotationDiff < AngleThreshold)
+                return true;
+
+            for (int i = 0; i < SortIkServo.Count; i++)
+            {
+                // Gradient descent
+                // Update : Solution -= LearningRate * Gradient
+
+                // calculate partial gradient
+                LocationRotationDiff gradient = PartialGradient(targetPosition, targetOrientation, angles, i);
+
+                // calculate dinamic learning rate of location different 
+                DinLearningRatePos = locRotDiff.LocationDiff / MaxPosErr * 100.0f;
+                // calculate dinamic learning rate of rotation different
+                DinLearningRateOri = locRotDiff.RotationDiff / MaxOriErr * 100.0f;
+
+                // calculate angle of joint with location gradient and rotation gradient
+                angles[i] -= DinLearningRatePos * gradient.LocationDiff + DinLearningRateOri * gradient.RotationDiff;
+
+                // Clamp - limited angle of joint
+                angles[i] = Mathf.Clamp(angles[i], SortIkServo[i].MinAngle, SortIkServo[i].MaxAngle);
+
+                // if different lower than threshold (distance and rotation) then stop
+                if (locRotDiff.LocationDiff < DistanceThreshold && locRotDiff.RotationDiff < AngleThreshold)
+                    return true;
+            }
+
+            return false;
+        }
+
+        public LocationRotationDiff PartialGradient(Vector3 targetPosition, Quaternion targetOrientation, float[] angles, int i)
+        {
+            // Saves the angle,
+            // it will be restored later
+            float angle = angles[i];
+            LocationRotationDiff gradient = new LocationRotationDiff();
+
+            // calculate different
+            LocationRotationDiff f_xGlobal = DistanceAndAngleFromTarget(targetPosition, targetOrientation, angles);
+            // Gradient : [F(x+SamplingDistance) - F(x)] / h
+
+            // change angles with samplingangle (a little bit)
+            angles[i] += SamplingAngle;
+
+            // recalculate different
+            LocationRotationDiff f_x_plus_dGlobal = DistanceAndAngleFromTarget(targetPosition, targetOrientation, angles);
+
+            // calculate gradient of position
+            gradient.LocationDiff = (f_x_plus_dGlobal.LocationDiff - f_xGlobal.LocationDiff) / SamplingAngle;
+            // calculate gradient of orientation
+            gradient.RotationDiff = (f_x_plus_dGlobal.RotationDiff - f_xGlobal.RotationDiff) / SamplingAngle;
+
+            // Restore angles
+            angles[i] = angle;
+
+            return gradient;
+        }
+
+        public LocationRotationDiff DistanceAndAngleFromTarget(Vector3 targetPosition, Quaternion targetOrientation, float[] angles)
+        {
+            LocationRotationDiff different = new LocationRotationDiff();
+
+            VectorSM DistanceAndAngle = ForwardKinematics(angles, SortIkServo);
+
+            different.LocationDiff = Vector3.Distance(DistanceAndAngle.Translation, targetPosition);
+
+            different.RotationDiff = Quaternion.Angle(DistanceAndAngle.Rotation, targetOrientation);
+
+            return different;
+        }
+
+        //public VectorSM ForwardKinematics(float[] angles, List<Servo> Servos)
+        //{
+        //    VectorSM endEffector = new VectorSM();
+        //    Vector3 prevPoint = Servos[0].Position;
+        //    Quaternion rotation = Quaternion.identity;
+
+        //    for (int i = 1; i < Servos.Count; i++)
+        //    {
+        //        float sign;
+
+        //        if (Servos[i - 1].ServoTransform.tag == "inverse")
+        //            sign = -1f;
+        //        else
+        //            sign = 1f;
+
+        //        rotation *= Quaternion.AngleAxis(sign * angles[i - 1], Servos[i - 1].Axis);
+        //        Vector3 nextPoint = prevPoint + rotation * (Servos[i - 1].baseTransformRotation * Servos[i].StartOffset);
+
+        //        prevPoint = nextPoint;
+        //    }
+
+        //    endEffector.Translation = prevPoint;
+        //    endEffector.Rotation = rotation;
+        //    return endEffector;
+        //}
+
+        public VectorSM ForwardKinematics(float[] angles, List<IKservo> Servos)
+        {
+            VectorSM endEffector = new VectorSM();
+            Vector3 prevPoint = Servos[0].Position;
+            Quaternion rotation = Quaternion.identity;
+
+            for (int i = 1; i < Servos.Count; i++)
+            {
+                //float sign;
+
+                //if (Servos[i - 1].ServoTransform.tag == "inverse")
+                //    sign = -1f;
+                //else
+                //    sign = 1f;
+
+                //rotation *= Quaternion.AngleAxis(sign * angles[i - 1], Servos[i - 1].Axis);
+                rotation *= Quaternion.AngleAxis(angles[i - 1], Servos[i - 1].Axis);
+                Vector3 nextPoint = prevPoint + rotation * (Servos[i - 1].baseTransformRotation * Servos[i].StartOffset);
+
+                prevPoint = nextPoint;
+            }
+
+            endEffector.Translation = prevPoint;
+            endEffector.Rotation = rotation;
+            return endEffector;
+        }
+
+
+        private void GetChildPartRecursive(Part obj)
+        {
+            if (null == obj)
+                return;
+
+            foreach (Part child in obj.children)
+            {
+                if (null == child)
+                    continue;
+                listOfChildrenPart.Add(child);
+                GetChildPartRecursive(child);
+            }
+        }
+
+        private string VectorToString(Vector3 vector, string format)
+        {
+            string szoveg = "";
+
+            szoveg = string.Format("( " + vector.x.ToString(format) + ", " + vector.y.ToString(format) + ", " + vector.z.ToString(format) + " )");
+
+            return szoveg;
+        }
+    }
+}
