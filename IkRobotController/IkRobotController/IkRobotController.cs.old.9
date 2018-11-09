@@ -31,7 +31,7 @@ namespace IkRobotController
         protected int WindowID = 0;
         protected int MsgWindowID = 0;
 
-        public bool IsInitedModule = false;
+        private bool IsInitedModule = false;
         private bool IsSaveServoStructure = false;
 
         private string msgWindowTitle = "";
@@ -54,7 +54,6 @@ namespace IkRobotController
         private bool actualStateBool = false;
         private bool pdgfStateBool = false;
         private bool veeStateBool = false;
-        private bool refreshPDGFBool = false;
         private bool ircWindowActive = false;
         private bool msgWindowActive = false;
         private bool emergencyServoStop = false;
@@ -63,22 +62,15 @@ namespace IkRobotController
         private float transStep = 0.25f;
         private float rotStep = 0.25f;
 
-        private float ArmMaxLength = 8.0f;
-
         private string iterateString = "500";
-        private string forceDistStringZ = "0.6";
-        private string forceRollStringZ = "0.0";
-        private string forceDistStringX = "0.0";
-        private string forceRollStringX = "0.0";
-        private string forceDistStringY = "0.0";
-        private string forceRollStringY = "0.0";
+        private string forceDistString = "0.6";
+        private string forceRollString = "0.0";
         private string samplingAngleString = "0.02";
         private string DistanceThresholdString = "0.01";
         private string AngleThresholdString = "0.5";
         private string MaxPosErrString = "10";
         private string MaxOriErrString = "180";
         private string[] thetaString = { "0", "0", "0", "0", "0", "0", "0" };
-        private string ArmMaxLengthString = "8.0";
 
         private Vector2 trButtonsOrigin = new Vector2(10, 35);
         private Vector2 closeWindowButtonPosition = new Vector2(290, 3);
@@ -331,11 +323,10 @@ namespace IkRobotController
         Vector3[] JointsBaseAxis = { new Vector3(0, -1, 0), new Vector3(-1, 0, 0), new Vector3(0, 0, 1), new Vector3(0, 0, -1), new Vector3(0, 0, -1), new Vector3(-1, 0, 0), new Vector3(0, -1, 0), new Vector3(0, 0, 0) };
         // LEE Axis list
         Vector3[] JointsRealAxis = { new Vector3(0, 1, 0), new Vector3(1, 0, 0), new Vector3(0, 0, 1), new Vector3(0, 0, -1), new Vector3(0, 0, -1), new Vector3(1, 0, 0), new Vector3(0, 1, 0), new Vector3(0, 0, 0) };
-        public float[] theta = new float[8] { 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f };
-        public float[] currentTheta = new float[8] { 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f };
+        public float[] theta = new float[8];
 
         public bool[] blocking = new bool[8];
-        public bool nearPDGFBool = false;
+        public bool nearPDGF = false;
         public float distance;
         public float angle;
         public bool Success = false;
@@ -347,26 +338,20 @@ namespace IkRobotController
         public Vector3 globalPosition;
         public Quaternion globalQuaternion;
 
-        public int iterateNumber = 500;
-        public float forceDistNumberZ = 0.6f;
-        public float forceRollNumberZ = 0.0f;
-        public float forceDistNumberX = 0.0f;
-        public float forceRollNumberX = 0.0f;
-        public float forceDistNumberY = 0.0f;
-        public float forceRollNumberY = 0.0f;
+        public int iterateNumber;
+        public float forceDistNumber;
+        public float forceRollNumber;
         public float LearningRatePos;
         public float LearningRateOri;
-        public float SamplingAngle = 0.02f;
+        public float SamplingAngle;
 
-        public float DistanceThreshold = 0.01f;
+        public float DistanceThreshold;
         public float Distance;
-        public float AngleThreshold = 0.5f;
+        public float AngleThreshold;
         public float Angle;
 
-        public float workingDistance;
-
-        public float MaxPosErr = 10f;
-        public float MaxOriErr = 180f;
+        public float MaxPosErr;
+        public float MaxOriErr;
 
         public float DinLearningRatePos;
         public float DinLearningRateOri;
@@ -397,11 +382,8 @@ namespace IkRobotController
         private bool CheckExistArm()
         {
             for (int i = 0; i < JointList.Length; i++)
-            {
-                Debug.Log(string.Format("[TRF] CheckExistArm() - JointList[{0}] = " + JointList[i] + " " + ((part.FindChildPart(JointList[i], true) != null) ? "exist" : "not exist"), i));
                 if (part.FindChildPart(JointList[i], true) == null)
                     return false;
-            }
 
             return true;
         }
@@ -630,8 +612,7 @@ namespace IkRobotController
                         listOfChildrenPart = new List<Part>();
                         GetChildPartRecursive(part);
                         int elementCount = listOfChildrenPart.Count();
-                        //lastPart = listOfChildrenPart[elementCount - 1];
-                        lastPart = listOfChildrenPart.Find(e => e.name == JointList[JointList.Length - 1]);
+                        lastPart = listOfChildrenPart[elementCount - 1];
 
                         Debug.Log(string.Format("[TRF] {0} - lastPart " + lastPart.name, 40));
 
@@ -671,10 +652,10 @@ namespace IkRobotController
                 basePosition = globalPosition;
                 baseQuaternion = globalQuaternion;
 
-                //Debug.Log(string.Format("[TRF] {0} - START - servoGimbal[i]", 46));
+                Debug.Log(string.Format("[TRF] {0} - START - servoGimbal[i]", 46));
                 for (int i = 0; i < SortIkServo.Count; i++)
                     servoGimbal[i] = new GameObject();
-                //Debug.Log(string.Format("[TRF] {0} - END - servoGimbal[i]", 47));
+                Debug.Log(string.Format("[TRF] {0} - END - servoGimbal[i]", 47));
 
                 Debug.Log(string.Format("[TRF] {0} - START - EndDeclaration", 48));
                 windowRectangle = new Rect(windowPosition.x, windowPosition.y, windowSize.x, windowSize.y);
@@ -701,10 +682,6 @@ namespace IkRobotController
 
                 prevPartPosition = part.transform.position;
                 prevPartRotation = part.transform.rotation;
-
-                // cPos - tartget position = current arm position
-                globalPosition = SortIkServo[SortIkServo.Count - 1].ServoTransform.position;
-                globalQuaternion = SortIkServo[SortIkServo.Count - 1].ServoTransform.rotation;
 
                 IsInitedModule = true;
             }
@@ -735,13 +712,6 @@ namespace IkRobotController
 
             if (ircWindowActive && HighLogic.LoadedSceneIsFlight && IsInitedModule)
             {
-                //bool ctrlPressed = Input.GetKey(KeyCode.LeftControl);
-                //if(ctrlPressed)
-                //{                  
-                //    Debug.Log(string.Format("[TRF] {0} - FocusedWindow = {1}", 1001, FocusedWindow));
-                //}
-
-
                 //Debug.Log(string.Format("[TRF] {0} START Update()", 401));
 
                 // Set Aim Object (PDGFx)
@@ -812,103 +782,30 @@ namespace IkRobotController
 
                 #region PdgfAimObject
                 // set pdgf state - set aim object -> deactivate IK function
+                //if (pdgfStateBool && (hoverObject != null))
+                //{
+                //    globalQuaternion = hoverObject.transform.rotation * Quaternion.Euler(180f, -90f, 0f);
+                //    globalPosition = hoverObject.transform.position + (globalQuaternion * new Vector3(0f, -0.9f, 0f));
+                //    IK_active = false;
+                //}
                 if (pdgfStateBool && (dockingNodeObject != null))
                 {
-                    if (!nearPDGFBool)
+                    if (!nearPDGF)
                     {
-                        //globalQuaternion = dockingNodeObject.rotation * (Quaternion.Euler(180f, 0f, -90f) * (IsForceRoll ? Quaternion.Euler(0f, 0f, forceRollNumberZ) : Quaternion.Euler(0f, 0f, 0f)));
-                        globalQuaternion = dockingNodeObject.rotation * (Quaternion.Euler(180f, 0f, -90f) * (IsForceRoll ? Quaternion.Euler(forceRollNumberX, forceRollNumberY, forceRollNumberZ) : Quaternion.Euler(0f, 0f, 0f)));
-                        //globalPosition = dockingNodeObject.position + (globalQuaternion * (IsForceDist ? new Vector3(0f, 0f, -1.0f * forceDistNumberZ) : new Vector3(0f, 0f, -0.6f)));
-                        globalPosition = dockingNodeObject.position + (globalQuaternion * (IsForceDist ? new Vector3(forceDistNumberX, forceDistNumberY, -1.0f * forceDistNumberZ) : new Vector3(0f, 0f, -0.6f)));
-                        if (TargetInRange(ArmMaxLength))
-                        {
-                            Debug.Log(string.Format("[TRF] - Update() - PdgfAimObject - !nearPDGFBool - TargetInRange"));
-                            Debug.Log(string.Format("[TRF] - Update() - globalPosition = " + VectorToString(globalPosition, "0.00")));
-                        }
-                        else
-                        {
-                            Debug.Log(string.Format("[TRF] - Update() - PdgfAimObject - !nearPDGFBool - !TargetInRange"));
-                            Debug.Log(string.Format("[TRF] - Update() - globalPosition = " + VectorToString(globalPosition, "0.00")));
-                            globalPosition = TargetToRange(ArmMaxLength);
-                            Debug.Log(string.Format("[TRF] - Update() - globalPosition = TargetToRange(ArmMaxLength) = " + VectorToString(globalPosition, "0.00")));
-                        }
+                        //globalQuaternion = dockingNodeObject.rotation * Quaternion.Euler(180f, -90f, 90f);
+                        //globalQuaternion = dockingNodeObject.rotation * Quaternion.Euler(0f, -90f, 90f);
+                        globalQuaternion = dockingNodeObject.rotation * (Quaternion.Euler(180f, 0f, -90f) * (IsForceRoll ? Quaternion.Euler(0f, 0f, forceRollNumber) : Quaternion.Euler(0f, 0f, 0f)));
+                        globalPosition = dockingNodeObject.position + (globalQuaternion * (IsForceDist ? new Vector3(0f, 0f, -1.0f * forceDistNumber) : new Vector3(0f, 0f, -0.6f)));
                     }
                     else
                     {
-                        //globalQuaternion = dockingNodeObject.rotation * (Quaternion.Euler(180f, 0f, -90f) * (IsForceRoll ? Quaternion.Euler(0f, 0f, forceRollNumberZ) : Quaternion.Euler(0f, 0f, 0f)));
-                        globalQuaternion = dockingNodeObject.rotation * (Quaternion.Euler(180f, 0f, -90f) * (IsForceRoll ? Quaternion.Euler(forceRollNumberX, forceRollNumberY, forceRollNumberZ) : Quaternion.Euler(0f, 0f, 0f)));
+                        //globalQuaternion = dockingNodeObject.rotation * Quaternion.Euler(180f, -90f, 90f);
+                        //globalQuaternion = dockingNodeObject.rotation * Quaternion.Euler(0f, -90f, 90f);
+                        globalQuaternion = dockingNodeObject.rotation * (Quaternion.Euler(180f, 0f, -90f) * (IsForceRoll ? Quaternion.Euler(0f, 0f, forceRollNumber) : Quaternion.Euler(0f, 0f, 0f)));
+                        //globalPosition = dockingNodeObject.position + (globalQuaternion * new Vector3(0.0f, -0.375f, 0.0f));
                         globalPosition = dockingNodeObject.position + (globalQuaternion * new Vector3(0.0f, 0.0f, 0.0f));
-                        if (TargetInRange(ArmMaxLength))
-                        {
-                            Debug.Log(string.Format("[TRF] - Update() - PdgfAimObject - nearPDGFBool - TargetInRange"));
-                            Debug.Log(string.Format("[TRF] - Update() - globalPosition = " + VectorToString(globalPosition, "0.00")));
-                        }
-                        else
-                        {
-                            Debug.Log(string.Format("[TRF] - Update() - PdgfAimObject - nearPDGFBool - !TargetInRange"));
-                            Debug.Log(string.Format("[TRF] - Update() - globalPosition = " + VectorToString(globalPosition, "0.00")));
-                            globalPosition = TargetToRange(ArmMaxLength);
-                            Debug.Log(string.Format("[TRF] - Update() - globalPosition = TargetToRange(ArmMaxLength) = " + VectorToString(globalPosition, "0.00")));
-                        }
                     }
                     IK_active = false;
-
-                    //for (int i = 0; i < servoGimbal.Length; i++)
-                    //{
-                    //    Debug.Log(string.Format("[TRF] {0} - Update() - (servoGimbal[{1}]) " + VectorToString(servoGimbal[i].transform.position, "0.00") + " " + VectorToString(servoGimbal[i].transform.rotation.eulerAngles, "0.00"), 599, i));
-                    //}
-                }
-
-                if (refreshPDGFBool && (dockingNodeObject != null))
-                {
-                    //if (!nearPDGFBool)
-                    //{
-                    //    globalQuaternion = dockingNodeObject.rotation * (Quaternion.Euler(180f, 0f, -90f) * (IsForceRoll ? Quaternion.Euler(0f, 0f, forceRollNumber) : Quaternion.Euler(0f, 0f, 0f)));
-                    //    globalPosition = dockingNodeObject.position + (globalQuaternion * (IsForceDist ? new Vector3(0f, 0f, -1.0f * forceDistNumber) : new Vector3(0f, 0f, -0.6f)));
-                    //}
-                    //else
-                    //{
-                    //    globalQuaternion = dockingNodeObject.rotation * (Quaternion.Euler(180f, 0f, -90f) * (IsForceRoll ? Quaternion.Euler(0f, 0f, forceRollNumber) : Quaternion.Euler(0f, 0f, 0f)));
-                    //    globalPosition = dockingNodeObject.position + (globalQuaternion * new Vector3(0.0f, 0.0f, 0.0f));
-                    //}
-
-                    if (!nearPDGFBool)
-                    {
-                        //globalQuaternion = dockingNodeObject.rotation * (Quaternion.Euler(180f, 0f, -90f) * (IsForceRoll ? Quaternion.Euler(0f, 0f, forceRollNumberZ) : Quaternion.Euler(0f, 0f, 0f)));
-                        globalQuaternion = dockingNodeObject.rotation * (Quaternion.Euler(180f, 0f, -90f) * (IsForceRoll ? Quaternion.Euler(forceRollNumberX, forceRollNumberY, forceRollNumberZ) : Quaternion.Euler(0f, 0f, 0f)));
-                        //globalPosition = dockingNodeObject.position + (globalQuaternion * (IsForceDist ? new Vector3(0f, 0f, -1.0f * forceDistNumberZ) : new Vector3(0f, 0f, -0.6f)));
-                        globalPosition = dockingNodeObject.position + (globalQuaternion * (IsForceDist ? new Vector3(forceDistNumberX, forceDistNumberY, -1.0f * forceDistNumberZ) : new Vector3(0f, 0f, -0.6f)));
-                        if (TargetInRange(ArmMaxLength))
-                        {
-                            Debug.Log(string.Format("[TRF] - Update() - PdgfAimObject - !nearPDGFBool - TargetInRange"));
-                            Debug.Log(string.Format("[TRF] - Update() - globalPosition = " + VectorToString(globalPosition, "0.00")));
-                        }
-                        else
-                        {
-                            Debug.Log(string.Format("[TRF] - Update() - PdgfAimObject - !nearPDGFBool - !TargetInRange"));
-                            Debug.Log(string.Format("[TRF] - Update() - globalPosition = " + VectorToString(globalPosition, "0.00")));
-                            globalPosition = TargetToRange(ArmMaxLength);
-                            Debug.Log(string.Format("[TRF] - Update() - globalPosition = TargetToRange(ArmMaxLength) = " + VectorToString(globalPosition, "0.00")));
-                        }
-                    }
-                    else
-                    {
-                        //globalQuaternion = dockingNodeObject.rotation * (Quaternion.Euler(180f, 0f, -90f) * (IsForceRoll ? Quaternion.Euler(0f, 0f, forceRollNumberZ) : Quaternion.Euler(0f, 0f, 0f)));
-                        globalQuaternion = dockingNodeObject.rotation * (Quaternion.Euler(180f, 0f, -90f) * (IsForceRoll ? Quaternion.Euler(forceRollNumberX, forceRollNumberY, forceRollNumberZ) : Quaternion.Euler(0f, 0f, 0f)));
-                        globalPosition = dockingNodeObject.position + (globalQuaternion * new Vector3(0.0f, 0.0f, 0.0f));
-                        if (TargetInRange(ArmMaxLength))
-                        {
-                            Debug.Log(string.Format("[TRF] - Update() - PdgfAimObject - nearPDGFBool - TargetInRange"));
-                            Debug.Log(string.Format("[TRF] - Update() - globalPosition = " + VectorToString(globalPosition, "0.00")));
-                        }
-                        else
-                        {
-                            Debug.Log(string.Format("[TRF] - Update() - PdgfAimObject - nearPDGFBool - !TargetInRange"));
-                            Debug.Log(string.Format("[TRF] - Update() - globalPosition = " + VectorToString(globalPosition, "0.00")));
-                            globalPosition = TargetToRange(ArmMaxLength);
-                            Debug.Log(string.Format("[TRF] - Update() - globalPosition = TargetToRange(ArmMaxLength) = " + VectorToString(globalPosition, "0.00")));
-                        }
-                    }
 
                     for (int i = 0; i < servoGimbal.Length; i++)
                     {
@@ -963,6 +860,41 @@ namespace IkRobotController
                             break;
                         }
                     }
+
+                    //// orientation of main part
+                    //eefIKservo.fkParams.PartRotation = part.transform.rotation;
+
+                    //Quaternion partRotationDiff = Quaternion.Inverse(eefIKservo.fkParams.PartRotation) * prevIKservo.fkParams.PartRotation;
+
+                    //// transform of servo
+                    //eefIKservo.ServoTransform = eefIKservo.part.transform;
+                    //// orientation of main part
+                    //// don't change    
+                    //// position offset for parentpart
+                    ////eefIKservo.fkParams.ParentOffset = Quaternion.Inverse(prevIKservo.fkParams.Rotation) * (eefIKservo.ServoTransform.position - prevIKservo.ServoTransform.position);
+                    //eefIKservo.fkParams.ParentOffset = Quaternion.Inverse(prevIKservo.part.transform.rotation) * (eefIKservo.part.transform.position - prevIKservo.part.transform.position);
+                    ////eefIKservo.fkParams.ParentOffset = Quaternion.AngleAxis(-1f * theta[SortIkServo.Count - 2], prevIKservo.fkParams.Axis) * Quaternion.Inverse(prevIKservo.part.transform.rotation) * (eefIKservo.part.transform.position - prevIKservo.part.transform.position);
+
+                    ////Quaternion prevServoRotation = part.transform.rotation * Quaternion.Inverse(partRotation);
+                    ////for (int i = 0; i < SortIkServo.Count - 1; i++)
+                    ////    prevServoRotation *= Quaternion.AngleAxis(theta[i], prevIKservo.fkParams.Axis);
+                    ////eefIKservo.fkParams.ParentOffset = Quaternion.Inverse(prevServoRotation) * Quaternion.Inverse(prevIKservo.fkParams.Rotation) * (eefIKservo.ServoTransform.position - prevIKservo.ServoTransform.position);
+                    //// axis of servo
+                    ////eefIKservo.fkParams.Axis = part.transform.rotation * JointsRealAxis[i];
+                    //eefIKservo.fkParams.Axis = part.transform.rotation * new Vector3(0, 0, 0);
+                    //// global rotation of servo
+                    ////eefIKservo.fkParams.Rotation = eefIKservo.ServoTransform.rotation;
+                    ////eefIKservo.fkParams.Rotation = eefIKservo.part.transform.rotation;
+                    ////eefIKservo.fkParams.Rotation = partRotationDiff * eefIKservo.part.transform.rotation;
+                    ////Quaternion basePartRotationDiff = part.transform.rotation * Quaternion.Inverse(partRotation);
+                    //Quaternion basePartRotationDiff = part.transform.rotation * Quaternion.Inverse(partRotation);
+                    //for (int i = 0; i <( SortIkServo.Count - 1); i++)
+                    //    basePartRotationDiff *= Quaternion.AngleAxis(theta[i], SortIkServo[i].fkParams.Axis);
+                    //eefIKservo.fkParams.Rotation = Quaternion.Inverse(basePartRotationDiff) * eefIKservo.part.transform.rotation;
+
+
+                    //Debug.Log(string.Format("[TRF] {0} - Update() - (SortIkServo[SortIkServo.Count - 1]) " + IKServoToString(SortIkServo[SortIkServo.Count - 1]), 600));
+                    //Debug.Log(string.Format("[TRF] {0} - Update() - VeeIsActive = true", 600));
 
                     // initialize actual position and rotation
                     globalPosition = SortIkServo[SortIkServo.Count - 1].ServoTransform.position;
@@ -1050,7 +982,7 @@ namespace IkRobotController
                         if (iterateData.Count > (int)(diagramRectangle.width - 10f))
                             iterateData.RemoveAt(0);
 
-                        if (!nearPDGFBool)
+                        if (!nearPDGF)
                         {
                             if (j == iterateNumber)
                             {
@@ -1073,7 +1005,7 @@ namespace IkRobotController
                         else
                         {
                             SamplingAngle = 0.005f;
-                            servoSpeed = 0.031f;
+                            servoSpeed = 0.125f;
                         }
 
 
@@ -1099,8 +1031,7 @@ namespace IkRobotController
                     {
                         Success = true;
                         // if IK success then turn off IK activity or switchable ???
-                        if (!refreshPDGFBool)
-                            IK_active = false;
+                        IK_active = false;
                     }
                     //Debug.Log(string.Format("[TRF] {0} - Update() END ", 107));
                 }
@@ -1145,9 +1076,6 @@ namespace IkRobotController
 
                 global.transform.position = globalPosition;
                 global.transform.rotation = globalQuaternion;
-
-                currentTheta = GetActualServoRotation(SortIkServo);
-                workingDistance = ArmWorkingDistance();
             }
         }
 
@@ -1294,8 +1222,7 @@ namespace IkRobotController
                     listOfChildrenPart = new List<Part>();
                     GetChildPartRecursive(part);
                     int elementCount = listOfChildrenPart.Count();
-                    //lastPart = listOfChildrenPart[elementCount - 1];
-                    lastPart = listOfChildrenPart.Find(e => e.name == JointList[JointList.Length - 1]);
+                    lastPart = listOfChildrenPart[elementCount - 1];
 
                     Debug.Log(string.Format("[TRF] {0} - lastPart " + lastPart.name, 40));
 
@@ -1342,11 +1269,6 @@ namespace IkRobotController
                 // This will hide the TurnOnIKRCEvent event, and show the TurnOffIKRCEvene event.
                 Events["TurnOnIKRCEvent"].active = false;
                 Events["TurnOffIKRCEvent"].active = true;
-
-                // cPos - tartget position = current arm position
-                globalPosition = SortIkServo[SortIkServo.Count - 1].ServoTransform.position;
-                globalQuaternion = SortIkServo[SortIkServo.Count - 1].ServoTransform.rotation; 
-
                 ircWindowActive = true;
             }
         }
@@ -1569,20 +1491,6 @@ namespace IkRobotController
             IsInitedModule = false;
         }
 
-        public void OnDestroy()
-        {
-            if (ircWindowActive)
-            {
-                Debug.Log("[TRF] - Destroy()");
-                SetWinParamsToBuffer();
-                ircWindowActive = false;
-                OnSave(nodeInner);
-            }
-            IK_active = false;
-            servotransform = false;
-            IsInitedModule = false;
-        }
-
         public void Destroy()
         {
             if (ircWindowActive)
@@ -1619,7 +1527,6 @@ namespace IkRobotController
             {
                 // Draw window
                 windowRectangle = GUILayout.Window(WindowID, windowRectangle, OnWindow, "IK Robot Controller");
-                //Debug.Log(string.Format("[TRF{1}] {0} ircWindowActive", 1000, WindowID));
             }
 
             if (msgWindowActive)
@@ -1637,6 +1544,32 @@ namespace IkRobotController
 
                 #region Translation & Rotation Buttons
                 // Translation buttons
+                //if (GUI.RepeatButton(new Rect(10, 70, 30, 30), "◄"))
+                //    buttons.Translation.z = 0.025f * transStep;
+                //if (GUI.RepeatButton(new Rect(80, 70, 30, 30), "►"))
+                //    buttons.Translation.z = -0.025f * transStep;
+                //if (GUI.RepeatButton(new Rect(45, 35, 30, 30), "▲"))
+                //    buttons.Translation.x = -0.025f * transStep;
+                //if (GUI.RepeatButton(new Rect(45, 105, 30, 30), "▼"))
+                //    buttons.Translation.x = 0.025f * transStep;
+                //if (GUI.RepeatButton(new Rect(10, 105, 30, 30), "●"))
+                //    buttons.Translation.y = -0.025f * transStep;
+                //if (GUI.RepeatButton(new Rect(80, 35, 30, 30), "•"))
+                //    buttons.Translation.y = 0.025f * transStep;
+
+                //if (GUI.RepeatButton(new Rect(trButtonsOrigin.x, trButtonsOrigin.y + 35, 30, 30), "◄"))
+                //    buttons.Translation.z = -0.025f * transStep;
+                //if (GUI.RepeatButton(new Rect(trButtonsOrigin.x + 70, trButtonsOrigin.y + 35, 30, 30), "►"))
+                //    buttons.Translation.z = 0.025f * transStep;
+                //if (GUI.RepeatButton(new Rect(trButtonsOrigin.x + 35, trButtonsOrigin.y, 30, 30), "▲"))
+                //    buttons.Translation.x = 0.025f * transStep;
+                //if (GUI.RepeatButton(new Rect(trButtonsOrigin.x + 35, trButtonsOrigin.y + 70, 30, 30), "▼"))
+                //    buttons.Translation.x = -0.025f * transStep;
+                //if (GUI.RepeatButton(new Rect(trButtonsOrigin.x, trButtonsOrigin.y + 70, 30, 30), "●"))
+                //    buttons.Translation.y = -0.025f * transStep;
+                //if (GUI.RepeatButton(new Rect(trButtonsOrigin.x + 70, trButtonsOrigin.y, 30, 30), "•"))
+                //    buttons.Translation.y = 0.025f * transStep;
+
                 if (GUI.RepeatButton(new Rect(trButtonsOrigin.x, trButtonsOrigin.y + 35, 30, 30), "◄"))
                     buttons.Translation.y = 0.025f * transStep;
                 if (GUI.RepeatButton(new Rect(trButtonsOrigin.x + 70, trButtonsOrigin.y + 35, 30, 30), "►"))
@@ -1651,6 +1584,32 @@ namespace IkRobotController
                     buttons.Translation.z = 0.025f * transStep;
 
                 // Rotation buttons
+                //if (GUI.RepeatButton(new Rect(120, 70, 30, 30), "˅ʘ"))
+                //    buttons.Rotation = Quaternion.Euler(0f, 0.5f * rotStep, 0f);
+                //if (GUI.RepeatButton(new Rect(190, 70, 30, 30), "ʘ˅"))
+                //    buttons.Rotation = Quaternion.Euler(0f, -0.5f * rotStep, 0f);
+                //if (GUI.RepeatButton(new Rect(155, 35, 30, 30), "˄"))
+                //    buttons.Rotation = Quaternion.Euler(0f, 0f, 0.5f * rotStep);
+                //if (GUI.RepeatButton(new Rect(155, 105, 30, 30), "˅"))
+                //    buttons.Rotation = Quaternion.Euler(0f, 0f, -0.5f * rotStep);
+                //if (GUI.RepeatButton(new Rect(120, 105, 30, 30), "˂"))
+                //    buttons.Rotation = Quaternion.Euler(0.5f * rotStep, 0f, 0f);
+                //if (GUI.RepeatButton(new Rect(190, 35, 30, 30), "˃"))
+                //    buttons.Rotation = Quaternion.Euler(-0.5f * rotStep, 0f, 0f);
+
+                //if (GUI.RepeatButton(new Rect(trButtonsOrigin.x + 110, trButtonsOrigin.y + 35, 30, 30), "˅ʘ"))
+                //    buttons.Rotation = Quaternion.Euler(0f, 0.5f * rotStep, 0f);
+                //if (GUI.RepeatButton(new Rect(trButtonsOrigin.x + 180, trButtonsOrigin.y + 35, 30, 30), "ʘ˅"))
+                //    buttons.Rotation = Quaternion.Euler(0f, -0.5f * rotStep, 0f);
+                //if (GUI.RepeatButton(new Rect(trButtonsOrigin.x + 145, trButtonsOrigin.y, 30, 30), "˄"))
+                //    buttons.Rotation = Quaternion.Euler(0f, 0f, -0.5f * rotStep);
+                //if (GUI.RepeatButton(new Rect(trButtonsOrigin.x + 145, trButtonsOrigin.y + 70, 30, 30), "˅"))
+                //    buttons.Rotation = Quaternion.Euler(0f, 0f, 0.5f * rotStep);
+                //if (GUI.RepeatButton(new Rect(trButtonsOrigin.x + 110, trButtonsOrigin.y + 70, 30, 30), "˂"))
+                //    buttons.Rotation = Quaternion.Euler(-0.5f * rotStep, 0f, 0f);
+                //if (GUI.RepeatButton(new Rect(trButtonsOrigin.x + 180, trButtonsOrigin.y, 30, 30), "˃"))
+                //    buttons.Rotation = Quaternion.Euler(0.5f * rotStep, 0f, 0f);
+
                 if (GUI.RepeatButton(new Rect(trButtonsOrigin.x + 110, trButtonsOrigin.y + 35, 30, 30), "˅ʘ"))
                     buttons.Rotation = Quaternion.Euler(0f, 0f, 0.5f * rotStep);
                 if (GUI.RepeatButton(new Rect(trButtonsOrigin.x + 180, trButtonsOrigin.y + 35, 30, 30), "ʘ˅"))
@@ -1671,63 +1630,19 @@ namespace IkRobotController
                 servotransform = GUI.Toggle(new Rect(100, 15, 80, 20), servotransform, " servoTRF");
                 // zeroTheta iterate toggle
                 zeroThetaIterate = GUI.Toggle(new Rect(220, 15, 80, 20), zeroThetaIterate, " 0ƟIterate");
-                // clear values of Theta
-                clearThetasBool = GUI.Button(new Rect(250, 35, 45, 20), "clrƟ");
                 // set aim position and orientation to actual state
-                actualStateBool = GUI.Button(new Rect(250, 60, 45, 20), "acSt");
+                actualStateBool = GUI.Button(new Rect(250, 35, 40, 20), "acSt");
+                // clear values of Theta
+                clearThetasBool = GUI.Button(new Rect(250, 60, 40, 20), "clrƟ");
                 // set base position and orientation
-                baseStateBool = GUI.Button(new Rect(250, 85, 45, 20), "0St");
-
-                // reset position and rotation of endeffector
-                if (GUI.Button(new Rect(250, 110, 45, 20), "origin"))
-                {
-                    globalPosition = baseState.Translation;
-                    globalQuaternion = baseState.Rotation;
-                }
-
-                // set current position and rotation of endeffector
-                if (GUI.Button(new Rect(250, 135, 45, 20), "cPos"))
-                {
-                    globalPosition = SortIkServo[SortIkServo.Count - 1].ServoTransform.position;
-                    globalQuaternion = SortIkServo[SortIkServo.Count - 1].ServoTransform.rotation;
-                }
-
-                #region Target Definition
+                baseStateBool = GUI.Button(new Rect(250, 85, 40, 20), "0St");
+                // set selected position and orientation than aim
+                pdgfStateBool = GUI.Button(new Rect(250, 110, 40, 20), "pdgf");
                 // set selected part than virtual endeffector
-                veeStateBool = GUI.Button(new Rect(10, 210, 40, 20), "VEE");
-                // set aim position and orientation to selected PDGF
-                pdgfStateBool = GUI.Button(new Rect(60, 210, 50, 20), "target");
+                veeStateBool = GUI.Button(new Rect(200, 110, 40, 20), "VEE");
                 // set selected position and orientation than near aim
-                nearPDGFBool = GUI.Toggle(new Rect(120, 210, 70, 20), nearPDGFBool, " dockPos");
-                // set refresh selected position and orientation
-                refreshPDGFBool = GUI.Toggle(new Rect(200, 210, 70, 20), refreshPDGFBool, " rePos");
+                nearPDGF = GUI.Toggle(new Rect(292, 110, 20, 20), nearPDGF, "");
 
-                // Force Distance and ForceRoll
-                Yoffset = 0;
-                inputRect = new Rect(10, 235, 40, 20);
-                // Force DistZ
-                IsForceDist = GUI.Toggle(new Rect(10, 235, 90, 20), IsForceDist, " Force DistZ");
-                AddInputValue(inputRect, forceDistStringZ, out forceDistStringZ, "", out forceDistNumberZ, 90f);
-                // Force RollZ
-                IsForceRoll = GUI.Toggle(new Rect(10, 255, 90, 20), IsForceRoll, " Force RollZ");
-                AddInputValue(inputRect, forceRollStringZ, out forceRollStringZ, "", out forceRollNumberZ, 90f);
-
-                Yoffset = 0;
-                inputRect = new Rect(140, 235, 40, 20);
-                // Force DistX
-                AddInputValue(inputRect, forceDistStringX, out forceDistStringX, "DistX", out forceDistNumberX, 35f);
-                // Force RollX
-                AddInputValue(inputRect, forceRollStringX, out forceRollStringX, "RollX", out forceRollNumberX, 35f);
-
-                Yoffset = 0;
-                inputRect = new Rect(225, 235, 40, 20);
-                // Force DistZ
-                AddInputValue(inputRect, forceDistStringY, out forceDistStringY, "DistY", out forceDistNumberY, 35f);
-                // Force RollZ
-                AddInputValue(inputRect, forceRollStringY, out forceRollStringY, "RollY", out forceRollNumberY, 35f);
-                #endregion Target Definition
-
-                #region close window
                 // Close window button
                 if (GUI.Button(new Rect(closeWindowButtonPosition.x, closeWindowButtonPosition.y, 17, 15), "x"))
                 {
@@ -1741,19 +1656,20 @@ namespace IkRobotController
                     OnSave(nodeInner);
                 }
                 //Debug.Log(string.Format("[TRF] {0} - Close window button", 1004));
-                #endregion close window
 
-                #region window extender
                 // Extend windows button
                 if (!WindowIsExtended)
                 {
                     if (GUI.Button(new Rect(3, 3, 17, 15), ">"))
                     {
                         WindowIsExtended = true;
-                        windowSize = new Vector2(520, 600);
+                        windowSize = new Vector2(510, 600);
                         if (windowRectangle != null)
                             windowRectangle = new Rect(windowPosition.x, windowPosition.y, windowSize.x, windowSize.y);
                         closeWindowButtonPosition = new Vector2(windowSize.x - 20, 3);
+
+                        IsForceDist = false;
+                        IsForceRoll = false;
                     }
                 }
                 else
@@ -1767,28 +1683,28 @@ namespace IkRobotController
                         closeWindowButtonPosition = new Vector2(windowSize.x - 20, 3);
                     }
 
-                    #region IK display of parameters
-                    // IK values
                     Yoffset = 0;
-                    inputRect = new Rect(320, 395, 40, 20);
-                    AddInputValue(inputRect, iterateString, out iterateString, "IK_iterate", out iterateNumber, 150f);
-                    AddInputValue(inputRect, samplingAngleString, out samplingAngleString, "IK_samplingAngle", out SamplingAngle, 150f);
-                    AddInputValue(inputRect, DistanceThresholdString, out DistanceThresholdString, "IK_DistanceThreshold", out DistanceThreshold, 150f);
-                    AddOutputValue(inputRect, "IK_Distance", Distance, 150f);
-                    AddInputValue(inputRect, AngleThresholdString, out AngleThresholdString, "IK_AngleThreshold", out AngleThreshold, 150f);
-                    AddOutputValue(inputRect, "IK_Angle", Angle, 150f);
-                    AddInputValue(inputRect, MaxPosErrString, out MaxPosErrString, "IK_MaxPosErr", out MaxPosErr, 150f);
-                    AddInputValue(inputRect, MaxOriErrString, out MaxOriErrString, "IK_MaxOriErr", out MaxOriErr, 150f);
-                    AddOutputValue(inputRect, "IK_DinLearningRatePos", DinLearningRatePos, 150f);
-                    AddOutputValue(inputRect, "IK_DinLearningRateOri", DinLearningRateOri, 150f);
-                    #endregion IK display of parameters
+                    inputRect = new Rect(330, 110, 40, 20);
+                    // Force Dist
+                    IsForceDist = GUI.Toggle(new Rect(330, 110, 80, 20), IsForceDist, " Force Dist");
+                    AddInputValue(inputRect, forceDistString, out forceDistString, "", out forceDistNumber, 80f);
+                    // Force Roll
+                    IsForceRoll = GUI.Toggle(new Rect(330, 130, 80, 20), IsForceRoll, " Force Roll");
+                    AddInputValue(inputRect, forceRollString, out forceRollString, "", out forceRollNumber, 80f);
                 }
-                #endregion window extender
 
-                #region Theta values
+                // Success value
+                GUI.Toggle(new Rect(210, 280, 80, 20), Success, " Success");
+                // IK_Success value
+                GUI.Toggle(new Rect(210, 300, 90, 20), IKsuccess, " IK Success");
+                // Bug value
+                GUI.Toggle(new Rect(210, 320, 80, 20), Bug, " Bug");
+                //Debug.Log(string.Format("[TRF] {0} - IK toggles", 1005));
+
+
                 // Theta values
                 Yoffset = 0;
-                inputRect = new Rect(10, 365, 50, 20);
+                inputRect = new Rect(210, 140, 50, 20);
                 for (int i = 0; i < 7; i++)
                 {
                     if (IK_active)
@@ -1799,58 +1715,76 @@ namespace IkRobotController
                         AddInputValue(inputRect, thetaString[i], out thetaString[i], "Ɵ[" + i.ToString() + "]", out theta[i], 30f);
                     }
                 }
-
-                // Theta current values
-                Yoffset = 0;
-                inputRect = new Rect(110, 365, 50, 20);
-                for (int i = 0; i < 7; i++)
-                {
-                        AddOutputValue(inputRect, "Ɵ[" + i.ToString() + "]", currentTheta[i], 30f);
-                }
+                //Debug.Log(string.Format("[TRF] {0} - Theta values", 1006));
 
                 //Theta blocker
-                blocking[0] = GUI.Toggle(new Rect(92, 365, 20, 20), blocking[0], "");
-                blocking[1] = GUI.Toggle(new Rect(92, 385, 20, 20), blocking[1], "");
-                blocking[2] = GUI.Toggle(new Rect(92, 405, 20, 20), blocking[2], "");
-                blocking[3] = GUI.Toggle(new Rect(92, 425, 20, 20), blocking[3], "");
-                blocking[4] = GUI.Toggle(new Rect(92, 445, 20, 20), blocking[4], "");
-                blocking[5] = GUI.Toggle(new Rect(92, 465, 20, 20), blocking[5], "");
-                blocking[6] = GUI.Toggle(new Rect(92, 485, 20, 20), blocking[6], "");
-                #endregion Theta values
+                blocking[0] = GUI.Toggle(new Rect(292, 140, 20, 20), blocking[0], "");
+                blocking[1] = GUI.Toggle(new Rect(292, 160, 20, 20), blocking[1], "");
+                blocking[2] = GUI.Toggle(new Rect(292, 180, 20, 20), blocking[2], "");
+                blocking[3] = GUI.Toggle(new Rect(292, 200, 20, 20), blocking[3], "");
+                blocking[4] = GUI.Toggle(new Rect(292, 220, 20, 20), blocking[4], "");
+                blocking[5] = GUI.Toggle(new Rect(292, 240, 20, 20), blocking[5], "");
+                blocking[6] = GUI.Toggle(new Rect(292, 260, 20, 20), blocking[6], "");
+                //Debug.Log(string.Format("[TRF] {0} - Theta blocker", 1007));
 
-                #region position information
+                // IK values
                 Yoffset = 0;
-                inputRect = new Rect(10, 280, 40, 20);
-                AddOutputValue(inputRect, "IK_Position", globalPosition, 80f, 90f);
-                AddOutputValue(inputRect, "IK_Rotation", globalQuaternion.eulerAngles, 80f, 90f);
-                AddOutputValue(inputRect, "EE_Position", SortIkServo[SortIkServo.Count - 1].ServoTransform.position, 80f, 90f);
-                AddOutputValue(inputRect, "EE_Rotation", SortIkServo[SortIkServo.Count - 1].ServoTransform.rotation.eulerAngles, 80f, 90f);
-                inputRect = new Rect(200, 280, 40, 20);
-                AddOutputValue(inputRect, "distance", distance, 55f, 45f);
-                AddOutputValue(inputRect, "angle", angle, 55f, 45f);
-                AddOutputValue(inputRect, "wDist", workingDistance, 55f, 45f);
-                AddInputValue(inputRect, ArmMaxLengthString, out ArmMaxLengthString, "wRange", out ArmMaxLength, 55f);
-                #endregion position information
-
-                // emergency servo stop
-                emergencyServoStop = GUI.Toggle(new Rect(225, 280, 80, 20), emergencyServoStop, " EMGstp");
-
-                // Success value
-                GUI.Toggle(new Rect(225, 300, 80, 20), Success, " Success");
-                // IK_Success value
-                GUI.Toggle(new Rect(225, 320, 80, 20), IKsuccess, " IK Success");
-                // Bug value
-                GUI.Toggle(new Rect(225, 340, 80, 20), Bug, " Bug");
+                inputRect = new Rect(10, 140, 40, 20);
+                AddInputValue(inputRect, iterateString, out iterateString, "IK_iterate", out iterateNumber, 140f);
+                AddInputValue(inputRect, samplingAngleString, out samplingAngleString, "IK_samplingAngle", out SamplingAngle, 140f);
+                AddInputValue(inputRect, DistanceThresholdString, out DistanceThresholdString, "IK_DistanceThreshold", out DistanceThreshold, 140f);
+                AddOutputValue(inputRect, "IK_Distance", Distance, 140f);
+                AddInputValue(inputRect, AngleThresholdString, out AngleThresholdString, "IK_AngleThreshold", out AngleThreshold, 140f);
+                AddOutputValue(inputRect, "IK_Angle", Angle, 140f);
+                AddInputValue(inputRect, MaxPosErrString, out MaxPosErrString, "IK_MaxPosErr", out MaxPosErr, 140f);
+                AddInputValue(inputRect, MaxOriErrString, out MaxOriErrString, "IK_MaxOriErr", out MaxOriErr, 140f);
+                AddOutputValue(inputRect, "IK_DinLearningRatePos", DinLearningRatePos, 140f);
+                AddOutputValue(inputRect, "IK_DinLearningRateOri", DinLearningRateOri, 140f);
+                AddOutputValue(inputRect, "IK_globalPosition", globalPosition, 140f, 110f);
+                AddOutputValue(inputRect, "IK_globalRotation", globalQuaternion.eulerAngles, 140f, 110f);
+                //if (SortIkServo == null)
+                //    Debug.Log(string.Format("[TRF] {0} - SortIkServo == null", 1008));
+                //else if (SortIkServo[SortIkServo.Count - 1] == null)
+                //    Debug.Log(string.Format("[TRF] {0} - SortIkServo[SortIkServo.Count - 1] == null", 1008));
+                //else if (SortIkServo[SortIkServo.Count - 1].ServoTransform == null)
+                //    Debug.Log(string.Format("[TRF] {0} - SortIkServo[SortIkServo.Count - 1].ServoTransform == null", 1008));
+                //else if (SortIkServo[SortIkServo.Count - 1].ServoTransform.position == null)
+                //    Debug.Log(string.Format("[TRF] {0} - SortIkServo[SortIkServo.Count - 1].ServoTransform.position == null", 1008));
+                //else
+                //{
+                AddOutputValue(inputRect, "EFF_Position", SortIkServo[SortIkServo.Count - 1].ServoTransform.position, 140f, 110f);
+                AddOutputValue(inputRect, "EFF_Rosition", SortIkServo[SortIkServo.Count - 1].ServoTransform.rotation.eulerAngles, 140f, 110f);
+                //}
+                AddOutputValue(inputRect, "distance", distance, 140f);
+                AddOutputValue(inputRect, "angle", angle, 140f, 60f);
+                //Debug.Log(string.Format("[TRF] {0} - IK values", 1008));
 
                 // slider of servo speed
-                float[] speedSliderValues = { 0.0f, 0.031f, 0.063f, 0.125f, 0.25f, 0.5f, 1.0f, 2.0f, 4.0f };
-                servoSpeed = FixValuesLogSlider(new Rect(10, 140, 150, 20), 50f, "speed", servoSpeed, speedSliderValues);
+                float[] speedSliderValues = { 0.0f, 0.125f, 0.25f, 0.5f, 1.0f, 2.0f, 4.0f };
+                servoSpeed = FixValuesLogSlider(new Rect(10, 460, 150, 20), 50f, "speed", servoSpeed, speedSliderValues);
                 // slider of control button translation's step
                 float[] transSliderValues = { 0.0f, 0.0375f, 0.075f, 0.125f, 0.25f, 0.5f, 1.0f, 2.0f };
-                transStep = FixValuesLogSlider(new Rect(10, 160, 150, 20), 50f, "TRLstp", transStep, transSliderValues);
+                transStep = FixValuesLogSlider(new Rect(10, 480, 150, 20), 50f, "TRLstp", transStep, transSliderValues);
                 // slider of control button rotation's step
                 float[] rotSliderValues = { 0.0f, 0.0375f, 0.075f, 0.125f, 0.25f, 0.5f, 1.0f, 2.0f };
-                rotStep = FixValuesLogSlider(new Rect(10, 180, 150, 20), 50f, "ROTstp", rotStep, rotSliderValues);
+                rotStep = FixValuesLogSlider(new Rect(10, 500, 150, 20), 50f, "ROTstp", rotStep, rotSliderValues);
+
+                // emergency servo stop
+                emergencyServoStop = GUI.Toggle(new Rect(227, 430, 90, 25), emergencyServoStop, " EMGstp");
+
+                // reset position and rotation of endeffector
+                if (GUI.Button(new Rect(257, 460, 45, 25), "origin"))
+                {
+                    globalPosition = baseState.Translation;
+                    globalQuaternion = baseState.Rotation;
+                }
+
+                // set current position and rotation of endeffector
+                if (GUI.Button(new Rect(257, 490, 45, 25), "cPos"))
+                {
+                    globalPosition = SortIkServo[SortIkServo.Count - 1].ServoTransform.position;
+                    globalQuaternion = SortIkServo[SortIkServo.Count - 1].ServoTransform.rotation;
+                }
 
                 // set position and rotation of endeffector ???
 
@@ -2094,59 +2028,7 @@ namespace IkRobotController
             GUI.EndGroup();
             //GUILayout.EndArea();
         }
-
-
-        //static System.Reflection.FieldInfo s_focusedWindow = null;
-
-        //static public int FocusedWindow
-        //{
-        //    get
-        //    {
-        //        if (s_focusedWindow == null)
-        //        {
-        //            s_focusedWindow = typeof(GUI).GetField("focusedWindow", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-        //        }
-
-        //        return (int)s_focusedWindow.GetValue(null);
-        //    }
-        //}
-
         #endregion GUI
-
-        #region Tools
-        private float ArmWorkingDistance()
-        {
-            float armWorkingDistance;
-
-            armWorkingDistance = Mathf.Abs(Vector3.Distance(globalPosition, part.transform.position));
-
-            return armWorkingDistance;
-        }
-
-        private bool TargetInRange(float range)
-        {
-            float distance = 0f;
-            bool InRange = false;
-
-            distance = Mathf.Abs(Vector3.Distance(globalPosition, part.transform.position));
-            //Debug.Log(string.Format("[TRF] - Update() - TargetInRange({0})  distance = " + distance.ToString(), range));
-
-            InRange = distance <= range;
-            //Debug.Log(string.Format("[TRF] - Update() - TargetInRange({0}) = " + (InRange ? "true" : "false"), range));
-
-            return InRange;
-        }
-
-        private Vector3 TargetToRange(float range)
-        {
-            Vector3 target = globalPosition;
-            float scale = 1.0f;
-
-            scale = range / Mathf.Abs(Vector3.Distance(globalPosition, part.transform.position));
-            target = Vector3.Lerp(part.transform.position, globalPosition, scale);
-
-            return target;
-        }
 
         private bool ImplementServoRotation(List<IKservo> Servos, float[] theta, float speed = 0.25f)
         {
@@ -2164,21 +2046,13 @@ namespace IkRobotController
                     else
                         servoTheta = theta[j];
 
+                    //SortIkServo[j].iservo.Position
+                    //SortIkServo[j].iservo.MoveTo(theta[j], speed);
                     SortIkServo[j].iservo.MoveTo(servoTheta, speed);
                 }
                 else
                     success = false;
             return success;
-        }
-
-        private float[] GetActualServoRotation(List<IKservo> Servos)
-        {
-            float[] currentTheta = new float[8];
-
-            for (int j = 0; j < SortIkServo.Count - 1; j++)
-                currentTheta[j] = SortIkServo[j].iservo.Position;
-
-            return currentTheta;
         }
 
         private void GetChildPartRecursive(Part obj)
@@ -2194,7 +2068,6 @@ namespace IkRobotController
                 GetChildPartRecursive(child);
             }
         }
-        #endregion Tools
 
         #region ..ToSting
         private string VectorToString(Vector3 vector, string format)
