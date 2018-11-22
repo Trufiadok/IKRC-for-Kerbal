@@ -1,0 +1,5 @@
+D:\_Trufiadok\KSP\TRF_Base\_Unity Projects\Unity Project 2017\InfernalRoboticsMod-develop\InfernalRobotics\InfernalRobotics\bin\Debug\InfernalRobotics.dll
+D:\_Trufiadok\KSP\TRF_Base\_Unity Projects\Unity Project 2017\InfernalRoboticsMod-develop\InfernalRobotics\InfernalRobotics\bin\Debug\InfernalRobotics.pdb
+D:\_Trufiadok\KSP\TRF_Base\_Unity Projects\Unity Project 2017\InfernalRoboticsMod-develop\InfernalRobotics\InfernalRobotics\obj\Debug\InfernalRobotics.dll
+D:\_Trufiadok\KSP\TRF_Base\_Unity Projects\Unity Project 2017\InfernalRoboticsMod-develop\InfernalRobotics\InfernalRobotics\obj\Debug\InfernalRobotics.pdb
+D:\_Trufiadok\KSP\TRF_Base\_Unity Projects\Unity Project 2017\InfernalRoboticsMod-develop\InfernalRobotics\InfernalRobotics\obj\Debug\InfernalRoboticsMod.csprojResolveAssemblyReference.cache
