@@ -1,0 +1,18 @@
+[LOG 21:58:44.328] [TRF] 600 - Update() - set selected part than virtual endeffector
+[LOG 21:58:44.329] [TRF] 600 - Update() - save original LEE IKservo parameters
+[LOG 21:58:44.329] [TRF] 600 - Update() - (eefIKservo) ServoTransform = ( -8.65, -5.95, 5.85 ) ( -0.34, 0.63, -0.62, 0.32 )
+[LOG 21:58:44.329] [TRF] 600 - Update() - (orgLEEikServo) ServoTransform = ( -8.65, -5.95, 5.85 ) ( -0.34, 0.63, -0.62, 0.32 )
+[LOG 21:58:44.329] [TRF] 600 - Update() - partOfHoverObject.name = dockingPort2
+[LOG 21:58:44.329] [TRF] 600 - Update() - searching for dockingNode Transform
+[LOG 21:58:44.329] [TRF] 600 - Update() - element.name =dockingPort2
+[LOG 21:58:44.329] [TRF] 600 - Update() - element.name =model
+[LOG 21:58:44.329] [TRF] 600 - Update() - element.name =port
+[LOG 21:58:44.329] [TRF] 600 - Update() - element.name =cap
+[LOG 21:58:44.329] [TRF] 600 - Update() - element.name =collider
+[LOG 21:58:44.329] [TRF] 600 - Update() - element.name =dockingNode
+[LOG 21:58:44.329] [TRF] 600 - Update() - set new FKParams values
+[LOG 21:58:44.329] [TRF] 600 - Update() - initialize actual position and rotation
+[LOG 21:58:49.710] [TRF] 600 - Update() - reset original LEE than virtual endeffector
+[LOG 21:58:49.711] [TRF] 601 - Update() - (SortIkServo[SortIkServo.Count - 1]) ServoTransform = ( -7.42, -5.91, 5.02 ) ( 0.34, -0.63, 0.62, -0.32 )
+[LOG 21:58:49.711] [TRF] 601 - Update() - (SortIkServo[SortIkServo.Count - 1]) ServoTransform = ( -8.65, -5.95, 5.85 ) ( -0.34, 0.63, -0.62, 0.32 )
+[LOG 21:58:49.711] [TRF] 601 - Update() - VeeIsActive = false

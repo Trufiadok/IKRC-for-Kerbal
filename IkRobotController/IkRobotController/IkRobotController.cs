@@ -47,7 +47,8 @@ namespace IkRobotController
         private ConfigNode nodeInner;
         private bool IK_active = false;
         private bool IKButton_active = false;
-        private bool servotransform = false;
+        private bool servoTransformHas = false;
+        private bool targetIconHas = false;
         private bool zeroThetaIterate = false;
         private bool clearThetasBool = false;
         private bool baseStateBool = false;
@@ -921,6 +922,7 @@ namespace IkRobotController
                 // set selected part than virtual endeffector
                 if (veeStateBool && (dockingNodeObject != null) && !VeeIsActive)
                 {
+                    Debug.Log(string.Format("[TRF] {0} - Update() - set selected part than virtual endeffector", 600));
                     IK_active = false;
                     VeeIsActive = true;
 
@@ -929,6 +931,7 @@ namespace IkRobotController
 
                     // save original LEE IKservo parameters
                     orgLEEikServo = eefIKservo.Clone();
+                    Debug.Log(string.Format("[TRF] {0} - Update() - save original LEE IKservo parameters", 600));
                     //Debug.Log(string.Format("[TRF] {0} - Update() - (SortIkServo[SortIkServo.Count - 1]) " + IKServoToString(SortIkServo[SortIkServo.Count - 1]), 600));
                     Debug.Log(string.Format("[TRF] {0} - Update() - (eefIKservo) " + IKServoToString(eefIKservo), 600));
                     Debug.Log(string.Format("[TRF] {0} - Update() - (orgLEEikServo) " + IKServoToString(orgLEEikServo), 600));
@@ -938,12 +941,15 @@ namespace IkRobotController
                     Part partOfHoverObject = hoverObject.GetComponentInParent<Part>() as Part;
                     eefIKservo.part = partOfHoverObject;
                     eefIKservo.name = partOfHoverObject.name;
+                    Debug.Log(string.Format("[TRF] {0} - Update() - partOfHoverObject.name = " + partOfHoverObject.name, 600));
                     //eefIKservo.iservo = 
                     eefIKservo.MinAngle = 0f;
                     eefIKservo.MaxAngle = 0f;
 
+                    Debug.Log(string.Format("[TRF] {0} - Update() - searching for dockingNode Transform", 600));
                     foreach (Transform element in partOfHoverObject.GetComponentsInChildren<Transform>())
                     {
+                        Debug.Log(string.Format("[TRF] {0} - Update() - element.name =" + element.name, 600));
                         if (element.name == "dockingNode")
                         {
                             // transform of servo
@@ -959,18 +965,20 @@ namespace IkRobotController
                             for (int i = 0; i < (SortIkServo.Count - 1); i++)
                                 basePartRotationDiff *= Quaternion.AngleAxis(theta[i], SortIkServo[i].fkParams.Axis);
                             eefIKservo.fkParams.Rotation = Quaternion.Inverse(basePartRotationDiff) * element.transform.rotation;
-
+                            Debug.Log(string.Format("[TRF] {0} - Update() - set new FKParams values", 600));
                             break;
                         }
                     }
 
                     // initialize actual position and rotation
+                    Debug.Log(string.Format("[TRF] {0} - Update() - initialize actual position and rotation", 600));
                     globalPosition = SortIkServo[SortIkServo.Count - 1].ServoTransform.position;
                     globalQuaternion = SortIkServo[SortIkServo.Count - 1].ServoTransform.rotation;
                 }
 
                 if (veeStateBool && (dockingNodeObject == null) && VeeIsActive)
                 {
+                    Debug.Log(string.Format("[TRF] {0} - Update() - reset original LEE than virtual endeffector", 600));
                     // restore original LEE IKservo parameters
                     Debug.Log(string.Format("[TRF] {0} - Update() - (SortIkServo[SortIkServo.Count - 1]) " + IKServoToString(SortIkServo[SortIkServo.Count - 1]), 601));
                     SortIkServo[SortIkServo.Count - 1].Copy(orgLEEikServo);
@@ -1369,26 +1377,35 @@ namespace IkRobotController
         {
             if (ircWindowActive)
             {
-                if (servotransform)
+                if (targetIconHas)
                 {
                     if (dockingNodeObject != null)
                     {
                         //DrawTools.DrawTransform(dockingNodeObject, 0.3f);
                         DrawTools.DrawSphere(dockingNodeObject.position, Color.yellow, 0.1f);
+
+                        //if (global != null)
+                        //{
+                        //    //DrawTools.DrawTransform(global.transform, 0.2f);
+                        //    DrawTools.DrawSphere(global.transform.position, Color.red, 0.075f);
+                        //}
+
+                        //DrawTools.DrawTransform(SortIkServo[SortIkServo.Count - 1].ServoTransform, 0.3f);
+                        if (SortIkServo[SortIkServo.Count - 1] != null)
+                        {
+                            DrawTools.DrawSphere(SortIkServo[SortIkServo.Count - 1].ServoTransform.position, Color.white, 0.1f);
+                        }
+
+                        if (global != null)
+                        {
+                            //DrawTools.DrawTransform(global.transform, 0.2f);
+                            DrawTools.DrawSphere(global.transform.position, Color.red, 0.05f);
+                        }
                     }
+                }
 
-                    //if (global != null)
-                    //{
-                    //    //DrawTools.DrawTransform(global.transform, 0.2f);
-                    //    DrawTools.DrawSphere(global.transform.position, Color.red, 0.075f);
-                    //}
-
-                    //DrawTools.DrawTransform(SortIkServo[SortIkServo.Count - 1].ServoTransform, 0.3f);
-                    if (SortIkServo[SortIkServo.Count - 1] != null)
-                    {
-                        DrawTools.DrawSphere(SortIkServo[SortIkServo.Count - 1].ServoTransform.position, Color.white, 0.1f);
-                    }
-
+                if (servoTransformHas)
+                {
                     //Debug.Log(string.Format("[TRF] {0} - !IK_active ", 102));
                     //for (int i = 0; i < (servoGimbal.Length - 1); i++)
                     for (int i = 0; i < servoGimbal.Length; i++)
@@ -1412,7 +1429,7 @@ namespace IkRobotController
                     if (global != null)
                     {
                         DrawTools.DrawTransform(global.transform, 0.2f);
-                        DrawTools.DrawSphere(global.transform.position, Color.red, 0.05f);
+                        //DrawTools.DrawSphere(global.transform.position, Color.red, 0.05f);
                     }
                 }
             }
@@ -1565,7 +1582,8 @@ namespace IkRobotController
             //}
             ircWindowActive = false;
             IK_active = false;
-            servotransform = false;
+            servoTransformHas = false;
+            targetIconHas = false;
             IsInitedModule = false;
         }
 
@@ -1579,7 +1597,8 @@ namespace IkRobotController
                 OnSave(nodeInner);
             }
             IK_active = false;
-            servotransform = false;
+            servoTransformHas = false;
+            targetIconHas = false;
             IsInitedModule = false;
         }
 
@@ -1593,7 +1612,8 @@ namespace IkRobotController
                 OnSave(nodeInner);
             }
             IK_active = false;
-            servotransform = false;
+            servoTransformHas = false;
+            targetIconHas = false;
             IsInitedModule = false;
         }
         #endregion OnMethods
@@ -1667,10 +1687,12 @@ namespace IkRobotController
 
                 // IK active toggle
                 IK_active = GUI.Toggle(new Rect(15, 15, 70, 20), IK_active, " IK active");
+                // icon of target toggle
+                targetIconHas = GUI.Toggle(new Rect(90, 15, 60, 20), targetIconHas, " trgICO");
                 // transform of servos toggle
-                servotransform = GUI.Toggle(new Rect(100, 15, 80, 20), servotransform, " servoTRF");
+                servoTransformHas = GUI.Toggle(new Rect(150, 15, 75, 20), servoTransformHas, " servoTRF");
                 // zeroTheta iterate toggle
-                zeroThetaIterate = GUI.Toggle(new Rect(220, 15, 80, 20), zeroThetaIterate, " 0ƟIterate");
+                zeroThetaIterate = GUI.Toggle(new Rect(230, 15, 60, 20), zeroThetaIterate, " 0ƟIter");
                 // clear values of Theta
                 clearThetasBool = GUI.Button(new Rect(250, 35, 45, 20), "clrƟ");
                 // set aim position and orientation to actual state
