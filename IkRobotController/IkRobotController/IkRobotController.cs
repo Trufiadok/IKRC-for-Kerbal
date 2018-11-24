@@ -1774,8 +1774,9 @@ namespace IkRobotController
                         WindowIsExtended = true;
                         windowSize = new Vector2(520, 600);
                         if (windowRectangle != null)
-                            windowRectangle = new Rect(windowPosition.x, windowPosition.y, windowSize.x, windowSize.y);
-                        closeWindowButtonPosition = new Vector2(windowSize.x - 20, 3);
+                            //windowRectangle = new Rect(windowPosition.x, windowPosition.y, windowSize.x, windowSize.y);
+                            windowRectangle = new Rect(windowRectangle.x, windowRectangle.y, windowSize.x, windowSize.y);
+                            closeWindowButtonPosition = new Vector2(windowSize.x - 20, 3);
                     }
                 }
                 else
@@ -1785,7 +1786,8 @@ namespace IkRobotController
                         WindowIsExtended = false;
                         windowSize = new Vector2(310, 600);
                         if (windowRectangle != null)
-                            windowRectangle = new Rect(windowPosition.x, windowPosition.y, windowSize.x, windowSize.y);
+                            //windowRectangle = new Rect(windowPosition.x, windowPosition.y, windowSize.x, windowSize.y);
+                            windowRectangle = new Rect(windowRectangle.x, windowRectangle.y, windowSize.x, windowSize.y);
                         closeWindowButtonPosition = new Vector2(windowSize.x - 20, 3);
                     }
 
