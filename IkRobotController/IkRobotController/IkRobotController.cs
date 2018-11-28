@@ -1375,7 +1375,7 @@ namespace IkRobotController
         #region OnMethods
         public void OnRenderObject()
         {
-            if (ircWindowActive)
+            if (ircWindowActive && HighLogic.LoadedSceneIsFlight && IsInitedModule)
             {
                 if (targetIconHas)
                 {
