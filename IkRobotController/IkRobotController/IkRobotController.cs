@@ -818,7 +818,7 @@ namespace IkRobotController
                     if (!nearPDGFBool)
                     {
                         //globalQuaternion = dockingNodeObject.rotation * (Quaternion.Euler(180f, 0f, -90f) * (IsForceRoll ? Quaternion.Euler(0f, 0f, forceRollNumberZ) : Quaternion.Euler(0f, 0f, 0f)));
-                        globalQuaternion = dockingNodeObject.rotation * (Quaternion.Euler(180f, 0f, -90f) * (IsForceRoll ? Quaternion.Euler(forceRollNumberX, forceRollNumberY, forceRollNumberZ) : Quaternion.Euler(0f, 0f, 0f)));
+                        globalQuaternion = dockingNodeObject.rotation * (Quaternion.Euler(180f, 0f, 180f) * (IsForceRoll ? Quaternion.Euler(forceRollNumberX, forceRollNumberY, forceRollNumberZ) : Quaternion.Euler(0f, 0f, 0f)));
                         //globalPosition = dockingNodeObject.position + (globalQuaternion * (IsForceDist ? new Vector3(0f, 0f, -1.0f * forceDistNumberZ) : new Vector3(0f, 0f, -0.6f)));
                         globalPosition = dockingNodeObject.position + (globalQuaternion * (IsForceDist ? new Vector3(forceDistNumberX, forceDistNumberY, -1.0f * forceDistNumberZ) : new Vector3(0f, 0f, -0.6f)));
                         if (TargetInRange(ArmMaxLength))
@@ -837,7 +837,7 @@ namespace IkRobotController
                     else
                     {
                         //globalQuaternion = dockingNodeObject.rotation * (Quaternion.Euler(180f, 0f, -90f) * (IsForceRoll ? Quaternion.Euler(0f, 0f, forceRollNumberZ) : Quaternion.Euler(0f, 0f, 0f)));
-                        globalQuaternion = dockingNodeObject.rotation * (Quaternion.Euler(180f, 0f, -90f) * (IsForceRoll ? Quaternion.Euler(forceRollNumberX, forceRollNumberY, forceRollNumberZ) : Quaternion.Euler(0f, 0f, 0f)));
+                        globalQuaternion = dockingNodeObject.rotation * (Quaternion.Euler(180f, 0f, 180f) * (IsForceRoll ? Quaternion.Euler(forceRollNumberX, forceRollNumberY, forceRollNumberZ) : Quaternion.Euler(0f, 0f, 0f)));
                         globalPosition = dockingNodeObject.position + (globalQuaternion * new Vector3(0.0f, 0.0f, 0.0f));
                         if (TargetInRange(ArmMaxLength))
                         {
@@ -876,7 +876,7 @@ namespace IkRobotController
                     if (!nearPDGFBool)
                     {
                         //globalQuaternion = dockingNodeObject.rotation * (Quaternion.Euler(180f, 0f, -90f) * (IsForceRoll ? Quaternion.Euler(0f, 0f, forceRollNumberZ) : Quaternion.Euler(0f, 0f, 0f)));
-                        globalQuaternion = dockingNodeObject.rotation * (Quaternion.Euler(180f, 0f, -90f) * (IsForceRoll ? Quaternion.Euler(forceRollNumberX, forceRollNumberY, forceRollNumberZ) : Quaternion.Euler(0f, 0f, 0f)));
+                        globalQuaternion = dockingNodeObject.rotation * (Quaternion.Euler(180f, 0f, 180f) * (IsForceRoll ? Quaternion.Euler(forceRollNumberX, forceRollNumberY, forceRollNumberZ) : Quaternion.Euler(0f, 0f, 0f)));
                         //globalPosition = dockingNodeObject.position + (globalQuaternion * (IsForceDist ? new Vector3(0f, 0f, -1.0f * forceDistNumberZ) : new Vector3(0f, 0f, -0.6f)));
                         globalPosition = dockingNodeObject.position + (globalQuaternion * (IsForceDist ? new Vector3(forceDistNumberX, forceDistNumberY, -1.0f * forceDistNumberZ) : new Vector3(0f, 0f, -0.6f)));
                         if (TargetInRange(ArmMaxLength))
@@ -895,7 +895,7 @@ namespace IkRobotController
                     else
                     {
                         //globalQuaternion = dockingNodeObject.rotation * (Quaternion.Euler(180f, 0f, -90f) * (IsForceRoll ? Quaternion.Euler(0f, 0f, forceRollNumberZ) : Quaternion.Euler(0f, 0f, 0f)));
-                        globalQuaternion = dockingNodeObject.rotation * (Quaternion.Euler(180f, 0f, -90f) * (IsForceRoll ? Quaternion.Euler(forceRollNumberX, forceRollNumberY, forceRollNumberZ) : Quaternion.Euler(0f, 0f, 0f)));
+                        globalQuaternion = dockingNodeObject.rotation * (Quaternion.Euler(180f, 0f, 180f) * (IsForceRoll ? Quaternion.Euler(forceRollNumberX, forceRollNumberY, forceRollNumberZ) : Quaternion.Euler(0f, 0f, 0f)));
                         globalPosition = dockingNodeObject.position + (globalQuaternion * new Vector3(0.0f, 0.0f, 0.0f));
                         if (TargetInRange(ArmMaxLength))
                         {
@@ -1379,6 +1379,11 @@ namespace IkRobotController
             {
                 if (targetIconHas)
                 {
+                    if (SortIkServo[SortIkServo.Count - 1] != null)
+                    {
+                        DrawTools.DrawSphere(SortIkServo[SortIkServo.Count - 1].ServoTransform.position, Color.white, 0.1f);
+                    }
+
                     if (dockingNodeObject != null)
                     {
                         //DrawTools.DrawTransform(dockingNodeObject, 0.3f);
@@ -1391,10 +1396,6 @@ namespace IkRobotController
                         //}
 
                         //DrawTools.DrawTransform(SortIkServo[SortIkServo.Count - 1].ServoTransform, 0.3f);
-                        if (SortIkServo[SortIkServo.Count - 1] != null)
-                        {
-                            DrawTools.DrawSphere(SortIkServo[SortIkServo.Count - 1].ServoTransform.position, Color.white, 0.1f);
-                        }
 
                         if (global != null)
                         {
