@@ -7,6 +7,7 @@ using UnityEngine.UI;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using KSP.IO;
+using System.Globalization;
 
 // FELADATOK:
 // - Plugin run only flight mode ???
@@ -19,11 +20,79 @@ using KSP.IO;
 // - Save/Load ServoStructure To/From config file in EditorMode
 // - Get Axis information from arm structure
 
+/*
+ * CheckServosZeroState()
+ * {
+ * 	StatesToThetas()
+ * 	...
+ * 	..
+ * 	.
+ * }
+ * 
+ * Start()
+ * {
+ * 	if(!InitIRWrapper())
+ * 		return;
+ * 	if(!CheckExistArm())
+ * 		return;
+ * 	if(!GetArmServos())
+ * 		return;
+ * 	ServosIsBaseInited = true;
+ * 	if(!IsLoadedFkParams)
+ *  {
+ * 		if(!CheckServosZeroState())
+ * 			return;
+ * 		if(!DumpFkParams())
+ * 			return;
+ *  }
+ *	if(!GetFkParamsFromBuffer())
+ *		return;
+ *	IsInitedModule = true;
+ * }
+ * 
+ * Update()
+ * {
+ * 	if(ServosIsBaseInited && !DumpEventActive)
+ * 		DumpEventActive = true;
+ * 	...
+ * 	..
+ * 	.
+ * }
+ * 
+ * DumpEvent()
+ * {
+ * 	...
+ * 	..
+ * 	.
+ * 	if(GetFkParamsFromBuffer())
+ * 		IsInitedModule = true;
+ * }
+ *
+*/
+
+
+
 namespace IkRobotController
 {
     [KSPAddon(KSPAddon.Startup.Flight, false)]
     public class IkRobotController : PartModule
     {
+        #region module variable of part.cfg
+        [KSPField(isPersistant = false)]
+        public string controlButtonUpDownColor = "";
+
+        [KSPField(isPersistant = false)]
+        public string controlButtonLeftRightColor = "";
+
+        [KSPField(isPersistant = false)]
+        public string controlButtonForwardBackwardColor = "";
+        #endregion module variable of part.cfg
+
+        private bool buttonIsColored = false;
+        private Color colorControlButtonUpDown;
+        private Color colorControlButtonLeftRight;
+        private Color colorControlButtonForwardBackward;
+
         private static int onSaveCounter = 0;
         private static int onLoadCounter = 0;
 
@@ -32,10 +101,18 @@ namespace IkRobotController
         protected int MsgWindowID = 0;
 
         public bool IsInitedModule = false;
+        public bool IsInitedModule1st = true;
+        private bool IsLoadedFkParams = false;
+        private bool ServosIsBaseInited = false;
+        private bool DumpEventIsActive = false;
         private bool IsSaveServoStructure = false;
 
         private string msgWindowTitle = "";
         private string msgText = "";
+
+        private GUIStyle redStyle = null;
+        private GUIStyle greenStyle = null;
+        private GUIStyle blueStyle = null;
 
         private Rect windowRectangle;
         private Rect msgWindowRectangle;
@@ -384,6 +461,19 @@ namespace IkRobotController
         private Vector3 prevPartPosition;
         private Quaternion prevPartRotation;
 
+        private bool InitIRWrapper()
+        {
+            //if (!IRWrapper.APIReady)
+            //{
+                Debug.Log(string.Format("[TRF] {0} IRWrapper.InitWrapper() START", 1));
+                IRWrapper.InitWrapper();
+                Debug.Log(string.Format("[TRF] {0} IRWrapper.InitWrapper() END", 2));
+            //}
+            //else
+            //    Debug.Log(string.Format("[TRF] {0} InitIRWrapper() IRWrapper.APIReady == true", 1));
+            return IRWrapper.APIReady;
+        }
+
         #region mapping servo structure
         private void CreateFKparams()
         {
@@ -395,15 +485,94 @@ namespace IkRobotController
             }
         }
 
-        private bool CheckExistArm()
+        private bool CheckServosZeroState(bool stateToTheta = false)
         {
-            for (int i = 0; i < JointList.Length; i++)
+            if (stateToTheta)
+                StatesToThetas();
+            foreach (float element in theta)
             {
-                Debug.Log(string.Format("[TRF] CheckExistArm() - JointList[{0}] = " + JointList[i] + " " + ((part.FindChildPart(JointList[i], true) != null) ? "exist" : "not exist"), i));
-                if (part.FindChildPart(JointList[i], true) == null)
+                if (element != 0f)
                     return false;
             }
 
+            return true;
+        }
+
+        private void StatesToThetas()
+        {
+            // Get angle of Joints
+            if (SortIkServo != null)
+                for (int j = 0; j < SortIkServo.Count - 1; j++)
+                    theta[j] = SortIkServo[j].iservo.Position;
+            else
+                Debug.Log(string.Format("[TRF] StatesToThetas() SortIkServo == null"));
+        }
+
+        private bool CheckExistArm()
+        {
+            if (part != null)
+            {
+                for (int i = 0; i < JointList.Length; i++)
+                {
+                    Debug.Log(string.Format("[TRF] CheckExistArm() - JointList[{0}] = " + JointList[i] + " " + ((part.FindChildPart(JointList[i], true) != null) ? "exist" : "not exist"), i));
+                    if (part.FindChildPart(JointList[i], true) == null)
+                        return false;
+                }
+
+                return true;
+            }
+            else
+                return false;
+        }
+
+        private bool GetArmServos()
+        {
+            Debug.Log(string.Format("[TRF]  GetArmServos() - START"));
+            if (IRWrapper.APIReady)
+            {
+                Debug.Log(string.Format("[TRF] {0} - IRWrapper.APIReady", 21));
+                if (AllIkServo == null)
+                    AllIkServo = new List<IKservo>();
+                if (allServos == null)
+                    allServos = new List<IRWrapper.IServo>();
+                if (SortIkServo == null)
+                {
+                    SortIkServo = new List<IKservo>();
+                    Debug.Log(string.Format("[TRF] - GetArmServos() - construct SortIkServo"));
+                }
+                Debug.Log(string.Format("[TRF] {0} - Inited ServoLists", 21));
+
+                GetAllChildServo();
+                Debug.Log(string.Format("[TRF] {0} - Get all child servo ({1})", 22, allServos.Count));
+
+                if (allServos.Count >= JointList.Length)
+                {
+                    Debug.Log(string.Format("[TRF] {0} - AllIkServo ({1})", 23, AllIkServo.Count));
+
+                    SortIKservos();
+
+                    // Get last part
+                    if (listOfChildrenPart == null)
+                        listOfChildrenPart = new List<Part>();
+                    GetChildPartRecursive(part);
+                    int elementCount = listOfChildrenPart.Count();
+                    lastPart = listOfChildrenPart.Find(e => e.name == JointList[JointList.Length - 1]);
+
+                    Debug.Log(string.Format("[TRF] {0} - lastPart " + lastPart.name, 40));
+
+                    // Add EndEffector/LEE/ (last part) to SortIkServo - problem -> if LEE hold other element that will last part
+                    SortIkServo.Add(new IKservo(lastPart));
+                    Debug.Log(string.Format("[TRF] {0} - END - SortIkServo.Add(new IKservo(lastPart)", 41));
+                }
+                else
+                {
+                    Debug.Log(string.Format("[TRF] - GetArmServos() - allServos.Count < JointList.Length"));
+                    return false;
+                }
+            }
+            else
+                return false;
+            Debug.Log(string.Format("[TRF]  GetArmServos() - END"));
             return true;
         }
 
@@ -415,10 +584,10 @@ namespace IkRobotController
                 allServos.AddRange(group.Servos);
             }
 
-            //foreach (IRWrapper.IServo element in allServos)
-            //{
-            //    Debug.Log(string.Format("[TRF] {0} - allServos.Add( " + element.HostPart.name + " )", 22));
-            //}
+            foreach (IRWrapper.IServo element in allServos)
+            {
+                Debug.Log(string.Format("[TRF] {0} - allServos.Add( " + element.HostPart.name + " )", 22));
+            }
 
             // Scanning all servos
             foreach (IRWrapper.IServo iservo in allServos)
@@ -484,7 +653,7 @@ namespace IkRobotController
             Debug.Log(string.Format("[TRF] {0} - END SortIKservos()", 24));
         }
 
-        private void DumpServoStructure(List<IKservo> IkServos)
+        private bool DumpServoStructure(List<IKservo> IkServos)
         {
             // 
             Vector3 StartPos = part.transform.position;
@@ -504,15 +673,10 @@ namespace IkRobotController
                     // position offset for parentpart
                     ikServo.fkParams.ParentOffset = Quaternion.Inverse(StartRot) * (ikServo.ServoTransform.position - StartPos);
                     // axis of servo
-                    //ikServo.fkParams.Axis = part.transform.rotation * (part.transform.localRotation * JointsRealAxis[i]);
                     ikServo.fkParams.Axis = part.transform.rotation * JointsRealAxis[i];
-                    //ikServo.fkParams.Axis = Quaternion.Inverse(part.transform.rotation) * JointsBaseAxis[i];
                     // global rotation of servo
                     ikServo.fkParams.Rotation = ikServo.ServoTransform.rotation;
-                    // global position of servo
-                    //ikServo.fkParams.Position = ikServo.ServoTransform.position;
                     // Parent's global position of servo
-                    //StartPos = ikServo.fkParams.Position;
                     StartPos = ikServo.ServoTransform.position;
                     // Parent's global rotation of servo
                     StartRot = ikServo.fkParams.Rotation;
@@ -545,12 +709,8 @@ namespace IkRobotController
 
                 Debug.Log(string.Format("[TRF] {0} - ikServo " + ikServo.part.name, 40));
                 Debug.Log(string.Format("[TRF] {0} - ParentOffset " + VectorToString(ikServo.fkParams.ParentOffset, "0.00"), 42));
-                //Debug.Log(string.Format("[TRF] {0} - Axis " + VectorToString(ikServo.fkParams.Axis, "0.0") + "  " + VectorToString(part.transform.rotation * ikServo.fkParams.Axis, "0.0"), 40));
                 Debug.Log(string.Format("[TRF] {0} - Axis " + VectorToString(ikServo.fkParams.Axis, "0.0"), 40));
-                // Debug.Log(string.Format("[TRF] {0} - Axis " + VectorToString(JointsRealAxis[i], "0.0") + "  " + VectorToString(part.transform.rotation * JointsRealAxis[i], "0.0"), 40));
-                //Debug.Log(string.Format("[TRF] {0} - Position " + VectorToString(ikServo.fkParams.Position, "0.00"), 42));
                 Debug.Log(string.Format("[TRF] {0} - Rotation " + QuaternionToString(ikServo.fkParams.Rotation, "0.00"), 42));
-                //Debug.Log(string.Format("[TRF] {0} - Rotation " + QuaternionToString(Quaternion.Inverse(part.transform.rotation) * ikServo.fkParams.Rotation, "0.00"), 42));
 
                 i++;
             }
@@ -558,12 +718,22 @@ namespace IkRobotController
             Debug.Log(string.Format("[TRF] {0} - END DumpServoStructure()", 42));
 
             Debug.Log(string.Format("[TRF] {0} - part.transform.rotation " + QuaternionToString(part.transform.rotation, "0.00"), 42));
+
+            return true;
         }
         #endregion mapping servo structure
+
+         private bool initPartConfigButtonColors()
+        {
+            return (ColorUtility.TryParseHtmlString(controlButtonUpDownColor, out colorControlButtonUpDown)
+                && ColorUtility.TryParseHtmlString(controlButtonLeftRightColor, out colorControlButtonLeftRight)
+                && ColorUtility.TryParseHtmlString(controlButtonForwardBackwardColor, out colorControlButtonForwardBackward));
+        }
 
         // Use this for initialization
         public void Start()
         {
+            buttonIsColored = initPartConfigButtonColors();
             IsInitedModule = false;
             msgWindowRectangle = new Rect(msgWindowPosition.x, msgWindowPosition.y, msgWindowSize.x, msgWindowSize.y);
 
@@ -595,88 +765,6 @@ namespace IkRobotController
                 globalPosition = new Vector3(0f, 0f, 0f);
                 globalQuaternion = Quaternion.Euler(0f, 0f, 0f);
 
-                // check exist arm on part
-                if (!CheckExistArm())
-                {
-                    Debug.Log(string.Format("[TRF] {0} Don't Exist Arm on PART", 0));
-                    return;
-                }
-                else
-                {
-                    Debug.Log(string.Format("[TRF] {0} Exist Arm on PART", 0));
-                }
-
-                Debug.Log(string.Format("[TRF] {0} IRWrapper.InitWrapper() START", 1));
-                IRWrapper.InitWrapper();
-                Debug.Log(string.Format("[TRF] {0} IRWrapper.InitWrapper() END", 2));
-
-                if (IRWrapper.APIReady)
-                {
-                    Debug.Log(string.Format("[TRF] {0} - IRWrapper.APIReady", 21));
-                    AllIkServo = new List<IKservo>();
-                    allServos = new List<IRWrapper.IServo>();
-                    SortIkServo = new List<IKservo>();
-                    Debug.Log(string.Format("[TRF] {0} - Inited ServoLists", 21));
-
-                    GetAllChildServo();
-                    Debug.Log(string.Format("[TRF] {0} - Get all child servo ({1})", 22, allServos.Count));
-
-                    if (allServos.Count >= JointList.Length)
-                    {
-                        Debug.Log(string.Format("[TRF] {0} - AllIkServo ({1})", 23, AllIkServo.Count));
-
-                        SortIKservos();
-
-                        // Get last part
-                        listOfChildrenPart = new List<Part>();
-                        GetChildPartRecursive(part);
-                        int elementCount = listOfChildrenPart.Count();
-                        //lastPart = listOfChildrenPart[elementCount - 1];
-                        lastPart = listOfChildrenPart.Find(e => e.name == JointList[JointList.Length - 1]);
-
-                        Debug.Log(string.Format("[TRF] {0} - lastPart " + lastPart.name, 40));
-
-                        // Add EndEffector/LEE/ (last part) to SortIkServo - problem -> if LEE hold other element that will last part
-                        SortIkServo.Add(new IKservo(lastPart));
-                        Debug.Log(string.Format("[TRF] {0} - END - SortIkServo.Add(new IKservo(lastPart)", 41));
-
-                        // if have all IKservo than calculate IK parameters of IKservos 
-                        if (SortIkServo.Count == JointList.Length)
-                        {
-                            partPosition = part.transform.position;
-                            partRotation = part.transform.rotation;
-
-                            // dumping servo structure
-                            DumpServoStructure(SortIkServo);
-
-                            //Debug.Log(string.Format("[TRF] {0} - START - GetFKParamsFromBuffer()", 42));
-                            GetFKParamsFromBuffer();
-                            //Debug.Log(string.Format("[TRF] {0} - END - GetFKParamsFromBuffer()", 43));
-
-                        }
-                    }
-                }
-                else
-                    return;
-
-                Debug.Log(string.Format("[TRF] {0} - START - globalPosition&Quaternion", 44));
-                // set position of last part for global position
-                globalPosition = SortIkServo[SortIkServo.Count - 1].ServoTransform.position;
-                globalQuaternion = SortIkServo[SortIkServo.Count - 1].ServoTransform.rotation;
-                Debug.Log(string.Format("[TRF] {0} - START - globalPosition&Quaternion", 45));
-
-                baseState.Translation = globalPosition;
-                baseState.Rotation = globalQuaternion;
-
-                // Store base position and base orientation
-                basePosition = globalPosition;
-                baseQuaternion = globalQuaternion;
-
-                //Debug.Log(string.Format("[TRF] {0} - START - servoGimbal[i]", 46));
-                for (int i = 0; i < SortIkServo.Count; i++)
-                    servoGimbal[i] = new GameObject();
-                //Debug.Log(string.Format("[TRF] {0} - END - servoGimbal[i]", 47));
-
                 Debug.Log(string.Format("[TRF] {0} - START - EndDeclaration", 48));
                 windowRectangle = new Rect(windowPosition.x, windowPosition.y, windowSize.x, windowSize.y);
                 iterateData = new List<float>();
@@ -686,77 +774,229 @@ namespace IkRobotController
 
                 Debug.Log(string.Format("[TRF] {0} end of Start() WindowID: {1}", 400, WindowID));
 
-                // Get angle of Joints
-                for (int j = 0; j < SortIkServo.Count - 1; j++)
-                    theta[j] = SortIkServo[j].iservo.Position;
-                //if (!double.IsNaN(theta[j]))
+                //// check exist arm on part
+                //if (!CheckExistArm())
                 //{
-                //    // blocking fullrotate of servo
-                //    if (theta[j] > 180f)
-                //        servoTheta = theta[j] - 360f;
-                //    else if (theta[j] < -180f)
-                //        servoTheta = theta[j] + 360f;
-                //    else
-                //        servoTheta = theta[j];
+                //    Debug.Log(string.Format("[TRF] {0} Don't Exist Arm on PART", 0));
+                //    return;
+                //}
+                //else
+                //{
+                //    Debug.Log(string.Format("[TRF] {0} Exist Arm on PART", 0));
                 //}
 
-                prevPartPosition = part.transform.position;
-                prevPartRotation = part.transform.rotation;
+                //Debug.Log(string.Format("[TRF] {0} IRWrapper.InitWrapper() START", 1));
+                //IRWrapper.InitWrapper();
+                //Debug.Log(string.Format("[TRF] {0} IRWrapper.InitWrapper() END", 2));
 
-                // cPos - tartget position = current arm position
-                globalPosition = SortIkServo[SortIkServo.Count - 1].ServoTransform.position;
-                globalQuaternion = SortIkServo[SortIkServo.Count - 1].ServoTransform.rotation;
+                //if (IRWrapper.APIReady)
+                //{
+                //    Debug.Log(string.Format("[TRF] {0} - IRWrapper.APIReady", 21));
+                //    AllIkServo = new List<IKservo>();
+                //    allServos = new List<IRWrapper.IServo>();
+                //    SortIkServo = new List<IKservo>();
+                //    Debug.Log(string.Format("[TRF] {0} - Inited ServoLists", 21));
 
+                //    GetAllChildServo();
+                //    Debug.Log(string.Format("[TRF] {0} - Get all child servo ({1})", 22, allServos.Count));
+
+                //    if (allServos.Count >= JointList.Length)
+                //    {
+                //        Debug.Log(string.Format("[TRF] {0} - AllIkServo ({1})", 23, AllIkServo.Count));
+
+                //        SortIKservos();
+
+                //        // Get last part
+                //        listOfChildrenPart = new List<Part>();
+                //        GetChildPartRecursive(part);
+                //        int elementCount = listOfChildrenPart.Count();
+                //        //lastPart = listOfChildrenPart[elementCount - 1];
+                //        lastPart = listOfChildrenPart.Find(e => e.name == JointList[JointList.Length - 1]);
+
+                //        Debug.Log(string.Format("[TRF] {0} - lastPart " + lastPart.name, 40));
+
+                //        // Add EndEffector/LEE/ (last part) to SortIkServo - problem -> if LEE hold other element that will last part
+                //        SortIkServo.Add(new IKservo(lastPart));
+                //        Debug.Log(string.Format("[TRF] {0} - END - SortIkServo.Add(new IKservo(lastPart)", 41));
+
+                //        // if have all IKservo than calculate IK parameters of IKservos 
+                //        if (SortIkServo.Count == JointList.Length)
+                //        {
+                //            partPosition = part.transform.position;
+                //            partRotation = part.transform.rotation;
+
+                //            // dumping servo structure
+                //            DumpServoStructure(SortIkServo);
+
+                //            //Debug.Log(string.Format("[TRF] {0} - START - GetFKParamsFromBuffer()", 42));
+                //            GetFKParamsFromBuffer();
+                //            //Debug.Log(string.Format("[TRF] {0} - END - GetFKParamsFromBuffer()", 43));
+
+                //        }
+                //    }
+                //}
+                //else
+                //    return;
+
+                if (!InitIRWrapper())
+                    return;
+                Debug.Log(string.Format("[TRF] >>> >>> Start() - InitIRWrapper() == true"));
+                if (!CheckExistArm())
+                    return;
+                Debug.Log(string.Format("[TRF] >>> >>> Start() - CheckExistArm() == true"));
+                if (!GetArmServos())
+                    return;
+                Debug.Log(string.Format("[TRF] >>> >>> Start() - GetArmServos() == true"));
+                ServosIsBaseInited = true;
+                Debug.Log(string.Format("[TRF] >>> >>> Start() - ServosIsBaseInited = true"));
+                if (!DumpServoStructure(SortIkServo))
+                    return;
+                Debug.Log(string.Format("[TRF] >>> >>> Start() - DumpServoStructure(SortIkServo) == true"));
+                if (!IsLoadedFkParams)
+                {
+                    Debug.Log(string.Format("[TRF] >>> >>> Start() - IsLoadedFkParams == false"));
+                    //if (!CheckServosZeroState(true))
+                    //    return;
+                    //Debug.Log(string.Format("[TRF] >>> >>> Start() - CheckServosZeroState() == true"));
+                    IsLoadedFkParams = true;
+                    SetFKParamsToBuffer();
+                    Debug.Log(string.Format("[TRF] >>> >>> Start() - SetFKParamsToBuffer() == true"));
+                    OnSave(null);
+                    Debug.Log(string.Format("[TRF] >>> >>> Start() - OnSave()"));
+                }
+                if (!GetFKParamsFromBuffer())
+                    return;
+                Debug.Log(string.Format("[TRF] >>> >>> Start() - GetFKParamsFromBuffer() == true"));
                 IsInitedModule = true;
+                Debug.Log(string.Format("[TRF] >>> >>> Start() - IsInitedModule = true"));
             }
         }
 
         // Update is called once per frame
         public void Update()
         {
-            //if (part.transform.InverseTransformPoint(prevPartPosition).magnitude > 0.1f || (Quaternion.Inverse(prevPartRotation) * part.transform.rotation).eulerAngles.magnitude > 0.1f)
+            //if (HighLogic.LoadedSceneIsFlight && ServosIsBaseInited && !DumpEventIsActive)
             //{
-            //    // global orientation
-            //    globalQuaternion = globalQuaternion * (Quaternion.Inverse(prevPartRotation) * part.transform.rotation);
-            //    // global position
-            //    globalPosition = globalPosition + globalQuaternion * part.transform.InverseTransformPoint(prevPartPosition);
+            //    //Debug.Log(string.Format("[TRF] Update() - DumpEventIsActive = false"));
+            //    if (CheckServosZeroState())
+            //    {
+            //        CheckServosZeroState(true);
+            //        Events["DumpServoStructureEvent"].active = true;
+            //        DumpEventIsActive = true;
+            //        Debug.Log(string.Format("[TRF] Update() - DumpEventIsActive = true"));
+            //    }
             //}
-            //prevPartPosition = part.transform.position;
-            //prevPartRotation = part.transform.rotation;
 
-            // Dump Button enable / disable
-            if (HighLogic.LoadedSceneIsFlight && (theta[0] == 0 && theta[1] == 0 && theta[2] == 0 && theta[3] == 0 && theta[4] == 0 && theta[5] == 0 && theta[6] == 0 && theta[7] == 0))
+            if (HighLogic.LoadedSceneIsFlight && IsInitedModule && IsInitedModule1st)
             {
-                Events["DumpServoStructureEvent"].active = true;
+                IsInitedModule1st = false;
+                Debug.Log(string.Format("[TRF] Update() - IsInitedModule1st = false"));
+
+                Debug.Log(string.Format("[TRF] {0} - Update() - globalPosition&Quaternion", 44));
+                // set position of last part for global position
+                //if (globalPosition == null)
+                //{
+                //    Debug.Log(string.Format("[TRF] - Update() - globalPosition == null"));
+                //    return;
+                //}
+                //if (globalQuaternion == null)
+                //{
+                //    Debug.Log(string.Format("[TRF] - Update() - globalQuaternion == null"));
+                //    return;
+                //}
+                //if (SortIkServo == null)
+                //{
+                //    Debug.Log(string.Format("[TRF] - Update() - SortIkServo == null"));
+                //    return;
+                //}
+                //if (SortIkServo.Count == 0)
+                //{
+                //    Debug.Log(string.Format("[TRF] - Update() - SortIkServo.Count == 0"));
+                //    return;
+                //}
+                //Debug.Log(string.Format("[TRF] - Update() - SortIkServo.Count = {0}", SortIkServo.Count));
+                //int counter = 0;
+                //foreach (IKservo element in SortIkServo)
+                //{
+                //    Debug.Log(string.Format("[TRF] - Update() - counter = {0}", counter));
+                //    counter++;
+                //    if (element == null)
+                //    {
+                //        Debug.Log(string.Format("[TRF] - Update() - element == null"));
+                //        return;
+                //    }
+                //}
+                //Debug.Log(string.Format("[TRF] - Update() - SortIkServo.Count - 1 = {0}", (SortIkServo.Count - 1)));
+                //counter = SortIkServo.Count - 1;
+                //if (SortIkServo[counter].ServoTransform.position != null)
+                //{
+                //    Debug.Log(string.Format("[TRF] - Update() - SortIkServo[counter].ServoTransform.position = " + VectorToString(SortIkServo[counter].ServoTransform.position, "0.00")));
+                globalPosition = SortIkServo[SortIkServo.Count - 1].ServoTransform.position;
+                //}
+                //else
+                //{
+                //    Debug.Log(string.Format("[TRF] - Update() - SortIkServo[counter].ServoTransform.position == null"));
+                //    return;
+                //}
+                //if (SortIkServo[counter].ServoTransform.rotation != null)
+                //{
+                //    Debug.Log(string.Format("[TRF] - Update() - SortIkServo[counter].ServoTransform.rotation = " + QuaternionToString(SortIkServo[counter].ServoTransform.rotation, "0.00")));
+                globalQuaternion = SortIkServo[SortIkServo.Count - 1].ServoTransform.rotation;
+                //}
+                //else
+                //{
+                //    Debug.Log(string.Format("[TRF] - Update() - SortIkServo[counter].ServoTransform.rotation == null"));
+                //    return;
+                //}
+                Debug.Log(string.Format("[TRF] {0} - Update() - globalPosition&Quaternion", 45));
+
+                baseState.Translation = globalPosition;
+                baseState.Rotation = globalQuaternion;
+                Debug.Log(string.Format("[TRF] Update() -  baseState init"));
+
+                // Store base position and base orientation
+                basePosition = globalPosition;
+                baseQuaternion = globalQuaternion;
+                Debug.Log(string.Format("[TRF] Update() -  (basePosition, baseQuaternion) init"));
+
+                for (int i = 0; i < SortIkServo.Count; i++)
+                    servoGimbal[i] = new GameObject();
+                Debug.Log(string.Format("[TRF] Update() -  baseState init"));
+
+                // Get angle of Joints
+                for (int j = 0; j < SortIkServo.Count - 1; j++)
+                    theta[j] = SortIkServo[j].iservo.Position;
+                Debug.Log(string.Format("[TRF] Update() -  Get angle of Joints"));
+
+                prevPartPosition = part.transform.position;
+                prevPartRotation = part.transform.rotation;
+                Debug.Log(string.Format("[TRF] Update() -  (prevPartPosition, prevPartRotation) init"));
+
+                // cPos - tartget position = current arm position
+                globalPosition = SortIkServo[SortIkServo.Count - 1].ServoTransform.position;
+                globalQuaternion = SortIkServo[SortIkServo.Count - 1].ServoTransform.rotation;
+                Debug.Log(string.Format("[TRF] Update() -  (globalPosition, globalQuaternion) init"));
+
+                Events["TurnOnIKRCEvent"].active = true;
             }
-            else
-            {
-                Events["DumpServoStructureEvent"].active = false;
-            }
+
+            //// Dump Button enable / disable
+            //if (HighLogic.LoadedSceneIsFlight && (theta[0] == 0 && theta[1] == 0 && theta[2] == 0 && theta[3] == 0 && theta[4] == 0 && theta[5] == 0 && theta[6] == 0 && theta[7] == 0))
+            //{
+            //    Events["DumpServoStructureEvent"].active = true;
+            //}
+            //else
+            //{
+            //    Events["DumpServoStructureEvent"].active = false;
+            //}
 
             if (ircWindowActive && HighLogic.LoadedSceneIsFlight && IsInitedModule)
             {
-                //bool ctrlPressed = Input.GetKey(KeyCode.LeftControl);
-                //if(ctrlPressed)
-                //{                  
-                //    Debug.Log(string.Format("[TRF] {0} - FocusedWindow = {1}", 1001, FocusedWindow));
-                //}
-
-
-                //Debug.Log(string.Format("[TRF] {0} START Update()", 401));
-
                 // Set Aim Object (PDGFx)
                 GameObject mouseObject = CheckForObjectUnderCursor();
-                //if (mouseObject != null)
-                //    Debug.Log(string.Format("[TRF] {0} mouseObject " + mouseObject.name, 420));
-                //else
-                //    Debug.Log(string.Format("[TRF] {0} mouseObject null", 420));
-                //string info = mouseObject ? mouseObject.name : "Nothing";
-                //Debug.Log(string.Format("[TRF] {0} - info.text " + info, 403));
                 bool modPressed = Input.GetKey(KeyCode.LeftAlt);
                 if (modPressed && (mouseObject != null))
                 {
-                    //Debug.Log(string.Format("[TRF] {0} - modPressed active", 500));
                     foreach (Transform element in mouseObject.GetComponentsInChildren<Transform>())
                     {
                         if (element.name == "dockingNode")
@@ -768,8 +1008,6 @@ namespace IkRobotController
                             break;
                         }
                     }
-                    //    currentDisplayedObject = GetRootObject(hoverObject);
-                    //    Debug.Log(string.Format("[TRF] {0} - currentDisplayedObject " + currentDisplayedObject.name, 502));
                 }
                 if (modPressed && (mouseObject == null))
                 {
@@ -1254,7 +1492,7 @@ namespace IkRobotController
         #endregion get part transform by mouse
 
         #region KSPEvents
-        [KSPEvent(guiActive = true, guiName = "Dump ServoStructure")]
+        [KSPEvent(guiActive = true, guiName = "Dump ServoStructure", active = true)]
         public void DumpServoStructureEvent()
         {
             // Genarate servo structure and save
@@ -1320,17 +1558,9 @@ namespace IkRobotController
                         DumpServoStructure(SortIkServo);
 
                         SetFKParamsToBuffer();
-                        //if (nodeInner != null)
-                        //{
                         OnSave(null);
                         Debug.Log(string.Format("[TRF] {0} Servo Structure Dumped", 50));
                         MsgWindow(new Vector2(1920f / 2f, 1080f / 2f), "Servo dumping message", "Servo Structure Dumped");
-                        //}
-                        //else
-                        //{
-                        //    MsgWindow(new Vector2(1920f / 2f, 1080f / 2f), "Servo dumping message", "Servo Structure Not Dumped");
-                        //    return;
-                        //}
                     }
                     else
                         MsgWindow(new Vector2(1920f / 2f, 1080f / 2f), "Servo dumping message", "Servo Structure Not Dumped");
@@ -1339,9 +1569,15 @@ namespace IkRobotController
             }
             else
                 return;
+
+            if (GetFKParamsFromBuffer())
+            {
+                IsInitedModule = true;
+                Debug.Log(string.Format("[TRF] Start() - IsInitedModule = true"));
+            }
         }
 
-        [KSPEvent(guiActive = true, guiName = "Turn on IKRC")]
+        [KSPEvent(guiActive = true, guiName = "Turn on IKRC", active = false)]
         public void TurnOnIKRCEvent()
         {
             if (IsInitedModule)
@@ -1353,7 +1589,7 @@ namespace IkRobotController
 
                 // cPos - tartget position = current arm position
                 globalPosition = SortIkServo[SortIkServo.Count - 1].ServoTransform.position;
-                globalQuaternion = SortIkServo[SortIkServo.Count - 1].ServoTransform.rotation; 
+                globalQuaternion = SortIkServo[SortIkServo.Count - 1].ServoTransform.rotation;
 
                 ircWindowActive = true;
             }
@@ -1517,6 +1753,15 @@ namespace IkRobotController
             Debug.Log(string.Format("[TRF] - OnLoad() " + HighLogic.LoadedScene.ToString()));
             Debug.Log(string.Format("[TRF] - OnLoad() {0}", onLoadCounter));
             onLoadCounter++;
+
+            foreach (IKservo ikServo in FKparamsIkServo)
+            {
+                if (ikServo.fkParams.ParentOffset != (new Vector3(0f, 0f, 0f)))
+                {
+                    IsLoadedFkParams = true;
+                    return;
+                }
+            }
         }
 
         private void SetWinParamsToBuffer()
@@ -1544,33 +1789,37 @@ namespace IkRobotController
 
                 servoNumber++;
             }
+
+            IsLoadedFkParams = true;
         }
 
-        private void GetFKParamsFromBuffer()
+        private bool GetFKParamsFromBuffer()
         {
-            Debug.Log(string.Format("[TRF] {0} - GetFKParamsFromBuffer()", 42));
-            Debug.Log(string.Format("[TRF] {0} - part.transform.rotation " + QuaternionToString(part.transform.rotation, "0.00"), 42));
-            int servoNumber = 0;
-            foreach (IKservo ikServo in FKparamsIkServo)
+            if (IsLoadedFkParams)
             {
-                SortIkServo[servoNumber].fkParams.PartRotation = ikServo.fkParams.PartRotation;
-                SortIkServo[servoNumber].fkParams.ParentOffset = ikServo.fkParams.ParentOffset;
-                SortIkServo[servoNumber].fkParams.Axis = ikServo.fkParams.Axis;
-                //SortIkServo[servoNumber].fkParams.Axis = part.transform.rotation * ikServo.fkParams.Axis;
-                //SortIkServo[servoNumber].fkParams.Position = ikServo.fkParams.Position;
-                SortIkServo[servoNumber].fkParams.Rotation = ikServo.fkParams.Rotation;
-                //SortIkServo[servoNumber].fkParams.Rotation =  Quaternion.Inverse(ikServo.fkParams.PartRotation) * part.transform.rotation * ikServo.fkParams.Rotation;
+                Debug.Log(string.Format("[TRF] {0} - GetFKParamsFromBuffer()", 42));
+                Debug.Log(string.Format("[TRF] {0} - part.transform.rotation " + QuaternionToString(part.transform.rotation, "0.00"), 42));
+                int servoNumber = 0;
+                foreach (IKservo ikServo in FKparamsIkServo)
+                {
+                    SortIkServo[servoNumber].fkParams.PartRotation = ikServo.fkParams.PartRotation;
+                    SortIkServo[servoNumber].fkParams.ParentOffset = ikServo.fkParams.ParentOffset;
+                    SortIkServo[servoNumber].fkParams.Axis = ikServo.fkParams.Axis;
+                    SortIkServo[servoNumber].fkParams.Rotation = ikServo.fkParams.Rotation;
 
-                Debug.Log(string.Format("[TRF] {0} - ParentOffset " + VectorToString(SortIkServo[servoNumber].fkParams.ParentOffset, "0.00"), 42));
-                //Debug.Log(string.Format("[TRF] {0} - Axis " + VectorToString(ikServo.fkParams.Axis, "0.0") + "  " + VectorToString(part.transform.rotation * ikServo.fkParams.Axis, "0.0"), 40));
-                Debug.Log(string.Format("[TRF] {0} - Axis " + VectorToString(ikServo.fkParams.Axis, "0.0"), 40));
-                //Debug.Log(string.Format("[TRF] {0} - Position " + VectorToString(SortIkServo[servoNumber].fkParams.Position, "0.00"), 42));
-                Debug.Log(string.Format("[TRF] {0} - Rotation " + QuaternionToString(SortIkServo[servoNumber].fkParams.Rotation, "0.00"), 42));
+                    Debug.Log(string.Format("[TRF] {0} - ParentOffset " + VectorToString(SortIkServo[servoNumber].fkParams.ParentOffset, "0.00"), 42));
+                    Debug.Log(string.Format("[TRF] {0} - Axis " + VectorToString(ikServo.fkParams.Axis, "0.0"), 40));
+                    Debug.Log(string.Format("[TRF] {0} - Rotation " + QuaternionToString(SortIkServo[servoNumber].fkParams.Rotation, "0.00"), 42));
 
-                servoNumber++;
+                    servoNumber++;
+                }
+
+                partRotation = SortIkServo[0].fkParams.PartRotation;
             }
+            else
+                return false;
 
-            partRotation = SortIkServo[0].fkParams.PartRotation;
+            return true;
         }
 
         public void OnDisable()
@@ -1657,6 +1906,26 @@ namespace IkRobotController
                 GUILayout.BeginHorizontal();
 
                 #region Translation & Rotation Buttons
+                // Coloring translation and rotation buttons
+                if (buttonIsColored)
+                {
+                    InitStyles();
+                    // Translation buttons
+                    GUI.Box(new Rect(trButtonsOrigin.x - 2, trButtonsOrigin.y + 33, 34, 34), "", greenStyle);
+                    GUI.Box(new Rect(trButtonsOrigin.x + 68, trButtonsOrigin.y + 33, 34, 34), "", greenStyle);
+                    GUI.Box(new Rect(trButtonsOrigin.x + 33, trButtonsOrigin.y - 2, 34, 34), "", redStyle);
+                    GUI.Box(new Rect(trButtonsOrigin.x + 33, trButtonsOrigin.y + 68, 34, 34), "", redStyle);
+                    GUI.Box(new Rect(trButtonsOrigin.x - 2, trButtonsOrigin.y + 68, 34, 34), "", blueStyle);
+                    GUI.Box(new Rect(trButtonsOrigin.x + 68, trButtonsOrigin.y - 2, 34, 34), "", blueStyle);
+                    // Rotation buttons
+                    GUI.Box(new Rect(trButtonsOrigin.x + 108, trButtonsOrigin.y + 33, 34, 34), "", blueStyle);
+                    GUI.Box(new Rect(trButtonsOrigin.x + 178, trButtonsOrigin.y + 33, 34, 34), "", blueStyle);
+                    GUI.Box(new Rect(trButtonsOrigin.x + 143, trButtonsOrigin.y - 2, 34, 34), "", greenStyle);
+                    GUI.Box(new Rect(trButtonsOrigin.x + 143, trButtonsOrigin.y + 68, 34, 34), "", greenStyle);
+                    GUI.Box(new Rect(trButtonsOrigin.x + 108, trButtonsOrigin.y + 68, 34, 34), "", redStyle);
+                    GUI.Box(new Rect(trButtonsOrigin.x + 178, trButtonsOrigin.y - 2, 34, 34), "", redStyle);
+                }
+
                 // Translation buttons
                 if (GUI.RepeatButton(new Rect(trButtonsOrigin.x, trButtonsOrigin.y + 35, 30, 30), "◄"))
                     buttons.Translation.y = 0.025f * transStep;
@@ -1672,6 +1941,7 @@ namespace IkRobotController
                     buttons.Translation.z = 0.025f * transStep;
 
                 // Rotation buttons
+
                 if (GUI.RepeatButton(new Rect(trButtonsOrigin.x + 110, trButtonsOrigin.y + 35, 30, 30), "˅ʘ"))
                     buttons.Rotation = Quaternion.Euler(0f, 0f, 0.5f * rotStep);
                 if (GUI.RepeatButton(new Rect(trButtonsOrigin.x + 180, trButtonsOrigin.y + 35, 30, 30), "ʘ˅"))
@@ -1777,7 +2047,7 @@ namespace IkRobotController
                         if (windowRectangle != null)
                             //windowRectangle = new Rect(windowPosition.x, windowPosition.y, windowSize.x, windowSize.y);
                             windowRectangle = new Rect(windowRectangle.x, windowRectangle.y, windowSize.x, windowSize.y);
-                            closeWindowButtonPosition = new Vector2(windowSize.x - 20, 3);
+                        closeWindowButtonPosition = new Vector2(windowSize.x - 20, 3);
                     }
                 }
                 else
@@ -1830,7 +2100,7 @@ namespace IkRobotController
                 inputRect = new Rect(110, 365, 50, 20);
                 for (int i = 0; i < 7; i++)
                 {
-                        AddOutputValue(inputRect, "Ɵ[" + i.ToString() + "]", currentTheta[i], 30f);
+                    AddOutputValue(inputRect, "Ɵ[" + i.ToString() + "]", currentTheta[i], 30f);
                 }
 
                 //Theta blocker
@@ -1917,6 +2187,74 @@ namespace IkRobotController
             msgText = text;
 
             msgWindowActive = true;
+        }
+
+        private void InitStyles()
+        {
+            if (redStyle == null)
+            {
+                redStyle = new GUIStyle(GUI.skin.box);
+                redStyle.normal.background = MakeTexWithRound(34, 34, colorControlButtonUpDown);
+            }
+            if (greenStyle == null)
+            {
+                greenStyle = new GUIStyle(GUI.skin.box);
+                greenStyle.normal.background = MakeTexWithRound(34, 34, colorControlButtonLeftRight);
+            }
+            if (blueStyle == null)
+            {
+                blueStyle = new GUIStyle(GUI.skin.box);
+                blueStyle.normal.background = MakeTexWithRound(34, 34, colorControlButtonForwardBackward);
+            }
+        }
+
+        private Texture2D MakeTex(int width, int height, Color col)
+        {
+            Color[] pix = new Color[width * height];
+            for (int i = 0; i < pix.Length; ++i)
+            {
+                pix[i] = col;
+            }
+            Texture2D result = new Texture2D(width, height);
+            result.SetPixels(pix);
+            result.Apply();
+            return result;
+        }
+
+        private Texture2D MakeTexWithRound(int width, int height, Color col)
+        {
+            Color transColor = new Color(col.r, col.g, col.b, 0f);
+            Color[] pix = new Color[width * height];
+            for (int i = 0; i < pix.Length; ++i)
+            {
+                int x = i % width;
+                int y = i / width;
+                //Debug.Log("i = " + i + " x = " + x + " y = " + y);
+                if (x == 0 || x == (width - 1))
+                {
+                    if (y == 0 || y == (height - 1) || y == 1 || y == (height - 2))
+                    {
+                        pix[i] = transColor;
+                    }
+                    else
+                        pix[i] = col;
+                }
+                else if (x == 1 || x == (width - 2))
+                {
+                    if (y == 0 || y == (height - 1))
+                    {
+                        pix[i] = transColor;
+                    }
+                    else
+                        pix[i] = col;
+                }
+                else
+                    pix[i] = col;
+            }
+            Texture2D result = new Texture2D(width, height);
+            result.SetPixels(pix);
+            result.Apply();
+            return result;
         }
 
         public void AddInputValue(Rect rectangle, string valueInString, out string valueOutString, string name, out int valueInt, float labelLength)
