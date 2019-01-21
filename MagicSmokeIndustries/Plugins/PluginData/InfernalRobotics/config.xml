@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <config>
     <vector3 name="controlWindowPosition">
-        <x>-204.999878</x>
-        <y>3</y>
+        <x>-825.999878</x>
+        <y>233.999908</y>
         <z>625</z>
     </vector3>
     <vector3 name="editorWindowPosition">
-        <x>-764.999573</x>
-        <y>-36</y>
+        <x>557.000488</x>
+        <y>250.999939</y>
         <z>625</z>
     </vector3>
     <vector2 name="editorWindowSize">
@@ -20,8 +20,8 @@
         <z>625</z>
     </vector3>
     <vector3 name="presetsWindowPosition">
-        <x>-615.399902</x>
-        <y>419.900024</y>
+        <x>442.600098</x>
+        <y>331.900085</y>
         <z>625</z>
     </vector3>
     <double name="UIAlphaValue">0.80000001192092896</double>

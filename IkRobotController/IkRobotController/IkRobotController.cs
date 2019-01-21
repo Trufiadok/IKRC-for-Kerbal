@@ -20,64 +20,24 @@ using System.Globalization;
 // - Save/Load ServoStructure To/From config file in EditorMode
 // - Get Axis information from arm structure
 
-/*
- * CheckServosZeroState()
- * {
- * 	StatesToThetas()
- * 	...
- * 	..
- * 	.
- * }
- * 
- * Start()
- * {
- * 	if(!InitIRWrapper())
- * 		return;
- * 	if(!CheckExistArm())
- * 		return;
- * 	if(!GetArmServos())
- * 		return;
- * 	ServosIsBaseInited = true;
- * 	if(!IsLoadedFkParams)
- *  {
- * 		if(!CheckServosZeroState())
- * 			return;
- * 		if(!DumpFkParams())
- * 			return;
- *  }
- *	if(!GetFkParamsFromBuffer())
- *		return;
- *	IsInitedModule = true;
- * }
- * 
- * Update()
- * {
- * 	if(ServosIsBaseInited && !DumpEventActive)
- * 		DumpEventActive = true;
- * 	...
- * 	..
- * 	.
- * }
- * 
- * DumpEvent()
- * {
- * 	...
- * 	..
- * 	.
- * 	if(GetFkParamsFromBuffer())
- * 		IsInitedModule = true;
- * }
- *
-*/
-
-
-
 namespace IkRobotController
 {
     [KSPAddon(KSPAddon.Startup.Flight, false)]
     public class IkRobotController : PartModule
     {
         #region module variable of part.cfg
+        [KSPField(isPersistant = false)]
+        public string robotArmID = "";
+
+        [KSPField(isPersistant = false)]
+        public string servoList = "";
+
+        [KSPField(isPersistant = false)]
+        public string servoRealAxis = "";
+
+        [KSPField(isPersistant = false)]
+        public string minMaxAngles = "";
+
         [KSPField(isPersistant = false)]
         public string controlButtonUpDownColor = "";
 
@@ -86,7 +46,19 @@ namespace IkRobotController
 
         [KSPField(isPersistant = false)]
         public string controlButtonForwardBackwardColor = "";
+
+        [KSPField(isPersistant = false)]
+        public bool debugTransforms = false;
+
+        [KSPField(isPersistant = false)]
+        public float workingRange = 8.0f;
         #endregion module variable of part.cfg
+
+        private static int counterStart = 0;
+        private static int counterOnLoad = 0;
+        private static int counterOnSave = 0;
+
+        private static bool JointListIsLoaded = false;
 
         private bool buttonIsColored = false;
         private Color colorControlButtonUpDown;
@@ -99,6 +71,8 @@ namespace IkRobotController
         protected static int NextWindowID = 110;
         protected int WindowID = 0;
         protected int MsgWindowID = 0;
+        protected int ChkWindowID = 0;
+        protected int CfgWindowID = 0;
 
         public bool IsInitedModule = false;
         public bool IsInitedModule1st = true;
@@ -108,7 +82,11 @@ namespace IkRobotController
         private bool IsSaveServoStructure = false;
 
         private string msgWindowTitle = "";
+        private string chkWindowTitle = "";
         private string msgText = "";
+        private string chkText = "";
+        private string[] chkButtonText = new string[3];
+        bool chkWindowResult = false;
 
         private GUIStyle redStyle = null;
         private GUIStyle greenStyle = null;
@@ -116,10 +94,17 @@ namespace IkRobotController
 
         private Rect windowRectangle;
         private Rect msgWindowRectangle;
+        private Rect chkWindowRectangle;
+        private Rect cfgWindowRectangle;
         private Vector2 windowPosition = new Vector2(10, 10);
         private Vector2 windowSize = new Vector2(310, 600);
         private Vector2 msgWindowPosition = new Vector2(100, 100);
-        private Vector2 msgWindowSize = new Vector2(200, 100);
+        private Vector2 msgWindowSize = new Vector2(250, 100);
+        private Vector2 chkWindowPosition = new Vector2(100, 100);
+        private Vector2 chkWindowSize = new Vector2(250, 100);
+        private Vector2 cfgWindowPosition = new Vector2(200, 200);
+        private Vector2 cfgWindowSize = new Vector2(250, 200);
+        Vector2 RIDScrollPosition;
         private Rect inputRect;
         private ConfigNode nodeInner;
         private bool IK_active = false;
@@ -135,7 +120,10 @@ namespace IkRobotController
         private bool refreshPDGFBool = false;
         private bool ircWindowActive = false;
         private bool msgWindowActive = false;
+        private bool chkWindowActive = false;
+        private bool cfgWindowActive = false;
         private bool emergencyServoStop = false;
+        private bool manageConfig = false;
         private float Yoffset = 0;
         private float servoSpeed = 0.25f;
         private float transStep = 0.25f;
@@ -160,12 +148,706 @@ namespace IkRobotController
 
         private Vector2 trButtonsOrigin = new Vector2(10, 35);
         private Vector2 closeWindowButtonPosition = new Vector2(290, 3);
+        private Vector2 closeCfgWindowButtonPosition = new Vector2(290, 3);
         private Rect diagramRectangle;
         private List<float> iterateData;
         private List<float> sampleAngleData;
         private List<List<float>> data;
 
         private bool WindowIsExtended = false;
+
+        public class ConfigXML
+        {
+            public class VECTOR2
+            {
+                public string name;
+                public Vector2 value;
+
+                public VECTOR2(string name, Vector2 value)
+                {
+                    this.name = name;
+                    this.value = new Vector2(value.x, value.y);
+                }
+            }
+
+            public class VECTOR3
+            {
+                public string name;
+                public Vector3 value;
+
+                public VECTOR3(string name, Vector3 value)
+                {
+                    this.name = name;
+                    this.value = new Vector3(value.x, value.y, value.z);
+                }
+            }
+
+            public class QUATERNION
+            {
+                public string name;
+                public Quaternion value;
+
+                public QUATERNION(string name, Quaternion value)
+                {
+                    this.name = name;
+                    this.value = new Quaternion(value.w, value.x, value.y, value.z);
+                }
+            }
+
+            public bool ContentIsLoaded = false;
+            public bool OperationIsSuccess = false;
+
+            public string vector2String;
+            public string vector3String;
+            public string quaternionString;
+
+            public string variableSequence;
+            public List<string> variableList;
+            public List<string> robotIDList;
+
+            public List<VECTOR2> vector2List;
+            public List<VECTOR3> vector3List;
+            public List<QUATERNION> quaternionList;
+
+            public ConfigXML()
+            {
+                ContentIsLoaded = false;
+                vector2String = "";
+                vector3String = "";
+                quaternionString = "";
+
+                variableSequence = "";
+                variableList = new List<string>();
+                robotIDList = new List<string>();
+
+                vector2List = new List<VECTOR2>();
+                vector3List = new List<VECTOR3>();
+                quaternionList = new List<QUATERNION>();
+
+                Debug.Log(string.Format("[TRF] ConfigXML() constructed"));
+            }
+
+            public bool CheckExistVariables(string preFix, string postFix)
+            {
+                bool subResult = false;
+
+                subResult = false;
+                string variableName = preFix + "-" + postFix;
+                foreach (string element in variableList)
+                {
+                    if (variableName == element)
+                    {
+                        subResult = true;
+                        break;
+                    }
+                }
+                if (!subResult)
+                {
+                    Debug.Log(string.Format("[TRF] - CheckExistVariables({0}) don't exist", variableName));
+                    return false;
+                }
+
+                Debug.Log(string.Format("[TRF] - CheckExistVariables({0}) exist", variableName));
+                return true;
+            }
+
+            public bool CheckExistVariables(string preFix, string[] postFixs, int servoCount)
+            {
+                bool subResult = false;
+
+                for (int i = 0; i < servoCount; i++)
+                    for (int j = 0; j < postFixs.Length; j++)
+                    {
+                        string variableName = preFix + "-" + i.ToString() + "-" + postFixs[j];
+                        subResult = false;
+                        foreach (string element in variableList)
+                        {
+                            if (variableName == element)
+                            {
+                                subResult = true;
+                                break;
+                            }
+                        }
+                        if (!subResult)
+                        {
+                            Debug.Log(string.Format("[TRF] - CheckExistVariables({0}) don't exist", variableName));
+                            return false;
+                        }
+                    }
+
+                Debug.Log(string.Format("[TRF] - CheckExistVariables({0}-...) exist", preFix));
+                return true;
+            }
+
+            public bool CreateVariables(string preFix, string postFix, string postFixType)
+            {
+                bool result = false;
+                bool subResult = false;
+
+                subResult = false;
+                string variableName = preFix + "-" + postFix;
+
+                switch (postFixType)
+                {
+                    case "Vector2":
+
+                        foreach (VECTOR2 element in vector2List)
+                        {
+                            if (element.name == variableName)
+                            {
+                                subResult = true;
+                                break;
+                            }
+                        }
+
+                        if (!subResult)
+                        {
+                            vector2String = vector2String + "," + variableName;
+                            variableSequence = variableSequence + "," + variableName;
+                            variableList.Add(variableName);
+                            vector2List.Add(new VECTOR2(variableName, new Vector2(0f, 0f)));
+                            Debug.Log(string.Format("[TRF] - CreateVariables({0}) OK", variableName));
+                        }
+
+                        break;
+
+                    case "Vector3":
+
+                        foreach (VECTOR3 element in vector3List)
+                        {
+                            if (element.name == variableName)
+                            {
+                                subResult = true;
+                                break;
+                            }
+                        }
+
+                        if (!subResult)
+                        {
+                            vector3String = vector3String + "," + variableName;
+                            variableSequence = variableSequence + "," + variableName;
+                            variableList.Add(variableName);
+                            vector3List.Add(new VECTOR3(variableName, new Vector3(0f, 0f, 0f)));
+                            Debug.Log(string.Format("[TRF] - CreateVariables({0}) OK", variableName));
+                        }
+
+                        break;
+
+                    case "Quaternion":
+
+                        foreach (QUATERNION element in quaternionList)
+                        {
+                            if (element.name == variableName)
+                            {
+                                subResult = true;
+                                break;
+                            }
+                        }
+
+                        if (!subResult)
+                        {
+                            quaternionString = quaternionString + "," + variableName;
+                            variableSequence = variableSequence + "," + variableName;
+                            variableList.Add(variableName);
+                            quaternionList.Add(new QUATERNION(variableName, Quaternion.identity));
+                            Debug.Log(string.Format("[TRF] - CreateVariables({0}) OK", variableName));
+                        }
+
+                        break;
+                }
+
+                result = true;
+
+                return result;
+            }
+
+            public bool CreateVariables(string preFix, string[] postFixs, string[] postFixTypes, int servoCount)
+            {
+                bool result = false;
+                bool subResult = false;
+
+                for (int i = 0; i < servoCount; i++)
+                    for (int j = 0; j < postFixs.Length; j++)
+                    {
+                        subResult = false;
+                        string variableName = preFix + "-" + i.ToString() + "-" + postFixs[j];
+
+                        switch (postFixTypes[j])
+                        {
+                            case "Vector2":
+
+                                foreach (VECTOR2 element in vector2List)
+                                {
+                                    if (element.name == variableName)
+                                    {
+                                        subResult = true;
+                                        break;
+                                    }
+                                }
+
+                                if (!subResult)
+                                {
+                                    vector2String = vector2String + "," + variableName;
+                                    variableSequence = variableSequence + "," + variableName;
+                                    variableList.Add(variableName);
+                                    vector2List.Add(new VECTOR2(variableName, new Vector2(0f, 0f)));
+                                    Debug.Log(string.Format("[TRF] - CreateVariables({0}) OK", variableName));
+                                }
+
+                                break;
+
+                            case "Vector3":
+
+                                foreach (VECTOR3 element in vector3List)
+                                {
+                                    if (element.name == variableName)
+                                    {
+                                        subResult = true;
+                                        break;
+                                    }
+                                }
+
+                                if (!subResult)
+                                {
+                                    vector3String = vector3String + "," + variableName;
+                                    variableSequence = variableSequence + "," + variableName;
+                                    variableList.Add(variableName);
+                                    vector3List.Add(new VECTOR3(variableName, new Vector3(0f, 0f, 0f)));
+                                    Debug.Log(string.Format("[TRF] - CreateVariables({0}) OK", variableName));
+                                }
+
+                                break;
+
+                            case "Quaternion":
+
+                                foreach (QUATERNION element in quaternionList)
+                                {
+                                    if (element.name == variableName)
+                                    {
+                                        subResult = true;
+                                        break;
+                                    }
+                                }
+
+                                if (!subResult)
+                                {
+                                    quaternionString = quaternionString + "," + variableName;
+                                    variableSequence = variableSequence + "," + variableName;
+                                    variableList.Add(variableName);
+                                    quaternionList.Add(new QUATERNION(variableName, Quaternion.identity));
+                                    Debug.Log(string.Format("[TRF] - CreateVariables({0}) OK", variableName));
+                                }
+
+                                break;
+                        }
+
+                    }
+
+                result = true;
+
+                return result;
+            }
+
+            public bool DeleteVariables(string preFix)
+            {
+                bool result = false;
+
+                // clear from variableSequence
+                string[] tempString = variableSequence.Split(',');
+                List<string> tempList = tempString.OfType<string>().ToList();
+                for (int i = tempList.Count - 1; i >= 0; i--)
+                {
+                    string element = tempList[i];
+                    if (element.StartsWith(preFix))
+                    {
+                        tempList.Remove(element);
+                    }
+                }
+                variableSequence = "";
+                foreach (string element in tempList)
+                {
+                    if (tempList.IndexOf(element) != (tempList.Count - 1))
+                        variableSequence = variableSequence + element + ",";
+                    else
+                        variableSequence = variableSequence + element;
+                }
+
+                // clear from vector2String
+                Debug.Log(string.Format("[TRF] - DeleteVariables({0}) vector2String = {1}", preFix, vector2String));
+                string[] temp2String = vector2String.Split(',');
+                List<string> temp2List = temp2String.OfType<string>().ToList();
+                for (int i = temp2List.Count - 1; i >= 0; i--)
+                {
+                    string element = temp2List[i];
+                    if (element.StartsWith(preFix))
+                        temp2List.Remove(element);
+                }
+                vector2String = "";
+                foreach (string element in temp2List)
+                {
+                    if (temp2List.IndexOf(element) != (temp2List.Count - 1))
+                        vector2String = vector2String + element + ",";
+                    else
+                        vector2String = vector2String + element;
+                }
+                Debug.Log(string.Format("[TRF] - DeleteVariables({0}) vector2String = {1}", preFix, vector2String));
+
+                // clear from vector3String
+                string[] temp3String = vector3String.Split(',');
+                List<string> temp3List = temp3String.OfType<string>().ToList();
+                for (int i = temp3List.Count - 1; i >= 0; i--)
+                {
+                    string element = temp3List[i];
+                    if (element.StartsWith(preFix))
+                        temp3List.Remove(element);
+                }
+                vector3String = "";
+                foreach (string element in temp3List)
+                {
+                    if (temp3List.IndexOf(element) != (temp3List.Count - 1))
+                        vector3String = vector3String + element + ",";
+                    else
+                        vector3String = vector3String + element;
+                }
+
+                // clear from quaternionString
+                string[] tempQString = quaternionString.Split(',');
+                List<string> tempQList = tempQString.OfType<string>().ToList();
+                for (int i = tempQList.Count - 1; i >= 0; i--)
+                {
+                    string element = tempQList[i];
+                    if (element.StartsWith(preFix))
+                        tempQList.Remove(element);
+                }
+                quaternionString = "";
+                foreach (string element in tempQList)
+                {
+                    if (tempQList.IndexOf(element) != (tempQList.Count - 1))
+                        quaternionString = quaternionString + element + ",";
+                    else
+                        quaternionString = quaternionString + element;
+                }
+
+                // clear from variableList
+                for (int i = variableList.Count - 1; i >= 0; i--)
+                {
+                    string element = variableList[i];
+                    if (element.StartsWith(preFix))
+                        variableList.Remove(element);
+                }
+
+                // clear from vector2List
+                for (int i = vector2List.Count - 1; i >= 0; i--)
+                {
+                    VECTOR2 element = vector2List[i];
+                    if (element.name.StartsWith(preFix))
+                        vector2List.Remove(element);
+                }
+
+                // clear from vector3List
+                for (int i = vector3List.Count - 1; i >= 0; i--)
+                {
+                    VECTOR3 element = vector3List[i];
+                    if (element.name.StartsWith(preFix))
+                        vector3List.Remove(element);
+                }
+
+                // clear from quaternionList
+                for (int i = quaternionList.Count - 1; i >= 0; i--)
+                {
+                    QUATERNION element = quaternionList[i];
+                    if (element.name.StartsWith(preFix))
+                        quaternionList.Remove(element);
+                }
+
+                result = true;
+                return result;
+            }
+
+            public void LoadVariables(PluginConfiguration config)
+            {
+                Debug.Log(string.Format("[TRF] LoadVariables() Start"));
+
+                vector2String = config.GetValue<string>("vector2String").Replace(" ", String.Empty);
+                string[] tempList = vector2String.Split(',');
+
+                //foreach (string text in tempList)
+                //    Debug.Log(string.Format("[TRF] LoadVariables() tempList - {0}", text));
+
+                foreach (string element in tempList)
+                {
+                    vector2List.Add(new VECTOR2(element, config.GetValue<Vector2>(element)));
+                }
+
+                //Debug.Log(string.Format("[TRF] LoadVariables() vector2List"));
+                //foreach (VECTOR2 vector2 in vector2List)
+                //    Debug.Log(string.Format("[TRF] LoadVariables() {0} {1}", vector2.name, VectorToString(vector2.value, "0.00")));
+
+                vector3String = config.GetValue<string>("vector3String").Replace(" ", String.Empty);
+                tempList = vector3String.Split(',');
+
+                //foreach (string text in tempList)
+                //    Debug.Log(string.Format("[TRF] LoadVariables() tempList - {0}", text));
+
+                foreach (string element in tempList)
+                {
+                    vector3List.Add(new VECTOR3(element, config.GetValue<Vector3>(element)));
+                }
+
+                //Debug.Log(string.Format("[TRF] LoadVariables() vector3List"));
+                //foreach (VECTOR3 vector3 in vector3List)
+                //    Debug.Log(string.Format("[TRF] LoadVariables() {0} {1}", vector3.name, VectorToString(vector3.value, "0.00")));
+
+                quaternionString = config.GetValue<string>("quaternionString").Replace(" ", String.Empty);
+                tempList = quaternionString.Split(',');
+
+                //foreach (string text in tempList)
+                //    Debug.Log(string.Format("[TRF] LoadVariables() tempList - {0}", text));
+
+                foreach (string element in tempList)
+                {
+                    quaternionList.Add(new QUATERNION(element, config.GetValue<Quaternion>(element)));
+                }
+
+                //Debug.Log(string.Format("[TRF] LoadVariables() quaternionList"));
+                //foreach (QUATERNION quaternion in quaternionList)
+                //    Debug.Log(string.Format("[TRF] LoadVariables() {0} {1}", quaternion.name, QuaternionToString(quaternion.value, "0.00")));
+
+                variableSequence = config.GetValue<string>("variableSequence").Replace(" ", String.Empty);
+                tempList = variableSequence.Split(',');
+
+                //foreach (string text in tempList)
+                //    Debug.Log(string.Format("[TRF] LoadVariables() tempList - {0}", text));
+
+                foreach (string element in tempList)
+                {
+                    variableList.Add(element);
+                }
+
+                //Debug.Log(string.Format("[TRF] LoadVariables() variableList"));
+                //foreach (string variable in variableList)
+                //    Debug.Log(string.Format("[TRF] LoadVariables() {0}", variable));
+
+                foreach (string element in variableList)
+                {
+                    foreach (VECTOR2 V2element in vector2List)
+                    {
+                        if (V2element.name == element)
+                        {
+                            V2element.value = config.GetValue<Vector2>(V2element.name);
+                            break;
+                        }
+                    }
+                    foreach (VECTOR3 V3element in vector3List)
+                    {
+                        if (V3element.name == element)
+                        {
+                            V3element.value = config.GetValue<Vector3>(V3element.name);
+                            break;
+                        }
+                    }
+                    foreach (QUATERNION Qelement in quaternionList)
+                    {
+                        if (Qelement.name == element)
+                        {
+                            Qelement.value = config.GetValue<Quaternion>(Qelement.name);
+                            break;
+                        }
+                    }
+                }
+
+                foreach (VECTOR2 V2element in vector2List)
+                {
+                    if (V2element.name.EndsWith("-IRC-Window-Position"))
+                    {
+                        if (!robotIDList.Contains(V2element.name.Remove(V2element.name.IndexOf("-IRC-Window-Position"))))
+                            robotIDList.Add(V2element.name.Remove(V2element.name.IndexOf("-IRC-Window-Position")));
+                    }
+                }
+
+                ContentIsLoaded = true;
+
+                Debug.Log(string.Format("[TRF] LoadVariables() End"));
+            }
+
+            public void SaveVariables(PluginConfiguration config)
+            {
+                Debug.Log(string.Format("[TRF] SaveVariables() Start"));
+
+                config.SetValue("vector2String", vector2String);
+                config.SetValue("vector3String", vector3String);
+                config.SetValue("quaternionString", quaternionString);
+                config.SetValue("variableSequence", variableSequence);
+
+                foreach (string element in variableList)
+                {
+                    foreach (VECTOR2 V2element in vector2List)
+                    {
+                        if (V2element.name == element)
+                        {
+                            config.SetValue(V2element.name, V2element.value);
+                            break;
+                        }
+                    }
+                    foreach (VECTOR3 V3element in vector3List)
+                    {
+                        if (V3element.name == element)
+                        {
+                            config.SetValue(V3element.name, V3element.value);
+                            break;
+                        }
+                    }
+                    foreach (QUATERNION Qelement in quaternionList)
+                    {
+                        if (Qelement.name == element)
+                        {
+                            config.SetValue(Qelement.name, Qelement.value);
+                            break;
+                        }
+                    }
+                }
+
+                Debug.Log(string.Format("[TRF] SaveVariables() End"));
+            }
+
+            public Vector2 GetVector2(string V2name)
+            {
+                Vector2 result = new Vector2();
+                OperationIsSuccess = false;
+
+                foreach (VECTOR2 elemenet in vector2List)
+                {
+                    if (V2name == elemenet.name)
+                    {
+                        result = elemenet.value;
+                        OperationIsSuccess = true;
+                        break;
+                    }
+                }
+
+                if (result != null)
+                {
+                    Debug.Log(string.Format("[TRF] GetVector2('{0}')", V2name));
+                    Debug.Log(string.Format("[TRF] {0} = " + VectorToString(result, "0.00"), V2name));
+                }
+                else
+                {
+                    Debug.Log(string.Format("[TRF] GetVector2('{0}') result == null", V2name));
+                }
+
+                return result;
+            }
+
+            public Vector3 GetVector3(string V3name)
+            {
+                Vector3 result = new Vector3();
+                OperationIsSuccess = false;
+
+                foreach (VECTOR3 elemenet in vector3List)
+                {
+                    if (V3name == elemenet.name)
+                    {
+                        result = elemenet.value;
+                        OperationIsSuccess = true;
+                        break;
+                    }
+                }
+
+                if (result != null)
+                {
+                    Debug.Log(string.Format("[TRF] GetVector3('{0}')", V3name));
+                    Debug.Log(string.Format("[TRF] {0} = " + VectorToString(result, "0.00"), V3name));
+                }
+                else
+                {
+                    Debug.Log(string.Format("[TRF] GetVector3('{0}') result == null", V3name));
+                }
+
+
+                return result;
+            }
+
+            public Quaternion GetQuaternion(string Qname)
+            {
+                Quaternion result = new Quaternion();
+                OperationIsSuccess = false;
+
+                foreach (QUATERNION elemenet in quaternionList)
+                {
+                    if (Qname == elemenet.name)
+                    {
+                        result = elemenet.value;
+                        OperationIsSuccess = true;
+                        break;
+                    }
+                }
+
+                if (result != null)
+                {
+                    Debug.Log(string.Format("[TRF] GetQuaternion('{0}')", Qname));
+                    Debug.Log(string.Format("[TRF] {0} = " + QuaternionToString(result, "0.00"), Qname));
+                }
+                else
+                {
+                    Debug.Log(string.Format("[TRF] GetQuaternion('{0}') result == null", Qname));
+                }
+
+                return result;
+            }
+
+            public void SetValue(string name, Vector2 V2value)
+            {
+                OperationIsSuccess = false;
+
+                foreach (VECTOR2 elemenet in vector2List)
+                {
+                    if (name == elemenet.name)
+                    {
+                        elemenet.value = V2value;
+                        OperationIsSuccess = true;
+                        return;
+                    }
+                }
+
+                Debug.Log(string.Format("[TRF] SetValue('{0}') non element", name));
+            }
+
+            public void SetValue(string name, Vector3 V3value)
+            {
+                OperationIsSuccess = false;
+
+                foreach (VECTOR3 elemenet in vector3List)
+                {
+                    if (name == elemenet.name)
+                    {
+                        elemenet.value = V3value;
+                        OperationIsSuccess = true;
+                        return;
+                    }
+                }
+
+                Debug.Log(string.Format("[TRF] SetValue('{0}') non element", name));
+            }
+
+            public void SetValue(string name, Quaternion Qvalue)
+            {
+                OperationIsSuccess = false;
+
+                foreach (QUATERNION elemenet in quaternionList)
+                {
+                    if (name == elemenet.name)
+                    {
+                        elemenet.value = Qvalue;
+                        OperationIsSuccess = true;
+                        return;
+                    }
+                }
+
+                Debug.Log(string.Format("[TRF] SetValue('{0}') non element", name));
+            }
+        }
+
+        ConfigXML configXML;
 
         public class VectorSM
         {
@@ -381,7 +1063,8 @@ namespace IkRobotController
         List<Part> listOfChildrenPart;
         VectorSM FKvector = new VectorSM();
         VectorSM baseState = new VectorSM();
-        GameObject[] servoGimbal = new GameObject[8];
+        //GameObject[] servoGimbal = new GameObject[8];
+        GameObject[] servoGimbal;
         GameObject global = new GameObject();
         Part lastPart;
 
@@ -401,18 +1084,40 @@ namespace IkRobotController
             OBJECT
         }
 
-        string[] JointList = { "TRF.CA2.ARoll", "TRF.CA2.AYaw", "TRF.CA2.APitch", "TRF.CA2.CElbow", "TRF.CA2.BPitch", "TRF.CA2.BYaw", "TRF.CA2.BRoll", "TRF.CA2.LEE.wCam" };
-        Vector3[] JointsAxis = { new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(0, 0, 0) };
+        static string[] JointVariableNames = { "Servo-Params-PartRotation", "Servo-Params-ParentOffset", "Servo-Params-Axis", "Servo-Params-Rotation" };
+        static string[] JointVariableTypes = { "Quaternion", "Vector3", "Vector3", "Quaternion" };
+        //string[] JointList = { "TRF.CA2.ARoll", "TRF.CA2.AYaw", "TRF.CA2.APitch", "TRF.CA2.CElbow", "TRF.CA2.BPitch", "TRF.CA2.BYaw", "TRF.CA2.BRoll", "TRF.CA2.LEE.wCam" };
+        string[] JointList;
+        //Vector3[] JointsAxis = { new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(0, 0, 0) };
+        //Vector3[] JointsBaseAxis = { new Vector3(0, -1, 0), new Vector3(-1, 0, 0), new Vector3(0, 0, 1), new Vector3(0, 0, -1), new Vector3(0, 0, -1), new Vector3(-1, 0, 0), new Vector3(0, -1, 0), new Vector3(0, 0, 0) };
         // !!! calculate value of JointsRealAxis !!!
-        // PDGF Axis list
-        //Vector3[] JointsRealAxis = { new Vector3(0, -1, 0), new Vector3(-1, 0, 0), new Vector3(0, 0, 1), new Vector3(0, 0, -1), new Vector3(0, 0, -1), new Vector3(-1, 0, 0), new Vector3(0, -1, 0), new Vector3(0, 0, 0) };
-        Vector3[] JointsBaseAxis = { new Vector3(0, -1, 0), new Vector3(-1, 0, 0), new Vector3(0, 0, 1), new Vector3(0, 0, -1), new Vector3(0, 0, -1), new Vector3(-1, 0, 0), new Vector3(0, -1, 0), new Vector3(0, 0, 0) };
-        // LEE Axis list
-        Vector3[] JointsRealAxis = { new Vector3(0, 1, 0), new Vector3(1, 0, 0), new Vector3(0, 0, 1), new Vector3(0, 0, -1), new Vector3(0, 0, -1), new Vector3(1, 0, 0), new Vector3(0, 1, 0), new Vector3(0, 0, 0) };
-        public float[] theta = new float[8] { 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f };
-        public float[] currentTheta = new float[8] { 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f };
+        //Vector3[] JointsRealAxis = { new Vector3(0, 1, 0), new Vector3(1, 0, 0), new Vector3(0, 0, 1), new Vector3(0, 0, -1), new Vector3(0, 0, -1), new Vector3(1, 0, 0), new Vector3(0, 1, 0), new Vector3(0, 0, 0) };
+        Vector3[] JointsRealAxis;
 
-        public bool[] blocking = new bool[8];
+        List<BoolText> ridbtList;
+
+        public class MinMaxAngle
+        {
+            public float Min = 0f;
+            public float Max = 0f;
+
+            public MinMaxAngle(float min, float max)
+            {
+                Min = min;
+                Max = max;
+            }
+
+        }
+
+        List<MinMaxAngle> minMaxAnglesList;
+
+        //public float[] theta = new float[8] { 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f };
+        public float[] theta;
+        //public float[] currentTheta = new float[8] { 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f };
+        public float[] currentTheta;
+
+        //public bool[] blocking = new bool[8];
+        public bool[] blocking;
         public bool nearPDGFBool = false;
         public float distance;
         public float angle;
@@ -461,13 +1166,15 @@ namespace IkRobotController
         private Vector3 prevPartPosition;
         private Quaternion prevPartRotation;
 
+        private GameObject gameObject;
+
         private bool InitIRWrapper()
         {
             //if (!IRWrapper.APIReady)
             //{
-                Debug.Log(string.Format("[TRF] {0} IRWrapper.InitWrapper() START", 1));
-                IRWrapper.InitWrapper();
-                Debug.Log(string.Format("[TRF] {0} IRWrapper.InitWrapper() END", 2));
+            Debug.Log(string.Format("[TRF] {0} IRWrapper.InitWrapper() START", 1));
+            IRWrapper.InitWrapper();
+            Debug.Log(string.Format("[TRF] {0} IRWrapper.InitWrapper() END", 2));
             //}
             //else
             //    Debug.Log(string.Format("[TRF] {0} InitIRWrapper() IRWrapper.APIReady == true", 1));
@@ -477,12 +1184,113 @@ namespace IkRobotController
         #region mapping servo structure
         private void CreateFKparams()
         {
-            FKparamsIkServo = new List<IKservo>();
+            if (FKparamsIkServo == null)
+                FKparamsIkServo = new List<IKservo>();
 
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < GetJointListLengthFromPartConfig(); i++)
             {
                 FKparamsIkServo.Add(new IKservo(new FKparams()));
             }
+
+        }
+
+        // 	servoList = TRF.CA2.ARoll, TRF.CA2.AYaw, TRF.CA2.APitch, TRF.CA2.CElbow, TRF.CA2.BPitch, TRF.CA2.BYaw, TRF.CA2.BRoll, TRF.CA2.LEE.wCam
+        private bool GetJointListFromPartConfig()
+        {
+            Debug.Log(string.Format("[TRF] GetJointListFromPartConfig() servoList = " + servoList));
+            servoList = servoList.Replace(" ", String.Empty);
+            int i = 0;
+            JointList = servoList.Split(',');
+            if (JointList.Length > 0)
+                foreach (string element in JointList)
+                {
+                    Debug.Log(string.Format("[TRF] GetJointListFromPartConfig() JointList[{0}] = " + JointList[i], i));
+                    i++;
+                }
+            return (JointList.Length > 1);
+        }
+
+        // servoRealAxis = (0 1 0), (1 0 0), (0 0 1), (0 0 -1), (0 0 -1), (1 0 0), (0 1 0), (0 0 0)
+        private bool GetJointRealAxisFromPartConfig()
+        {
+            Debug.Log(string.Format("[TRF]  GetJointRealAxisFromPartConfig() servoRealAxis = " + servoRealAxis));
+            int i = 0;
+            // (0 1 0), (1 0 0), (0 0 1), (0 0 -1), (0 0 -1), (1 0 0), (0 1 0), (0 0 0)
+            string[] servoRealAxisList = servoRealAxis.Split(',');
+            // '(0 1 0)' ' (1 0 0)' ' (0 0 1)' ' (0 0 -1)' ' (0 0 -1)' ' (1 0 0)' ' (0 1 0)' ' (0 0 0)'
+            foreach (string element in servoRealAxisList)
+            {
+                Debug.Log(string.Format("[TRF]  GetJointRealAxisFromPartConfig() element = {0}", element));
+                string[] axisString = element.Replace(" (", String.Empty).Replace("(", String.Empty).Replace(")", String.Empty).Split(' ');
+                Debug.Log(string.Format("[TRF]  GetJointRealAxisFromPartConfig() axisString.Length = {0}", axisString.Length));
+                if (axisString.Length == 3)
+                {
+                    Debug.Log(string.Format("[TRF]  GetJointRealAxisFromPartConfig() [0] = {0}, [1] = {1}, [2] = {2} ", axisString[0], axisString[1], axisString[2]));
+                    if (JointsRealAxis[i] != null)
+                        JointsRealAxis[i] = new Vector3(float.Parse(axisString[0]), float.Parse(axisString[1]), float.Parse(axisString[2]));
+                    else
+                    {
+                        Debug.Log(string.Format("[TRF]  GetJointRealAxisFromPartConfig() JointsRealAxis[{0}] == null", i));
+                        return false;
+                    }
+                }
+                else
+                {
+                    Debug.Log(string.Format("[TRF]  GetJointRealAxisFromPartConfig() axisString.Length != 3"));
+                    return false;
+                }
+                i++;
+            }
+            return (JointList.Length > 1);
+        }
+
+        // minMaxAngles = (-180 180), (-2 145), (-160 2), (-120 120), (-120 120), (-447 447), (0 0)
+        private bool GetMinMaxAnglesFromPartConfig()
+        {
+            Debug.Log(string.Format("[TRF]  GetMinMaxAnglesFromPartConfig() minMaxAngles = " + minMaxAngles));
+            // (-180 180), (-2 145), (2 -160), (-120 120), (-120 120), (-447 447), (0 0)
+            string[] minMaxAnglesArray = minMaxAngles.Split(',');
+            // '-180 180)' '(-2 145)' '(2 -160)' '(-120 120)' '(-120 120)' '(-447 447)' '(0 0)'
+            foreach (string element in minMaxAnglesArray)
+            {
+                Debug.Log(string.Format("[TRF]  GetMinMaxAnglesFromPartConfig() element = {0}", element));
+                string[] minMaxString = element.Replace(" (", String.Empty).Replace("(", String.Empty).Replace(")", String.Empty).Split(' ');
+                Debug.Log(string.Format("[TRF]  GetMinMaxAnglesFromPartConfig() minMaxString.Length = {0}", minMaxString.Length));
+                if (minMaxString.Length == 2)
+                {
+                    Debug.Log(string.Format("[TRF]  GetMinMaxAnglesFromPartConfig() [0] = {0}, [1] = {1}", minMaxString[0], minMaxString[1]));
+                    if (minMaxAnglesList != null)
+                        minMaxAnglesList.Add(new MinMaxAngle(float.Parse(minMaxString[0]), float.Parse(minMaxString[1])));
+                    else
+                    {
+                        Debug.Log(string.Format("[TRF]  GetMinMaxAnglesFromPartConfig() minMaxAnglesList == null"));
+                        return false;
+                    }
+                }
+                else
+                {
+                    Debug.Log(string.Format("[TRF]  GetMinMaxAnglesFromPartConfig() minMaxString.Length != 2"));
+                    return false;
+                }
+            }
+
+            //int i = 0;
+            //foreach (MinMaxAngle element in minMaxAnglesList)
+            //{
+            //    Debug.Log(string.Format("[TRF]  GetMinMaxAnglesFromPartConfig() - {0} - min = {1} max = {2}", i, element.Min, element.Max));
+            //    i++;
+            //}
+
+            return (minMaxAnglesList.Count > 0);
+        }
+
+        private int GetJointListLengthFromPartConfig()
+        {
+            int number = 0;
+
+            number = servoList.Replace(" ", String.Empty).Split(',').Length;
+
+            return number;
         }
 
         private bool CheckServosZeroState(bool stateToTheta = false)
@@ -514,9 +1322,23 @@ namespace IkRobotController
             {
                 for (int i = 0; i < JointList.Length; i++)
                 {
-                    Debug.Log(string.Format("[TRF] CheckExistArm() - JointList[{0}] = " + JointList[i] + " " + ((part.FindChildPart(JointList[i], true) != null) ? "exist" : "not exist"), i));
-                    if (part.FindChildPart(JointList[i], true) == null)
-                        return false;
+                    if (i == 0)
+                    {
+                        if (part.name != JointList[0])
+                        {
+                            Debug.Log(string.Format("[TRF] CheckExistArm() - JointList[{0}] = " + JointList[i] + " " + ((part.FindChildPart(JointList[i], true) != null) ? "exist" : "not exist"), i));
+                            if (part.FindChildPart(JointList[i], true) == null)
+                                return false;
+                        }
+                        else
+                            Debug.Log(string.Format("[TRF] CheckExistArm() - JointList[{0}] = " + JointList[i] + " " + ((part.name == JointList[0]) ? "exist" : "not exist"), i));
+                    }
+                    else
+                    {
+                        Debug.Log(string.Format("[TRF] CheckExistArm() - JointList[{0}] = " + JointList[i] + " " + ((part.FindChildPart(JointList[i], true) != null) ? "exist" : "not exist"), i));
+                        if (part.FindChildPart(JointList[i], true) == null)
+                            return false;
+                    }
                 }
 
                 return true;
@@ -545,7 +1367,8 @@ namespace IkRobotController
                 GetAllChildServo();
                 Debug.Log(string.Format("[TRF] {0} - Get all child servo ({1})", 22, allServos.Count));
 
-                if (allServos.Count >= JointList.Length)
+                //if (allServos.Count >= JointList.Length)
+                if (AllIkServo.Count >= (JointList.Length - 1))
                 {
                     Debug.Log(string.Format("[TRF] {0} - AllIkServo ({1})", 23, AllIkServo.Count));
 
@@ -563,15 +1386,36 @@ namespace IkRobotController
                     // Add EndEffector/LEE/ (last part) to SortIkServo - problem -> if LEE hold other element that will last part
                     SortIkServo.Add(new IKservo(lastPart));
                     Debug.Log(string.Format("[TRF] {0} - END - SortIkServo.Add(new IKservo(lastPart)", 41));
+                    Debug.Log(string.Format("[TRF] {0} - END - SortIkServo.Count = {1}", 41, SortIkServo.Count));
+
+                    // Init angle limit of servos
+                    int i = 0;
+                    if (minMaxAnglesList.Count == SortIkServo.Count)
+                        foreach (IKservo element in SortIkServo)
+                        {
+                            element.MaxAngle = minMaxAnglesList[i].Max;
+                            element.MinAngle = minMaxAnglesList[i].Min;
+                            i++;
+                        }
+                    else
+                        Debug.Log(string.Format("[TRF] - GetArmServos() - minMaxAnglesList.Count != SortIkServo.Count"));
+
+                    foreach (IKservo element in SortIkServo)
+                    {
+                        Debug.Log(string.Format("[TRF] - GetArmServos() - SortIkServo.MinAngle = {0} ~.MaxAngle = {1}", element.MinAngle, element.MaxAngle));
+                    }
                 }
                 else
                 {
-                    Debug.Log(string.Format("[TRF] - GetArmServos() - allServos.Count < JointList.Length"));
+                    Debug.Log(string.Format("[TRF] - GetArmServos() - AllIkServo.Count <= (JointList.Length - 1)"));
                     return false;
                 }
             }
             else
                 return false;
+
+
+
             Debug.Log(string.Format("[TRF]  GetArmServos() - END"));
             return true;
         }
@@ -593,7 +1437,12 @@ namespace IkRobotController
             foreach (IRWrapper.IServo iservo in allServos)
             {
                 //Debug.Log(string.Format("[TRF] {0} - iservo.HostPart.name( " + iservo.HostPart.name + " )", 22));
+                List<Part> partList = new List<Part>();
                 foreach (Part element in part.FindChildParts<Part>(true))
+                    partList.Add(element);
+                // if main element of robot arm is servo then add to list
+                partList.Add(part);
+                foreach (Part element in partList)
                 {
                     //Debug.Log(string.Format("[TRF] {0} - FindChildParts<Part>( " + element.name + " )", 22));
                     // if childparts contain servo and not hinge then add to IKservos
@@ -638,7 +1487,7 @@ namespace IkRobotController
 
         private void SortIKservos()
         {
-            for (int i = 0; i < JointList.Length; i++)
+            for (int i = 0; i < ((JointList[JointList.Length - 2] == JointList[JointList.Length - 1]) ? (JointList.Length - 1) : JointList.Length); i++)
             {
                 foreach (IKservo ikServo in AllIkServo)
                 {
@@ -662,6 +1511,7 @@ namespace IkRobotController
             int i = 0;
 
             // dumping servo structure
+            Debug.Log(string.Format("[TRF] DumpServoStructure() IkServos.Count = {0}", IkServos.Count));
             foreach (IKservo ikServo in IkServos)
             {
                 if (i < (IkServos.Count - 1))
@@ -707,7 +1557,7 @@ namespace IkRobotController
                     }
                 }
 
-                Debug.Log(string.Format("[TRF] {0} - ikServo " + ikServo.part.name, 40));
+                Debug.Log(string.Format("[TRF] {0} - [{1}]ikServo " + ikServo.part.name, 40, i));
                 Debug.Log(string.Format("[TRF] {0} - ParentOffset " + VectorToString(ikServo.fkParams.ParentOffset, "0.00"), 42));
                 Debug.Log(string.Format("[TRF] {0} - Axis " + VectorToString(ikServo.fkParams.Axis, "0.0"), 40));
                 Debug.Log(string.Format("[TRF] {0} - Rotation " + QuaternionToString(ikServo.fkParams.Rotation, "0.00"), 42));
@@ -723,7 +1573,7 @@ namespace IkRobotController
         }
         #endregion mapping servo structure
 
-         private bool initPartConfigButtonColors()
+        private bool initPartConfigButtonColors()
         {
             return (ColorUtility.TryParseHtmlString(controlButtonUpDownColor, out colorControlButtonUpDown)
                 && ColorUtility.TryParseHtmlString(controlButtonLeftRightColor, out colorControlButtonLeftRight)
@@ -733,9 +1583,52 @@ namespace IkRobotController
         // Use this for initialization
         public void Start()
         {
+            Debug.Log(string.Format("[TRF] Start of Start() {0}", counterStart));
+            counterStart++;
+
+            ridbtList = new List<BoolText>();
+
+            ArmMaxLength = workingRange;
+            ArmMaxLengthString = String.Format("{0}", workingRange, "0.0");
+
+            if (robotArmID == "")
+            {
+                Debug.Log(string.Format("[TRF] Start() robotArmID == 'empty'"));
+                return;
+            }
+            else
+                Debug.Log(string.Format("[TRF] Start() robotArmID == '{0}'", robotArmID));
+
+            if (!JointListIsLoaded)
+            {
+                if (!GetJointListFromPartConfig())
+                {
+                    Debug.Log(string.Format("[TRF] Start() - !GetJointListFromPartConfig()"));
+                    return;
+                }
+                else
+                    JointListIsLoaded = true;
+            }
+
+            JointsRealAxis = new Vector3[JointList.Length];
+
+            if (!GetJointRealAxisFromPartConfig())
+                return;
+
+            minMaxAnglesList = new List<MinMaxAngle>();
+
+            GetMinMaxAnglesFromPartConfig();
+
+            theta = new float[JointList.Length];
+            currentTheta = new float[JointList.Length];
+            blocking = new bool[JointList.Length];
+            servoGimbal = new GameObject[JointList.Length];
+
             buttonIsColored = initPartConfigButtonColors();
             IsInitedModule = false;
             msgWindowRectangle = new Rect(msgWindowPosition.x, msgWindowPosition.y, msgWindowSize.x, msgWindowSize.y);
+            cfgWindowRectangle = new Rect(cfgWindowPosition.x, cfgWindowPosition.y, cfgWindowSize.x, cfgWindowSize.y);
+            chkWindowRectangle = new Rect(chkWindowPosition.x, chkWindowPosition.y, chkWindowSize.x, chkWindowSize.y);
 
             if (HighLogic.LoadedSceneIsFlight)
             {
@@ -746,6 +1639,10 @@ namespace IkRobotController
                 NextWindowID++;
                 MsgWindowID = NextWindowID;
                 NextWindowID++;
+                CfgWindowID = NextWindowID;
+                NextWindowID++;
+                ChkWindowID = NextWindowID;
+                NextWindowID++;
 
                 if (part == null)
                     Debug.Log(string.Format("[TRF{1}] {0} Start() part == null", 0, WindowID));
@@ -754,10 +1651,9 @@ namespace IkRobotController
 
                 diagramRectangle = new Rect(10, 525, 290, 70);
 
-                //// Set base angle of joints = 0 degree
-                //theta[0] = theta[1] = theta[2] = theta[3] = theta[4] = theta[5] = theta[6] = theta[7] = 0.0f;
+                for (int i = 0; i < (JointList.Length - 1); i++)
+                    blocking[i] = false;
 
-                blocking[0] = blocking[1] = blocking[2] = blocking[3] = blocking[4] = blocking[5] = blocking[6] = blocking[7] = false;
                 // Init Buttons
                 buttons = new Buttons();
 
@@ -869,6 +1765,14 @@ namespace IkRobotController
                 Debug.Log(string.Format("[TRF] >>> >>> Start() - GetFKParamsFromBuffer() == true"));
                 IsInitedModule = true;
                 Debug.Log(string.Format("[TRF] >>> >>> Start() - IsInitedModule = true"));
+
+                //// list MinMaxAngles
+                //int j = 0;
+                //foreach (IKservo element in SortIkServo)
+                //{
+                //    Debug.Log(string.Format("[TRF] - Start() - SortIkServo[{0}].MinAngle = {1} ~.MaxAngle = {2}", j, SortIkServo[j].MinAngle, SortIkServo[j].MaxAngle));
+                //    j++;
+                //}
             }
         }
 
@@ -978,21 +1882,20 @@ namespace IkRobotController
                 Debug.Log(string.Format("[TRF] Update() -  (globalPosition, globalQuaternion) init"));
 
                 Events["TurnOnIKRCEvent"].active = true;
-            }
 
-            //// Dump Button enable / disable
-            //if (HighLogic.LoadedSceneIsFlight && (theta[0] == 0 && theta[1] == 0 && theta[2] == 0 && theta[3] == 0 && theta[4] == 0 && theta[5] == 0 && theta[6] == 0 && theta[7] == 0))
-            //{
-            //    Events["DumpServoStructureEvent"].active = true;
-            //}
-            //else
-            //{
-            //    Events["DumpServoStructureEvent"].active = false;
-            //}
+                //// list MinMaxAngles
+                //int k = 0;
+                //foreach (IKservo element in SortIkServo)
+                //{
+                //    Debug.Log(string.Format("[TRF] - Update() IsInitedModule1st - SortIkServo[{0}].MinAngle = {1} ~.MaxAngle = {2}", k, SortIkServo[k].MinAngle, SortIkServo[k].MaxAngle));
+                //    k++;
+                //}
+            }
 
             if (ircWindowActive && HighLogic.LoadedSceneIsFlight && IsInitedModule)
             {
                 // Set Aim Object (PDGFx)
+                //Debug.Log(string.Format("[TRF] Update() - // Set Aim Object (PDGFx)"));
                 GameObject mouseObject = CheckForObjectUnderCursor();
                 bool modPressed = Input.GetKey(KeyCode.LeftAlt);
                 if (modPressed && (mouseObject != null))
@@ -1016,6 +1919,7 @@ namespace IkRobotController
                 }
 
                 // emergency servo stop
+                //Debug.Log(string.Format("[TRF] Update() - // emergency servo stop"));
                 if (emergencyServoStop)
                 {
                     IK_active = false;
@@ -1025,12 +1929,13 @@ namespace IkRobotController
                 }
 
                 // set base state
+                //Debug.Log(string.Format("[TRF] Update() - // set base state"));
                 if (baseStateBool)
                 {
                     globalPosition = basePosition;
                     globalQuaternion = baseQuaternion;
 
-                    for (int i = 0; i < 8; i++)
+                    for (int i = 0; i < JointList.Length; i++)
                         theta[i] = 0f;
 
                     IK_active = false;
@@ -1040,6 +1945,7 @@ namespace IkRobotController
                 }
 
                 // set actual state
+                //Debug.Log(string.Format("[TRF] Update() - // set actual state"));
                 if (actualStateBool)
                 {
                     FKvector = ForwardKinematics(theta, SortIkServo);
@@ -1049,6 +1955,7 @@ namespace IkRobotController
                     IK_active = false;
                 }
 
+                //Debug.Log(string.Format("[TRF] Update() - #region PdgfAimObject"));
                 #region PdgfAimObject
                 // set pdgf state - set aim object -> deactivate IK function
                 if (pdgfStateBool && (dockingNodeObject != null))
@@ -1155,7 +2062,7 @@ namespace IkRobotController
                     }
                 }
                 #endregion PdgfAimObject
-
+                //Debug.Log(string.Format("[TRF] Update() - #region VirtualEndEffector"));
                 #region VirtualEndEffector
                 // set selected part than virtual endeffector
                 if (veeStateBool && (dockingNodeObject != null) && !VeeIsActive)
@@ -1230,14 +2137,14 @@ namespace IkRobotController
                     globalQuaternion = SortIkServo[SortIkServo.Count - 1].ServoTransform.rotation;
                 }
                 #endregion VirtualEndEffector
-
+                //Debug.Log(string.Format("[TRF] Update() - #region RobotArm MovingButtons"));
                 #region RobotArm MovingButtons
                 // detect button activity
                 IKButton_active = !ButtonsIsReleased();
 
                 // Kiterjesztett endeffektor esetén ez a funkció tiltott kell, hogy legyen !!! ???
                 // if rotate only servo of LEE then not IK only rotate servo to direct
-                if (buttons.Rotation == Quaternion.Euler(0f, 0f, 0.5f * rotStep) || buttons.Rotation == Quaternion.Euler(0f, 0f, -0.5f * rotStep))
+                if ((buttons.Rotation == Quaternion.Euler(0f, 0f, 0.5f * rotStep) || buttons.Rotation == Quaternion.Euler(0f, 0f, -0.5f * rotStep)) && robotArmID == "CA2")
                 {
                     theta[6] += (360f - buttons.Rotation.eulerAngles.z) > 180f ? buttons.Rotation.eulerAngles.z : (buttons.Rotation.eulerAngles.z - 360f);
                     // implement angle of joints
@@ -1257,6 +2164,7 @@ namespace IkRobotController
                 #region Active Inverse Kinematics
                 if (IK_active || IKButton_active)
                 {
+                    //Debug.Log(string.Format("[TRF] Update() - #region Active Inverse Kinematics"));
                     // calculate position- and orientation different
                     distance = Vector3.Distance(SortIkServo[SortIkServo.Count - 1].ServoTransform.position, globalPosition);
                     //angle = Quaternion.Angle(Quaternion.Euler(SortIkServo[SortIkServo.Count - 2].ServoTransform.rotation.eulerAngles), globalQuaternion);
@@ -1270,12 +2178,12 @@ namespace IkRobotController
                         // start iterate from zero thetas
                         if (zeroThetaIterate && IKsuccess)
                         {
-                            for (int i = 0; i < 8; i++)
+                            for (int i = 0; i < JointList.Length; i++)
                                 theta[i] = 0f;
                         }
                         // clear thetas
                         if (clearThetasBool)
-                            for (int i = 0; i < 8; i++)
+                            for (int i = 0; i < JointList.Length; i++)
                                 theta[i] = 0f;
 
                         //if(IKButton_active)
@@ -1334,7 +2242,7 @@ namespace IkRobotController
                         {
                             failedIterateCycle = 0;
 
-                            for (int i = 0; i < 8; i++)
+                            for (int i = 0; i < JointList.Length; i++)
                                 theta[i] = 0f;
                         }
 
@@ -1354,6 +2262,7 @@ namespace IkRobotController
                 #region Inactive Inverse Kinematics
                 else
                 {
+                    //Debug.Log(string.Format("[TRF] Update() - #region Inactive Inverse Kinematics"));
                     // clear buttons.Translation & .Rotation
                     ButtonsReleased();
                     //Debug.Log(string.Format("[TRF] {0} - ButtonsReleased()", 100));
@@ -1363,22 +2272,22 @@ namespace IkRobotController
                     // implement angle of joints
                     Bug = !ImplementServoRotation(SortIkServo, theta, servoSpeed);
 
-                    for (int i = 0; i < 7; i++)
-                    {
-                        if (blocking[i])
-                        {
-                            SortIkServo[i].MaxAngle = 0f;
-                            SortIkServo[i].MinAngle = 0f;
-                        }
-                        else
-                        {
-                            SortIkServo[i].MaxAngle = 270f;
-                            SortIkServo[i].MinAngle = -270f;
-                        }
-                    }
+                    //for (int i = 0; i < (JointList.Length - 1); i++)
+                    //{
+                    //    if (blocking[i])
+                    //    {
+                    //        SortIkServo[i].MaxAngle = 0f;
+                    //        SortIkServo[i].MinAngle = 0f;
+                    //    }
+                    //    else
+                    //    {
+                    //        SortIkServo[i].MaxAngle = 270f;
+                    //        SortIkServo[i].MinAngle = -270f;
+                    //    }
+                    //}
                 }
                 #endregion Inactive Inverse Kinematics
-
+                //Debug.Log(string.Format("[TRF] Update() - #region Refresh LineDiagram Data"));
                 #region Refresh LineDiagram Data
                 // Refresh data List of LineDiagram
                 if (data != null)
@@ -1500,19 +2409,19 @@ namespace IkRobotController
                 CreateFKparams();
 
             if (part == null)
-                Debug.Log(string.Format("[TRF{1}] {0} START Update() part == null", 0, WindowID));
+                Debug.Log(string.Format("[TRF{1}] {0} START DumpServoStructureEvent() part == null", 0, WindowID));
             else
-                Debug.Log(string.Format("[TRF{1}] {0} START Update() part.name = " + part.name, 0, WindowID));
+                Debug.Log(string.Format("[TRF{1}] {0} START DumpServoStructureEvent() part.name = " + part.name, 0, WindowID));
 
             // check exist arm on part
             if (!CheckExistArm())
             {
-                Debug.Log(string.Format("[TRF] {0} Don't Exist Arm on PART", 0));
+                Debug.Log(string.Format("[TRF] {0} DumpServoStructureEvent() - Don't Exist Arm on PART", 0));
                 return;
             }
             else
             {
-                Debug.Log(string.Format("[TRF] {0} Exist Arm on PART", 0));
+                Debug.Log(string.Format("[TRF] {0} DumpServoStructureEvent() - Exist Arm on PART", 0));
             }
 
             //Debug.Log(string.Format("[TRF] {0} IRWrapper.InitWrapper() START", 1));
@@ -1521,18 +2430,19 @@ namespace IkRobotController
 
             if (IRWrapper.APIReady)
             {
-                Debug.Log(string.Format("[TRF] {0} - IRWrapper.APIReady", 21));
+                Debug.Log(string.Format("[TRF] {0} - DumpServoStructureEvent() - IRWrapper.APIReady", 21));
                 AllIkServo = new List<IKservo>();
                 allServos = new List<IRWrapper.IServo>();
                 SortIkServo = new List<IKservo>();
-                Debug.Log(string.Format("[TRF] {0} - Inited ServoLists", 21));
+                Debug.Log(string.Format("[TRF] {0} - DumpServoStructureEvent() - Inited ServoLists", 21));
 
                 GetAllChildServo();
-                Debug.Log(string.Format("[TRF] {0} - Get all child servo ({1})", 22, allServos.Count));
+                Debug.Log(string.Format("[TRF] {0} - DumpServoStructureEvent() - Get all child servo ({1})", 22, allServos.Count));
 
-                if (allServos.Count >= JointList.Length)
+                //if (allServos.Count >= JointList.Length)
+                if (AllIkServo.Count >= (JointList.Length - 1))
                 {
-                    Debug.Log(string.Format("[TRF] {0} - AllIkServo ({1})", 23, AllIkServo.Count));
+                    Debug.Log(string.Format("[TRF] {0} - DumpServoStructureEvent() - AllIkServo ({1})", 23, AllIkServo.Count));
 
                     SortIKservos();
 
@@ -1543,7 +2453,7 @@ namespace IkRobotController
                     //lastPart = listOfChildrenPart[elementCount - 1];
                     lastPart = listOfChildrenPart.Find(e => e.name == JointList[JointList.Length - 1]);
 
-                    Debug.Log(string.Format("[TRF] {0} - lastPart " + lastPart.name, 40));
+                    Debug.Log(string.Format("[TRF] {0} - DumpServoStructureEvent() - lastPart " + lastPart.name, 40));
 
                     // Add EndEffector/LEE/ (last part) to SortIkServo - problem -> if LEE hold other element that will last part
                     SortIkServo.Add(new IKservo(lastPart));
@@ -1559,13 +2469,17 @@ namespace IkRobotController
 
                         SetFKParamsToBuffer();
                         OnSave(null);
-                        Debug.Log(string.Format("[TRF] {0} Servo Structure Dumped", 50));
-                        MsgWindow(new Vector2(1920f / 2f, 1080f / 2f), "Servo dumping message", "Servo Structure Dumped");
+                        Debug.Log(string.Format("[TRF] {0} DumpServoStructureEvent() - Servo Structure Dumped", 50));
+                        //MsgWindow(new Vector2(1920f / 2f, 1080f / 2f), "Servo dumping message", "Servo Structure Dumped");
+                        MsgWindow(new Vector2(Screen.width / 2f, Screen.height / 2f), "Servo dumping message", "Servo Structure Dumped");
                     }
                     else
-                        MsgWindow(new Vector2(1920f / 2f, 1080f / 2f), "Servo dumping message", "Servo Structure Not Dumped");
+                        //MsgWindow(new Vector2(1920f / 2f, 1080f / 2f), "Servo dumping message", "Servo Structure Not Dumped");
+                        MsgWindow(new Vector2(Screen.width / 2f, Screen.height / 2f), "Servo dumping message", "Servo Structure Not Dumped");
 
                 }
+                else
+                    Debug.Log(string.Format("[TRF] - DumpServoStructureEvent() - AllIkServo.Count <= (JointList.Length - 1)"));
             }
             else
                 return;
@@ -1573,7 +2487,7 @@ namespace IkRobotController
             if (GetFKParamsFromBuffer())
             {
                 IsInitedModule = true;
-                Debug.Log(string.Format("[TRF] Start() - IsInitedModule = true"));
+                Debug.Log(string.Format("[TRF] DumpServoStructureEvent() - IsInitedModule = true"));
             }
         }
 
@@ -1668,42 +2582,95 @@ namespace IkRobotController
                         DrawTools.DrawTransform(global.transform, 0.2f);
                         //DrawTools.DrawSphere(global.transform.position, Color.red, 0.05f);
                     }
+
+                    if (debugTransforms)
+                    {
+                        // Show part.transform
+                        if (part != null)
+                            DrawTools.DrawTransform(part.transform, 1.0f);
+                        // Show Global Zero Transform
+                        if (gameObject == null)
+                        {
+                            gameObject = new GameObject();
+                            gameObject.transform.position = new Vector3(0f, 0f, 0f);
+                            gameObject.transform.rotation = Quaternion.identity;
+                        }
+                        else
+                            DrawTools.DrawTransform(gameObject.transform, 2.0f);
+                    }
                 }
             }
         }
 
         public override void OnSave(ConfigNode node)
         {
-            if ((HighLogic.LoadedSceneIsFlight && IsInitedModule) || HighLogic.LoadedSceneIsEditor)
+            //base.OnSave(node);
+
+            Debug.Log(string.Format("[TRF] Start of OnSave() {0}", counterOnSave));
+            counterOnSave++;
+
+            if (HighLogic.LoadedSceneIsFlight && IsInitedModule)
             {
                 PluginConfiguration config = PluginConfiguration.CreateForType<IkRobotController>();
 
-                // save window parameters from buffer to config.xml
-                config.SetValue("IRC Window Position", windowPosition);
-                Debug.Log(string.Format("[TRF] {0} - OnSave() windowPosition {1}, {2}", 0, windowPosition.x, windowPosition.y));
-
-                // save FK parameters from buffer to config.xml
-                if (FKparamsIkServo != null)
+                if (configXML != null && configXML.ContentIsLoaded)
                 {
-                    if (FKparamsIkServo.Count == 8)
+                    Debug.Log(string.Format("[TRF] OnSave() configXML != null && ContentIsLoaded"));
+
+                    // save window parameters from buffer to config.xml
+                    //config.SetValue(robotArmID + "-" + "IRC Window Position", windowPosition);
+                    configXML.SetValue(robotArmID + "-" + "IRC-Window-Position", windowPosition);
+                    Debug.Log(string.Format("[TRF] {0} - OnSave() {3}windowPosition {1}, {2}", 0, windowPosition.x, windowPosition.y, robotArmID + "-"));
+
+                    // save FK parameters from buffer to config.xml
+                    if (FKparamsIkServo != null && JointList != null)
                     {
-                        int servoNumber = 0;
-                        foreach (IKservo ikServo in FKparamsIkServo)
+                        if (FKparamsIkServo.Count == JointList.Length)
                         {
-                            config.SetValue(servoNumber.ToString() + "-Servo-Params-PartRotation", ikServo.fkParams.PartRotation);
-                            config.SetValue(servoNumber.ToString() + "-Servo-Params-ParentOffset", ikServo.fkParams.ParentOffset);
-                            config.SetValue(servoNumber.ToString() + "-Servo-Params-Axis", ikServo.fkParams.Axis);
-                            //config.SetValue(servoNumber.ToString() + "-Servo-Params-Position", ikServo.fkParams.Position);
-                            config.SetValue(servoNumber.ToString() + "-Servo-Params-Rotation", ikServo.fkParams.Rotation);
+                            int servoNumber = 0;
+                            foreach (IKservo ikServo in FKparamsIkServo)
+                            {
+                                //config.SetValue(robotArmID + "-" + servoNumber.ToString() + "-Servo-Params-PartRotation", ikServo.fkParams.PartRotation);
+                                configXML.SetValue(robotArmID + "-" + servoNumber.ToString() + "-Servo-Params-PartRotation", ikServo.fkParams.PartRotation);
+                                Debug.Log(string.Format("[TRF] - OnSave() {0}{1}-Servo-Params-PartRotation - {2}", robotArmID + "-", servoNumber.ToString(), ikServo.fkParams.PartRotation));
+                                //config.SetValue(robotArmID + "-" + servoNumber.ToString() + "-Servo-Params-ParentOffset", ikServo.fkParams.ParentOffset);
+                                configXML.SetValue(robotArmID + "-" + servoNumber.ToString() + "-Servo-Params-ParentOffset", ikServo.fkParams.ParentOffset);
+                                Debug.Log(string.Format("[TRF] - OnSave() {0}{1}-Servo-Params-ParentOffset - {2}", robotArmID + "-", servoNumber.ToString(), ikServo.fkParams.ParentOffset));
+                                //config.SetValue(robotArmID + "-" + servoNumber.ToString() + "-Servo-Params-Axis", ikServo.fkParams.Axis);
+                                configXML.SetValue(robotArmID + "-" + servoNumber.ToString() + "-Servo-Params-Axis", ikServo.fkParams.Axis);
+                                Debug.Log(string.Format("[TRF] - OnSave() {0}{1}-Servo-Params-Axis - {2}", robotArmID + "-", servoNumber.ToString(), ikServo.fkParams.Axis));
+                                ////config.SetValue(robotArmID + "-" + servoNumber.ToString() + "-Servo-Params-Position", ikServo.fkParams.Position);
+                                //config.SetValue(robotArmID + "-" + servoNumber.ToString() + "-Servo-Params-Rotation", ikServo.fkParams.Rotation);
+                                configXML.SetValue(robotArmID + "-" + servoNumber.ToString() + "-Servo-Params-Rotation", ikServo.fkParams.Rotation);
+                                Debug.Log(string.Format("[TRF] - OnSave() {0}{1}-Servo-Params-Rotation - {2}", robotArmID + "-", servoNumber.ToString(), ikServo.fkParams.Rotation));
 
-                            servoNumber++;
+                                servoNumber++;
+                            }
+
+                            configXML.SaveVariables(config);
+                            config.save();
+
+                            ridbtList.Clear();
+                            foreach (string element in configXML.robotIDList)
+                            {
+                                ridbtList.Add(new BoolText(false, element));
+                            }
+
+                            Debug.Log(string.Format("[TRF] {0} end of OnSave()", 0));
                         }
-
-                        config.save();
-
-                        Debug.Log(string.Format("[TRF] {0} end of OnSave()", 0));
                     }
                 }
+                else
+                {
+                    Debug.Log(string.Format("[TRF] OnSave() configXML {0}", configXML == null ? "== null" : "!= null"));
+                    if (configXML != null)
+                        Debug.Log(string.Format("[TRF] OnSave() ContentIsLoaded == {0}", configXML.ContentIsLoaded ? "true" : "false"));
+                }
+            }
+            else
+            {
+                Debug.Log(string.Format("[TRF] - OnLoad() HighLogic.LoadedSceneIsFlight = {0}", HighLogic.LoadedSceneIsFlight.ToString()));
+                Debug.Log(string.Format("[TRF] - OnLoad() IsInitedModule = {0}", IsInitedModule.ToString()));
             }
 
             Debug.Log(string.Format("[TRF] - OnSave() " + HighLogic.LoadedScene.ToString()));
@@ -1713,54 +2680,112 @@ namespace IkRobotController
 
         public override void OnLoad(ConfigNode node)
         {
-            Debug.Log(string.Format("[TRF] {0} Start of OnLoad()", 0));
+            //base.OnLoad(node);
 
-            //if (HighLogic.LoadedSceneIsFlight /*|| HighLogic.LoadedSceneIsEditor*/)
+            Debug.Log(string.Format("[TRF] Start of OnLoad() {0}", counterOnLoad));
+            counterOnLoad++;
+
+            //if (HighLogic.LoadedSceneIsFlight)
             //{
+            Debug.Log(string.Format("[TRF] - OnLoad() HighLogic.LoadedSceneIsFlight = {0}", HighLogic.LoadedSceneIsFlight.ToString()));
+
+            if (configXML == null)
+                configXML = new ConfigXML();
+
             PluginConfiguration config = PluginConfiguration.CreateForType<IkRobotController>();
 
             config.load();
 
-            // load window parameters from config.xml to buffer
-            windowPosition = config.GetValue<Vector2>("IRC Window Position");
-            Debug.Log(string.Format("[TRF] {0} - OnLoad() windowPosition {1}, {2}", 42, windowPosition.x, windowPosition.y));
-
-            if (FKparamsIkServo == null)
-                CreateFKparams();
-
-            // load FK parameters from config.xml to buffer
-            int servoNumber = 0;
-            foreach (IKservo ikServo in FKparamsIkServo)
+            if (configXML != null)
             {
-                ikServo.fkParams.PartRotation = config.GetValue<Quaternion>(servoNumber.ToString() + "-Servo-Params-PartRotation");
-                ikServo.fkParams.ParentOffset = config.GetValue<Vector3>(servoNumber.ToString() + "-Servo-Params-ParentOffset");
-                ikServo.fkParams.Axis = config.GetValue<Vector3>(servoNumber.ToString() + "-Servo-Params-Axis");
-                //ikServo.fkParams.Position = config.GetValue<Vector3>(servoNumber.ToString() + "-Servo-Params-Position");
-                ikServo.fkParams.Rotation = config.GetValue<Quaternion>(servoNumber.ToString() + "-Servo-Params-Rotation");
+                configXML.LoadVariables(config);
 
-                Debug.Log(string.Format("[TRF] {0} - OnLoad() " + VectorToString(ikServo.fkParams.ParentOffset, "0.00"), 42));
+                // load window parameters from config.xml to buffer
+                //windowPosition = config.GetValue<Vector2>(robotArmID + "-" + "IRC Window Position");
+                windowPosition = configXML.GetVector2(robotArmID + "-" + "IRC-Window-Position");
+                Debug.Log(string.Format("[TRF] {0} - OnLoad() {3}windowPosition {1}, {2}", 42, windowPosition.x, windowPosition.y, robotArmID + "-"));
 
-                servoNumber++;
-            }
+                if (FKparamsIkServo == null)
+                    CreateFKparams();
 
-            GetWinParamsFromBuffer();
-            ircWindowActive = false;
-            nodeInner = node;
-            //}
+                // load FK parameters from config.xml to buffer
+                int servoNumber = 0;
+                Debug.Log(string.Format("[TRF] - OnLoad() robotArmID = {0}", robotArmID));
 
-            Debug.Log(string.Format("[TRF] {0} end of OnLoad()", 0));
+                JointListIsLoaded = GetJointListFromPartConfig();
 
-            Debug.Log(string.Format("[TRF] - OnLoad() " + HighLogic.LoadedScene.ToString()));
-            Debug.Log(string.Format("[TRF] - OnLoad() {0}", onLoadCounter));
-            onLoadCounter++;
-
-            foreach (IKservo ikServo in FKparamsIkServo)
-            {
-                if (ikServo.fkParams.ParentOffset != (new Vector3(0f, 0f, 0f)))
+                if (!JointListIsLoaded)
                 {
-                    IsLoadedFkParams = true;
-                    return;
+                    if (!GetJointListFromPartConfig())
+                    {
+                        Debug.Log(string.Format("[TRF] OnLoad() - !GetJointListFromPartConfig()"));
+                        return;
+                    }
+                    else
+                        JointListIsLoaded = true;
                 }
+
+                // check exist variables with robotArmID
+                if (!configXML.CheckExistVariables(robotArmID, "IRC-Window-Position") || !configXML.CheckExistVariables(robotArmID, JointVariableNames, JointList.Length))
+                {
+                    if (!configXML.CreateVariables(robotArmID, "IRC-Window-Position", "Vector2"))
+                        Debug.Log(string.Format("[TRF] - Start() configXML.CreateVariables() IRC-Window-Position fault"));
+                    if (!configXML.CreateVariables(robotArmID, JointVariableNames, JointVariableTypes, JointList.Length))
+                        Debug.Log(string.Format("[TRF] - Start() configXML.CreateVariables() JointVariables fault"));
+                }
+                else
+                    Debug.Log(string.Format("[TRF] - Start() configXML.CheckExistVariables() OK"));
+
+                foreach (IKservo ikServo in FKparamsIkServo)
+                {
+                    //ikServo.fkParams.PartRotation = config.GetValue<Quaternion>(robotArmID + "-" + servoNumber.ToString() + "-Servo-Params-PartRotation");
+                    ikServo.fkParams.PartRotation = configXML.GetQuaternion(robotArmID + "-" + servoNumber.ToString() + "-Servo-Params-PartRotation");
+                    Debug.Log(string.Format("[TRF] - OnLoad() {0}{1}-Servo-Params-PartRotation - {2}", robotArmID + "-", servoNumber.ToString(), ikServo.fkParams.PartRotation));
+                    //ikServo.fkParams.ParentOffset = config.GetValue<Vector3>(robotArmID + "-" + servoNumber.ToString() + "-Servo-Params-ParentOffset");
+                    ikServo.fkParams.ParentOffset = configXML.GetVector3(robotArmID + "-" + servoNumber.ToString() + "-Servo-Params-ParentOffset");
+                    Debug.Log(string.Format("[TRF] - OnLoad() {0}{1}-Servo-Params-ParentOffset - {2}", robotArmID + "-", servoNumber.ToString(), ikServo.fkParams.ParentOffset));
+                    //ikServo.fkParams.Axis = config.GetValue<Vector3>(robotArmID + "-" + servoNumber.ToString() + "-Servo-Params-Axis");
+                    ikServo.fkParams.Axis = configXML.GetVector3(robotArmID + "-" + servoNumber.ToString() + "-Servo-Params-Axis");
+                    Debug.Log(string.Format("[TRF] - OnLoad() {0}{1}-Servo-Params-Axis - {2}", robotArmID + "-", servoNumber.ToString(), ikServo.fkParams.Axis));
+                    ////ikServo.fkParams.Position = config.GetValue<Vector3>(robotArmID + "-" + servoNumber.ToString() + "-Servo-Params-Position");
+                    //ikServo.fkParams.Rotation = config.GetValue<Quaternion>(robotArmID + "-" + servoNumber.ToString() + "-Servo-Params-Rotation");
+                    ikServo.fkParams.Rotation = configXML.GetQuaternion(robotArmID + "-" + servoNumber.ToString() + "-Servo-Params-Rotation");
+                    Debug.Log(string.Format("[TRF] - OnLoad() {0}{1}-Servo-Params-Rotation - {2}", robotArmID + "-", servoNumber.ToString(), ikServo.fkParams.Rotation));
+
+                    Debug.Log(string.Format("[TRF] {0} - OnLoad() " + VectorToString(ikServo.fkParams.ParentOffset, "0.00"), 42));
+
+                    servoNumber++;
+                }
+
+                GetWinParamsFromBuffer();
+                ircWindowActive = false;
+                nodeInner = node;
+
+                Debug.Log(string.Format("[TRF] {0} end of OnLoad()", 0));
+
+                Debug.Log(string.Format("[TRF] - OnLoad() " + HighLogic.LoadedScene.ToString()));
+                Debug.Log(string.Format("[TRF] - OnLoad() {0}", onLoadCounter));
+                onLoadCounter++;
+
+                foreach (IKservo ikServo in FKparamsIkServo)
+                {
+                    if (ikServo.fkParams.ParentOffset != (new Vector3(0f, 0f, 0f)))
+                    {
+                        IsLoadedFkParams = true;
+                        return;
+                    }
+                }
+            }
+            else
+                Debug.Log(string.Format("[TRF] OnLoad() configXML == null"));
+            //}
+            //else
+            //    Debug.Log(string.Format("[TRF] - OnLoad() HighLogic.LoadedSceneIsFlight = {0}", HighLogic.LoadedSceneIsFlight.ToString()));
+
+            ridbtList.Clear();
+            foreach (string element in configXML.robotIDList)
+            {
+                ridbtList.Add(new BoolText(false, element));
             }
         }
 
@@ -1895,7 +2920,20 @@ namespace IkRobotController
             if (msgWindowActive)
             {
                 // Draw message window
-                msgWindowRectangle = GUILayout.Window(MsgWindowID, msgWindowRectangle, OnMsgWindow, msgWindowTitle);
+                //msgWindowRectangle = GUILayout.Window(MsgWindowID, msgWindowRectangle, OnMsgWindow, msgWindowTitle);
+                msgWindowRectangle = GUILayout.Window(MsgWindowID, new Rect(msgWindowPosition, new Vector2(msgWindowRectangle.width, msgWindowRectangle.height)), OnMsgWindow, msgWindowTitle);
+            }
+
+            if (chkWindowActive)
+            {
+                // Draw check window
+                chkWindowRectangle = GUILayout.Window(ChkWindowID, new Rect(chkWindowPosition, new Vector2(chkWindowRectangle.width, chkWindowRectangle.height)), OnChkWindow, chkWindowTitle);
+            }
+
+            if (cfgWindowActive)
+            {
+                // Draw window
+                cfgWindowRectangle = GUILayout.Window(CfgWindowID, cfgWindowRectangle, OnCfgWindow, "Manage Config File");
             }
         }
 
@@ -2077,6 +3115,20 @@ namespace IkRobotController
                     AddOutputValue(inputRect, "IK_DinLearningRatePos", DinLearningRatePos, 150f);
                     AddOutputValue(inputRect, "IK_DinLearningRateOri", DinLearningRateOri, 150f);
                     #endregion IK display of parameters
+
+                    //// MinMax values
+                    //Yoffset = 0;
+                    //inputRect = new Rect(320, 245, 50, 20);
+                    //for (int i = 0; i < (JointList.Length - 1); i++)
+                    //{
+                    //    AddOutputValue(inputRect, "min[" + i.ToString() + "]", SortIkServo[i].MinAngle, 4f);
+                    //}
+                    //Yoffset = 0;
+                    //inputRect = new Rect(420, 245, 50, 20);
+                    //for (int i = 0; i < (JointList.Length - 1); i++)
+                    //{
+                    //    AddOutputValue(inputRect, "max[" + i.ToString() + "]", SortIkServo[i].MaxAngle, 4f);
+                    //}
                 }
                 #endregion window extender
 
@@ -2084,34 +3136,72 @@ namespace IkRobotController
                 // Theta values
                 Yoffset = 0;
                 inputRect = new Rect(10, 365, 50, 20);
-                for (int i = 0; i < 7; i++)
+                for (int i = 0; i < (JointList.Length - 1); i++)
                 {
                     if (IK_active)
-                        AddOutputValue(inputRect, "Ɵ[" + i.ToString() + "]", theta[i], 30f);
+                        AddOutputValue(inputRect, "Ɵ[" + i.ToString() + "]", theta[i], 49f);
                     else
                     {
                         thetaString[i] = theta[i].ToString("0.000");
-                        AddInputValue(inputRect, thetaString[i], out thetaString[i], "Ɵ[" + i.ToString() + "]", out theta[i], 30f);
+                        AddInputValue(inputRect, thetaString[i], out thetaString[i], "Ɵ[" + i.ToString() + "]", out theta[i], 49f);
+                        theta[i] = Mathf.Clamp(theta[i], SortIkServo[i].MinAngle, SortIkServo[i].MaxAngle);
                     }
                 }
+                // Control buttons of theta
+                Yoffset = 0;
+                inputRect = new Rect(37, 365, 20, 20);
+                for (int i = 0; i < (JointList.Length - 1); i++)
+                {
+                    if (IK_active)
+                        AddRepeatButton(inputRect, "◄");
+                    else
+                    {
+                        if (AddRepeatButton(inputRect, "◄"))
+                        {
+                            theta[i] = theta[i] - 0.25f * rotStep;
+                            theta[i] = Mathf.Clamp(theta[i], SortIkServo[i].MinAngle, SortIkServo[i].MaxAngle);
+                            //Debug.Log(string.Format("[TRF] OnWindow() - {0}. - MinAngle = {1} ({3}) MaxAngle = {2}", i, SortIkServo[i].MinAngle, SortIkServo[i].MaxAngle, theta[i]));
+                        }
+                    }
 
+                }
+                Yoffset = 0;
+                inputRect = new Rect(111, 365, 20, 20);
+                for (int i = 0; i < (JointList.Length - 1); i++)
+                {
+                    if (IK_active)
+                        AddRepeatButton(inputRect, "►");
+                    else
+                    {
+                        if (AddRepeatButton(inputRect, "►"))
+                        {
+                            theta[i] = theta[i] + 0.25f * rotStep;
+                            theta[i] = Mathf.Clamp(theta[i], SortIkServo[i].MinAngle, SortIkServo[i].MaxAngle);
+                            //Debug.Log(string.Format("[TRF] OnWindow() - {0}. - MinAngle = {1} ({3}) MaxAngle = {2}", i, SortIkServo[i].MinAngle, SortIkServo[i].MaxAngle, theta[i]));
+                        }
+                    }
+
+                }
                 // Theta current values
                 Yoffset = 0;
                 inputRect = new Rect(110, 365, 50, 20);
-                for (int i = 0; i < 7; i++)
+                for (int i = 0; i < (JointList.Length - 1); i++)
                 {
-                    AddOutputValue(inputRect, "Ɵ[" + i.ToString() + "]", currentTheta[i], 30f);
+                    //AddOutputValue(inputRect, "Ɵ[" + i.ToString() + "]", currentTheta[i], 30f);
+                    AddOutputValue(inputRect, "", currentTheta[i], 30f);
                 }
 
                 //Theta blocker
-                blocking[0] = GUI.Toggle(new Rect(92, 365, 20, 20), blocking[0], "");
-                blocking[1] = GUI.Toggle(new Rect(92, 385, 20, 20), blocking[1], "");
-                blocking[2] = GUI.Toggle(new Rect(92, 405, 20, 20), blocking[2], "");
-                blocking[3] = GUI.Toggle(new Rect(92, 425, 20, 20), blocking[3], "");
-                blocking[4] = GUI.Toggle(new Rect(92, 445, 20, 20), blocking[4], "");
-                blocking[5] = GUI.Toggle(new Rect(92, 465, 20, 20), blocking[5], "");
-                blocking[6] = GUI.Toggle(new Rect(92, 485, 20, 20), blocking[6], "");
+                //for (int i = 0; i < (JointList.Length - 1); i++)
+                //{
+                //    blocking[i] = GUI.Toggle(new Rect(92, 365 + (i * 20), 20, 20), blocking[i], "");
+                //}
                 #endregion Theta values
+
+                #region Debug Text
+                //string dbgText = String.Format("{0} {1}", VectorToString(SortIkServo[0].fkParams.Axis, "0.00"), VectorToString(JointsRealAxis[0], "0"));
+                //GUI.Label(new Rect(20, 500, 290, 20), dbgText);
+                #endregion Debug Text
 
                 #region position information
                 Yoffset = 0;
@@ -2152,27 +3242,116 @@ namespace IkRobotController
                 Color[] color = { Color.red, Color.yellow };
                 LineDiagram(diagramRectangle, data, color);
 
+                manageConfig = GUI.Button(new Rect(225, 495, 70, 20), "manCfg");
+
+                if (manageConfig)
+                {
+                    cfgWindowActive = true;
+                    foreach (BoolText element in ridbtList)
+                    {
+                        element.active = false;
+                    }
+                }
+
                 GUILayout.EndHorizontal();
 
                 GUI.DragWindow();
             }
         }
 
+        public void OnCfgWindow(int cfgWindowID)
+        {
+            GUILayout.BeginHorizontal();
+
+            closeCfgWindowButtonPosition = new Vector2(cfgWindowSize.x - 20, 3);
+
+            // Close window button
+            if (GUI.Button(new Rect(closeCfgWindowButtonPosition.x, closeCfgWindowButtonPosition.y, 17, 15), "x"))
+            {
+                cfgWindowActive = false;
+                chkWindowResult = false;
+            }
+
+            RIDScrollPosition = ToggleListScrollScope(ridbtList, new Rect(10, 20, 150, 150), RIDScrollPosition, true, true);
+
+            bool deleteSelected = GUI.Button(new Rect(180, 20, 60, 20), "delete");
+            // ??? close button
+
+            if (deleteSelected)
+            {
+                bool result = false;
+                for (int i = 0; i < ridbtList.Count; i++)
+                {
+                    result = ridbtList[i].active;
+                    break;
+                }
+                if (result)
+                    ChkWindow(new Vector2(Screen.width / 2f, Screen.height / 2f), "Delete selected configuration", "Are you sure delete the selected configuration?");
+            }
+
+            if (chkWindowResult)
+            {
+                chkWindowResult = false;
+                for (int i = ridbtList.Count - 1; i >= 0; i--)
+                {
+                    if (ridbtList[i].active)
+                    {
+                        configXML.DeleteVariables(ridbtList[i].text);
+                        ridbtList.Remove(ridbtList[i]);
+                    }
+                }
+            }
+
+            GUILayout.EndHorizontal();
+
+            GUI.DragWindow();
+        }
+
         public void OnMsgWindow(int msgWindowID)
         {
             GUILayout.BeginHorizontal();
 
-            GUI.Label(new Rect(30, msgWindowRectangle.height / 2 - 15, msgWindowRectangle.width - 60, 20), msgText);
+            GUI.Label(new Rect(20, msgWindowRectangle.height / 2 - 15, msgWindowRectangle.width - 60, 20), msgText);
 
             // Close window button
-            if (GUI.Button(new Rect(180, 3, 17, 15), "x"))
+            //if (GUI.Button(new Rect(180, 3, 17, 15), "x"))
+            if (GUI.Button(new Rect(msgWindowRectangle.width - 20, 3, 17, 15), "x"))
             {
                 msgWindowActive = false;
             }
             // set current position and rotation of endeffector
-            if (GUI.Button(new Rect((200 - 45) / 2, 70, 45, 25), "OK"))
+            //if (GUI.Button(new Rect((200 - 45) / 2, 70, 45, 25), "OK"))
+            if (GUI.Button(new Rect((msgWindowRectangle.width - 45) / 2, 70, 45, 25), "OK"))
             {
                 msgWindowActive = false;
+            }
+
+            GUILayout.EndHorizontal();
+
+            GUI.DragWindow();
+        }
+
+        public void OnChkWindow(int chkWindowID)
+        {
+            chkWindowResult = false;
+
+            GUILayout.BeginHorizontal();
+
+            GUI.Label(new Rect(20, chkWindowRectangle.height / 2 - 15, chkWindowRectangle.width - 60, 20), chkText);
+
+            // Close window button
+            if (GUI.Button(new Rect(chkWindowRectangle.width - 20, 3, 17, 15), "x"))
+            {
+                chkWindowActive = false;
+            }
+            if (GUI.Button(new Rect((chkWindowRectangle.width - 45) / 2 - 30, 70, 45, 25), chkButtonText[0]))
+            {
+                chkWindowActive = false;
+                chkWindowResult = true;
+            }
+            if (GUI.Button(new Rect((chkWindowRectangle.width - 45) / 2 + 30, 70, 45, 25), chkButtonText[1]))
+            {
+                chkWindowActive = false;
             }
 
             GUILayout.EndHorizontal();
@@ -2187,6 +3366,16 @@ namespace IkRobotController
             msgText = text;
 
             msgWindowActive = true;
+        }
+
+        public void ChkWindow(Vector2 pos, string title, string text, string trueButton = "yes", string falseButton = "no")
+        {
+            chkWindowPosition = pos;
+            chkWindowTitle = title;
+            chkText = text;
+            chkButtonText[0] = trueButton;
+            chkButtonText[1] = falseButton;
+            chkWindowActive = true;
         }
 
         private void InitStyles()
@@ -2255,6 +3444,64 @@ namespace IkRobotController
             result.SetPixels(pix);
             result.Apply();
             return result;
+        }
+
+        public class BoolText
+        {
+            public bool active = false;
+            public string text = "";
+
+            public BoolText()
+            {
+                active = false;
+                text = "";
+            }
+
+            public BoolText(bool active, string text)
+            {
+                this.active = active;
+                this.text = text;
+            }
+        }
+
+        private Vector2 ToggleListScrollScope(List<BoolText> boolTextList, Rect position, Vector2 scrollPosition, bool alwaysShowHorizontal = false, bool alwaysShowVertical = false)
+        {
+            float maxTextLength = 0f;
+
+            foreach (BoolText element in boolTextList)
+            {
+                float textLen = (float)(element.text.Length + 1) * 9f;
+                if (textLen >= maxTextLength)
+                    maxTextLength = textLen;
+            }
+
+            using (var scrollScope = new GUI.ScrollViewScope(new Rect(position.x + 1, position.y + 2, position.width - 3, position.height - 3), scrollPosition, new Rect(0, 0, (10 + 20 + maxTextLength), (float)(boolTextList.Count * 18)), alwaysShowHorizontal, alwaysShowVertical))
+            {
+
+                scrollPosition = scrollScope.scrollPosition;
+
+                int i = 0;
+                foreach (BoolText element in boolTextList)
+                {
+                    float textLength = (float)(element.text.Length + 1) * 9f;
+                    element.active = GUI.Toggle(new Rect(10, (i * 18), 20 + textLength, 20), element.active, " " + element.text);
+                    i++;
+                }
+            }
+
+            DrawRectangle(position, Color.black);
+            DrawRectangle(new Rect(position.x + 2, position.y + 2, position.width - 20, position.height - 20), Color.black);
+            DrawRectangle(new Rect(position.x + position.width - 15, position.y + position.height - 15, 13, 13), Color.black);
+
+            return scrollPosition;
+        }
+
+        public bool AddRepeatButton(Rect rectangle, string icon, float offset = 20f)
+        {
+            bool valueInBool = false;
+            valueInBool = GUI.RepeatButton(new Rect(rectangle.x, rectangle.y + Yoffset, rectangle.width, rectangle.height), icon);
+            Yoffset += offset;
+            return valueInBool;
         }
 
         public void AddInputValue(Rect rectangle, string valueInString, out string valueOutString, string name, out int valueInt, float labelLength)
@@ -2536,7 +3783,7 @@ namespace IkRobotController
 
         private float[] GetActualServoRotation(List<IKservo> Servos)
         {
-            float[] currentTheta = new float[8];
+            float[] currentTheta = new float[JointList.Length];
 
             for (int j = 0; j < SortIkServo.Count - 1; j++)
                 currentTheta[j] = SortIkServo[j].iservo.Position;
@@ -2560,7 +3807,7 @@ namespace IkRobotController
         #endregion Tools
 
         #region ..ToSting
-        private string VectorToString(Vector3 vector, string format)
+        private static string VectorToString(Vector3 vector, string format)
         {
             string szoveg = "";
 
@@ -2569,7 +3816,16 @@ namespace IkRobotController
             return szoveg;
         }
 
-        private string QuaternionToString(Quaternion quaternion, string format)
+        private static string VectorToString(Vector2 vector, string format)
+        {
+            string szoveg = "";
+
+            szoveg = string.Format("( " + vector.x.ToString(format) + ", " + vector.y.ToString(format) + " )");
+
+            return szoveg;
+        }
+
+        private static string QuaternionToString(Quaternion quaternion, string format)
         {
             string szoveg = "";
 
@@ -2578,7 +3834,7 @@ namespace IkRobotController
             return szoveg;
         }
 
-        private string IKServoToString(IKservo ikServo)
+        private static string IKServoToString(IKservo ikServo)
         {
             string szoveg = "";
 
@@ -2639,6 +3895,7 @@ namespace IkRobotController
             // Gradient : [F(x+SamplingDistance) - F(x)] / h
 
             // change angles with samplingangle (a little bit)
+            // Use MinAngle & MaxAngle limints in change ?!
             angles[i] += SamplingAngle;
 
             // recalculate different

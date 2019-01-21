@@ -2,7 +2,6 @@ PART
 {
 name = TRF_CA2_LEE
 module = Part
-author = Trufiadok
 
 mesh = TRF_ISS_LEE.mu
 scale = 1.0
