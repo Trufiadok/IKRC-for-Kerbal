@@ -54,19 +54,25 @@ namespace IkRobotController
         public float workingRange = 8.0f;
         #endregion module variable of part.cfg
 
-        private static int counterStart = 0;
-        private static int counterOnLoad = 0;
-        private static int counterOnSave = 0;
+        //private static int counterStart = 0;
+        //private static int counterOnLoad = 0;
+        //private static int counterOnSave = 0;
+        private int counterStart = 0;
+        private int counterOnLoad = 0;
+        private int counterOnSave = 0;
 
-        private static bool JointListIsLoaded = false;
+        //private static bool JointListIsLoaded = false;
+        private bool JointListIsLoaded = false;
 
         private bool buttonIsColored = false;
         private Color colorControlButtonUpDown;
         private Color colorControlButtonLeftRight;
         private Color colorControlButtonForwardBackward;
 
-        private static int onSaveCounter = 0;
-        private static int onLoadCounter = 0;
+        //private static int onSaveCounter = 0;
+        //private static int onLoadCounter = 0;
+        private int onSaveCounter = 0;
+        private int onLoadCounter = 0;
 
         protected static int NextWindowID = 110;
         protected int WindowID = 0;
@@ -152,7 +158,12 @@ namespace IkRobotController
         private Rect diagramRectangle;
         private List<float> iterateData;
         private List<float> sampleAngleData;
+        private List<float> distanceData;
         private List<List<float>> data;
+
+        private Rect gradientDiagramRectangle;
+        private List<List<float>> gradientData;
+        private List<float> errorData;
 
         private bool WindowIsExtended = false;
 
@@ -1084,8 +1095,10 @@ namespace IkRobotController
             OBJECT
         }
 
-        static string[] JointVariableNames = { "Servo-Params-PartRotation", "Servo-Params-ParentOffset", "Servo-Params-Axis", "Servo-Params-Rotation" };
-        static string[] JointVariableTypes = { "Quaternion", "Vector3", "Vector3", "Quaternion" };
+        //static string[] JointVariableNames = { "Servo-Params-PartRotation", "Servo-Params-ParentOffset", "Servo-Params-Axis", "Servo-Params-Rotation" };
+        //static string[] JointVariableTypes = { "Quaternion", "Vector3", "Vector3", "Quaternion" };
+        string[] JointVariableNames = { "Servo-Params-PartRotation", "Servo-Params-ParentOffset", "Servo-Params-Axis", "Servo-Params-Rotation" };
+        string[] JointVariableTypes = { "Quaternion", "Vector3", "Vector3", "Quaternion" };
         //string[] JointList = { "TRF.CA2.ARoll", "TRF.CA2.AYaw", "TRF.CA2.APitch", "TRF.CA2.CElbow", "TRF.CA2.BPitch", "TRF.CA2.BYaw", "TRF.CA2.BRoll", "TRF.CA2.LEE.wCam" };
         string[] JointList;
         //Vector3[] JointsAxis = { new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(0, 0, 0) };
@@ -1491,6 +1504,7 @@ namespace IkRobotController
             {
                 foreach (IKservo ikServo in AllIkServo)
                 {
+                    //ikServo.part.partName
                     if (ikServo.part.name == JointList[i])
                     {
                         SortIkServo.Add(ikServo);
@@ -1650,6 +1664,7 @@ namespace IkRobotController
                     Debug.Log(string.Format("[TRF{1}] {0} Start() part.name = " + part.name, 0, WindowID));
 
                 diagramRectangle = new Rect(10, 525, 290, 70);
+                gradientDiagramRectangle = new Rect(320, 525, 290, 70);
 
                 for (int i = 0; i < (JointList.Length - 1); i++)
                     blocking[i] = false;
@@ -1665,74 +1680,13 @@ namespace IkRobotController
                 windowRectangle = new Rect(windowPosition.x, windowPosition.y, windowSize.x, windowSize.y);
                 iterateData = new List<float>();
                 sampleAngleData = new List<float>();
+                distanceData = new List<float>();
+                errorData = new List<float>();
                 data = new List<List<float>>();
+                gradientData = new List<List<float>>();
                 Debug.Log(string.Format("[TRF] {0} - END - EndDeclaration", 49));
 
                 Debug.Log(string.Format("[TRF] {0} end of Start() WindowID: {1}", 400, WindowID));
-
-                //// check exist arm on part
-                //if (!CheckExistArm())
-                //{
-                //    Debug.Log(string.Format("[TRF] {0} Don't Exist Arm on PART", 0));
-                //    return;
-                //}
-                //else
-                //{
-                //    Debug.Log(string.Format("[TRF] {0} Exist Arm on PART", 0));
-                //}
-
-                //Debug.Log(string.Format("[TRF] {0} IRWrapper.InitWrapper() START", 1));
-                //IRWrapper.InitWrapper();
-                //Debug.Log(string.Format("[TRF] {0} IRWrapper.InitWrapper() END", 2));
-
-                //if (IRWrapper.APIReady)
-                //{
-                //    Debug.Log(string.Format("[TRF] {0} - IRWrapper.APIReady", 21));
-                //    AllIkServo = new List<IKservo>();
-                //    allServos = new List<IRWrapper.IServo>();
-                //    SortIkServo = new List<IKservo>();
-                //    Debug.Log(string.Format("[TRF] {0} - Inited ServoLists", 21));
-
-                //    GetAllChildServo();
-                //    Debug.Log(string.Format("[TRF] {0} - Get all child servo ({1})", 22, allServos.Count));
-
-                //    if (allServos.Count >= JointList.Length)
-                //    {
-                //        Debug.Log(string.Format("[TRF] {0} - AllIkServo ({1})", 23, AllIkServo.Count));
-
-                //        SortIKservos();
-
-                //        // Get last part
-                //        listOfChildrenPart = new List<Part>();
-                //        GetChildPartRecursive(part);
-                //        int elementCount = listOfChildrenPart.Count();
-                //        //lastPart = listOfChildrenPart[elementCount - 1];
-                //        lastPart = listOfChildrenPart.Find(e => e.name == JointList[JointList.Length - 1]);
-
-                //        Debug.Log(string.Format("[TRF] {0} - lastPart " + lastPart.name, 40));
-
-                //        // Add EndEffector/LEE/ (last part) to SortIkServo - problem -> if LEE hold other element that will last part
-                //        SortIkServo.Add(new IKservo(lastPart));
-                //        Debug.Log(string.Format("[TRF] {0} - END - SortIkServo.Add(new IKservo(lastPart)", 41));
-
-                //        // if have all IKservo than calculate IK parameters of IKservos 
-                //        if (SortIkServo.Count == JointList.Length)
-                //        {
-                //            partPosition = part.transform.position;
-                //            partRotation = part.transform.rotation;
-
-                //            // dumping servo structure
-                //            DumpServoStructure(SortIkServo);
-
-                //            //Debug.Log(string.Format("[TRF] {0} - START - GetFKParamsFromBuffer()", 42));
-                //            GetFKParamsFromBuffer();
-                //            //Debug.Log(string.Format("[TRF] {0} - END - GetFKParamsFromBuffer()", 43));
-
-                //        }
-                //    }
-                //}
-                //else
-                //    return;
 
                 if (!InitIRWrapper())
                     return;
@@ -1779,18 +1733,6 @@ namespace IkRobotController
         // Update is called once per frame
         public void Update()
         {
-            //if (HighLogic.LoadedSceneIsFlight && ServosIsBaseInited && !DumpEventIsActive)
-            //{
-            //    //Debug.Log(string.Format("[TRF] Update() - DumpEventIsActive = false"));
-            //    if (CheckServosZeroState())
-            //    {
-            //        CheckServosZeroState(true);
-            //        Events["DumpServoStructureEvent"].active = true;
-            //        DumpEventIsActive = true;
-            //        Debug.Log(string.Format("[TRF] Update() - DumpEventIsActive = true"));
-            //    }
-            //}
-
             if (HighLogic.LoadedSceneIsFlight && IsInitedModule && IsInitedModule1st)
             {
                 IsInitedModule1st = false;
@@ -1798,60 +1740,8 @@ namespace IkRobotController
 
                 Debug.Log(string.Format("[TRF] {0} - Update() - globalPosition&Quaternion", 44));
                 // set position of last part for global position
-                //if (globalPosition == null)
-                //{
-                //    Debug.Log(string.Format("[TRF] - Update() - globalPosition == null"));
-                //    return;
-                //}
-                //if (globalQuaternion == null)
-                //{
-                //    Debug.Log(string.Format("[TRF] - Update() - globalQuaternion == null"));
-                //    return;
-                //}
-                //if (SortIkServo == null)
-                //{
-                //    Debug.Log(string.Format("[TRF] - Update() - SortIkServo == null"));
-                //    return;
-                //}
-                //if (SortIkServo.Count == 0)
-                //{
-                //    Debug.Log(string.Format("[TRF] - Update() - SortIkServo.Count == 0"));
-                //    return;
-                //}
-                //Debug.Log(string.Format("[TRF] - Update() - SortIkServo.Count = {0}", SortIkServo.Count));
-                //int counter = 0;
-                //foreach (IKservo element in SortIkServo)
-                //{
-                //    Debug.Log(string.Format("[TRF] - Update() - counter = {0}", counter));
-                //    counter++;
-                //    if (element == null)
-                //    {
-                //        Debug.Log(string.Format("[TRF] - Update() - element == null"));
-                //        return;
-                //    }
-                //}
-                //Debug.Log(string.Format("[TRF] - Update() - SortIkServo.Count - 1 = {0}", (SortIkServo.Count - 1)));
-                //counter = SortIkServo.Count - 1;
-                //if (SortIkServo[counter].ServoTransform.position != null)
-                //{
-                //    Debug.Log(string.Format("[TRF] - Update() - SortIkServo[counter].ServoTransform.position = " + VectorToString(SortIkServo[counter].ServoTransform.position, "0.00")));
                 globalPosition = SortIkServo[SortIkServo.Count - 1].ServoTransform.position;
-                //}
-                //else
-                //{
-                //    Debug.Log(string.Format("[TRF] - Update() - SortIkServo[counter].ServoTransform.position == null"));
-                //    return;
-                //}
-                //if (SortIkServo[counter].ServoTransform.rotation != null)
-                //{
-                //    Debug.Log(string.Format("[TRF] - Update() - SortIkServo[counter].ServoTransform.rotation = " + QuaternionToString(SortIkServo[counter].ServoTransform.rotation, "0.00")));
                 globalQuaternion = SortIkServo[SortIkServo.Count - 1].ServoTransform.rotation;
-                //}
-                //else
-                //{
-                //    Debug.Log(string.Format("[TRF] - Update() - SortIkServo[counter].ServoTransform.rotation == null"));
-                //    return;
-                //}
                 Debug.Log(string.Format("[TRF] {0} - Update() - globalPosition&Quaternion", 45));
 
                 baseState.Translation = globalPosition;
@@ -2167,7 +2057,6 @@ namespace IkRobotController
                     //Debug.Log(string.Format("[TRF] Update() - #region Active Inverse Kinematics"));
                     // calculate position- and orientation different
                     distance = Vector3.Distance(SortIkServo[SortIkServo.Count - 1].ServoTransform.position, globalPosition);
-                    //angle = Quaternion.Angle(Quaternion.Euler(SortIkServo[SortIkServo.Count - 2].ServoTransform.rotation.eulerAngles), globalQuaternion);
                     angle = Quaternion.Angle(Quaternion.Euler(SortIkServo[SortIkServo.Count - 1].ServoTransform.rotation.eulerAngles), globalQuaternion);
 
                     // if differents over the threshold then calculate IK
@@ -2186,16 +2075,16 @@ namespace IkRobotController
                             for (int i = 0; i < JointList.Length; i++)
                                 theta[i] = 0f;
 
-                        //if(IKButton_active)
-                        //{
-                        //    SamplingAngle = 0.01f * transStep;
-                        //}
-
                         // iterate angle of joints
                         int j;
                         for (j = 0; j < iterateNumber; j++)
                         {
                             IKsuccess = InverseKinematics(globalPosition, globalQuaternion, theta);
+
+                            errorData.Add(Distance / 2f * (gradientDiagramRectangle.height - 30f));
+                            if (errorData.Count > (int)(gradientDiagramRectangle.width - 10f))
+                                errorData.RemoveAt(0);
+
                             if (IKsuccess)
                                 break;
                         }
@@ -2237,6 +2126,10 @@ namespace IkRobotController
                         sampleAngleData.Add(SamplingAngle / 0.02f * (diagramRectangle.height - 30f));
                         if (sampleAngleData.Count > (int)(diagramRectangle.width - 10f))
                             sampleAngleData.RemoveAt(0);
+
+                        distanceData.Add(distance / 2f * (diagramRectangle.height - 30f));
+                        if (distanceData.Count > (int)(diagramRectangle.width - 10f))
+                            distanceData.RemoveAt(0);
 
                         if (failedIterateCycle > iterateThreshold)
                         {
@@ -2295,6 +2188,13 @@ namespace IkRobotController
                     data.Clear();
                     data.Add(iterateData);
                     data.Add(sampleAngleData);
+                    data.Add(distanceData);
+                }
+
+                if (gradientData != null)
+                {
+                    gradientData.Clear();
+                    gradientData.Add(errorData);
                 }
                 #endregion Refresh LineDiagram Data
 
@@ -2913,7 +2813,7 @@ namespace IkRobotController
             if (ircWindowActive)
             {
                 // Draw window
-                windowRectangle = GUILayout.Window(WindowID, windowRectangle, OnWindow, "IK Robot Controller");
+                windowRectangle = GUILayout.Window(WindowID, windowRectangle, OnWindow, robotArmID + " IK Robot Controller");
                 //Debug.Log(string.Format("[TRF{1}] {0} ircWindowActive", 1000, WindowID));
             }
 
@@ -3081,9 +2981,8 @@ namespace IkRobotController
                     if (GUI.Button(new Rect(3, 3, 17, 15), ">"))
                     {
                         WindowIsExtended = true;
-                        windowSize = new Vector2(520, 600);
+                        windowSize = new Vector2(620, 600);
                         if (windowRectangle != null)
-                            //windowRectangle = new Rect(windowPosition.x, windowPosition.y, windowSize.x, windowSize.y);
                             windowRectangle = new Rect(windowRectangle.x, windowRectangle.y, windowSize.x, windowSize.y);
                         closeWindowButtonPosition = new Vector2(windowSize.x - 20, 3);
                     }
@@ -3095,7 +2994,6 @@ namespace IkRobotController
                         WindowIsExtended = false;
                         windowSize = new Vector2(310, 600);
                         if (windowRectangle != null)
-                            //windowRectangle = new Rect(windowPosition.x, windowPosition.y, windowSize.x, windowSize.y);
                             windowRectangle = new Rect(windowRectangle.x, windowRectangle.y, windowSize.x, windowSize.y);
                         closeWindowButtonPosition = new Vector2(windowSize.x - 20, 3);
                     }
@@ -3103,7 +3001,8 @@ namespace IkRobotController
                     #region IK display of parameters
                     // IK values
                     Yoffset = 0;
-                    inputRect = new Rect(320, 395, 40, 20);
+                    //inputRect = new Rect(320, 395, 40, 20);
+                    inputRect = new Rect(320, 15, 40, 20);
                     AddInputValue(inputRect, iterateString, out iterateString, "IK_iterate", out iterateNumber, 150f);
                     AddInputValue(inputRect, samplingAngleString, out samplingAngleString, "IK_samplingAngle", out SamplingAngle, 150f);
                     AddInputValue(inputRect, DistanceThresholdString, out DistanceThresholdString, "IK_DistanceThreshold", out DistanceThreshold, 150f);
@@ -3129,6 +3028,9 @@ namespace IkRobotController
                     //{
                     //    AddOutputValue(inputRect, "max[" + i.ToString() + "]", SortIkServo[i].MaxAngle, 4f);
                     //}
+
+                    Color[] debugColor = { Color.red, Color.yellow, Color.magenta };
+                    LineDiagram(gradientDiagramRectangle, gradientData, debugColor);
                 }
                 #endregion window extender
 
@@ -3239,7 +3141,7 @@ namespace IkRobotController
 
                 // set position and rotation of endeffector ???
 
-                Color[] color = { Color.red, Color.yellow };
+                Color[] color = { Color.red, Color.yellow, Color.magenta };
                 LineDiagram(diagramRectangle, data, color);
 
                 manageConfig = GUI.Button(new Rect(225, 495, 70, 20), "manCfg");
@@ -3865,9 +3767,9 @@ namespace IkRobotController
                 // calculate partial gradient
                 LocationRotationDiff gradient = PartialGradient(targetPosition, targetOrientation, angles, i);
 
-                // calculate dinamic learning rate of location different 
+                // calculate dynamic learning rate of location different 
                 DinLearningRatePos = locRotDiff.LocationDiff / MaxPosErr * 100.0f;
-                // calculate dinamic learning rate of rotation different
+                // calculate dynamic learning rate of rotation different
                 DinLearningRateOri = locRotDiff.RotationDiff / MaxOriErr * 100.0f;
 
                 // calculate angle of joint with location gradient and rotation gradient - why sum ???
@@ -3875,6 +3777,12 @@ namespace IkRobotController
 
                 // Clamp - limited angle of joint
                 angles[i] = Mathf.Clamp(angles[i], SortIkServo[i].MinAngle, SortIkServo[i].MaxAngle);
+
+                // calculate different of distance and -rotation
+                locRotDiff = DistanceAndAngleFromTarget(targetPosition, targetOrientation, angles);
+
+                Distance = locRotDiff.LocationDiff;
+                Angle = locRotDiff.RotationDiff;
 
                 // if different lower than threshold (distance and rotation) then stop
                 if (locRotDiff.LocationDiff < DistanceThreshold && locRotDiff.RotationDiff < AngleThreshold)
@@ -3892,15 +3800,15 @@ namespace IkRobotController
 
             // calculate different
             LocationRotationDiff f_xGlobal = DistanceAndAngleFromTarget(targetPosition, targetOrientation, angles);
-            // Gradient : [F(x+SamplingDistance) - F(x)] / h
 
             // change angles with samplingangle (a little bit)
-            // Use MinAngle & MaxAngle limints in change ?!
+            // Use MinAngle & MaxAngle limits in change ?!
             angles[i] += SamplingAngle;
 
             // recalculate different
             LocationRotationDiff f_x_plus_dGlobal = DistanceAndAngleFromTarget(targetPosition, targetOrientation, angles);
 
+            // Gradient : [F(x+SamplingDistance) - F(x)] / h
             // calculate gradient of position
             gradient.LocationDiff = (f_x_plus_dGlobal.LocationDiff - f_xGlobal.LocationDiff) / SamplingAngle;
             // calculate gradient of orientation
