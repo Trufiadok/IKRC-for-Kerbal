@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <config>
-    <string name="vector2String">CA1-IRC-Window-Position,CA2-IRC-Window-Position,RV2F-IRC-Window-Position</string>
-    <string name="vector3String">CA1-0-Servo-Params-ParentOffset,CA1-0-Servo-Params-Axis,CA1-1-Servo-Params-ParentOffset,CA1-1-Servo-Params-Axis,CA1-2-Servo-Params-ParentOffset,CA1-2-Servo-Params-Axis,CA1-3-Servo-Params-ParentOffset,CA1-3-Servo-Params-Axis,CA1-4-Servo-Params-ParentOffset,CA1-4-Servo-Params-Axis,CA1-5-Servo-Params-ParentOffset,CA1-5-Servo-Params-Axis,CA1-6-Servo-Params-ParentOffset,CA1-6-Servo-Params-Axis,CA2-0-Servo-Params-ParentOffset,CA2-0-Servo-Params-Axis,CA2-1-Servo-Params-ParentOffset,CA2-1-Servo-Params-Axis,CA2-2-Servo-Params-ParentOffset,CA2-2-Servo-Params-Axis,CA2-3-Servo-Params-ParentOffset,CA2-3-Servo-Params-Axis,CA2-4-Servo-Params-ParentOffset,CA2-4-Servo-Params-Axis,CA2-5-Servo-Params-ParentOffset,CA2-5-Servo-Params-Axis,CA2-6-Servo-Params-ParentOffset,CA2-6-Servo-Params-Axis,CA2-7-Servo-Params-ParentOffset,CA2-7-Servo-Params-Axis,RV2F-0-Servo-Params-ParentOffset,RV2F-0-Servo-Params-Axis,RV2F-1-Servo-Params-ParentOffset,RV2F-1-Servo-Params-Axis,RV2F-2-Servo-Params-ParentOffset,RV2F-2-Servo-Params-Axis,RV2F-3-Servo-Params-ParentOffset,RV2F-3-Servo-Params-Axis,RV2F-4-Servo-Params-ParentOffset,RV2F-4-Servo-Params-Axis,RV2F-5-Servo-Params-ParentOffset,RV2F-5-Servo-Params-Axis,RV2F-6-Servo-Params-ParentOffset,RV2F-6-Servo-Params-Axis</string>
-    <string name="quaternionString">CA1-0-Servo-Params-PartRotation,CA1-0-Servo-Params-Rotation,CA1-1-Servo-Params-PartRotation,CA1-1-Servo-Params-Rotation,CA1-2-Servo-Params-PartRotation,CA1-2-Servo-Params-Rotation,CA1-3-Servo-Params-PartRotation,CA1-3-Servo-Params-Rotation,CA1-4-Servo-Params-PartRotation,CA1-4-Servo-Params-Rotation,CA1-5-Servo-Params-PartRotation,CA1-5-Servo-Params-Rotation,CA1-6-Servo-Params-PartRotation,CA1-6-Servo-Params-Rotation,CA2-0-Servo-Params-PartRotation,CA2-0-Servo-Params-Rotation,CA2-1-Servo-Params-PartRotation,CA2-1-Servo-Params-Rotation,CA2-2-Servo-Params-PartRotation,CA2-2-Servo-Params-Rotation,CA2-3-Servo-Params-PartRotation,CA2-3-Servo-Params-Rotation,CA2-4-Servo-Params-PartRotation,CA2-4-Servo-Params-Rotation,CA2-5-Servo-Params-PartRotation,CA2-5-Servo-Params-Rotation,CA2-6-Servo-Params-PartRotation,CA2-6-Servo-Params-Rotation,CA2-7-Servo-Params-PartRotation,CA2-7-Servo-Params-Rotation,RV2F-0-Servo-Params-PartRotation,RV2F-0-Servo-Params-Rotation,RV2F-1-Servo-Params-PartRotation,RV2F-1-Servo-Params-Rotation,RV2F-2-Servo-Params-PartRotation,RV2F-2-Servo-Params-Rotation,RV2F-3-Servo-Params-PartRotation,RV2F-3-Servo-Params-Rotation,RV2F-4-Servo-Params-PartRotation,RV2F-4-Servo-Params-Rotation,RV2F-5-Servo-Params-PartRotation,RV2F-5-Servo-Params-Rotation,RV2F-6-Servo-Params-PartRotation,RV2F-6-Servo-Params-Rotation</string>
-    <string name="variableSequence">CA1-IRC-Window-Position,CA1-0-Servo-Params-PartRotation,CA1-0-Servo-Params-ParentOffset,CA1-0-Servo-Params-Axis,CA1-0-Servo-Params-Rotation,CA1-1-Servo-Params-PartRotation,CA1-1-Servo-Params-ParentOffset,CA1-1-Servo-Params-Axis,CA1-1-Servo-Params-Rotation,CA1-2-Servo-Params-PartRotation,CA1-2-Servo-Params-ParentOffset,CA1-2-Servo-Params-Axis,CA1-2-Servo-Params-Rotation,CA1-3-Servo-Params-PartRotation,CA1-3-Servo-Params-ParentOffset,CA1-3-Servo-Params-Axis,CA1-3-Servo-Params-Rotation,CA1-4-Servo-Params-PartRotation,CA1-4-Servo-Params-ParentOffset,CA1-4-Servo-Params-Axis,CA1-4-Servo-Params-Rotation,CA1-5-Servo-Params-PartRotation,CA1-5-Servo-Params-ParentOffset,CA1-5-Servo-Params-Axis,CA1-5-Servo-Params-Rotation,CA1-6-Servo-Params-PartRotation,CA1-6-Servo-Params-ParentOffset,CA1-6-Servo-Params-Axis,CA1-6-Servo-Params-Rotation,CA2-IRC-Window-Position,CA2-0-Servo-Params-PartRotation,CA2-0-Servo-Params-ParentOffset,CA2-0-Servo-Params-Axis,CA2-0-Servo-Params-Rotation,CA2-1-Servo-Params-PartRotation,CA2-1-Servo-Params-ParentOffset,CA2-1-Servo-Params-Axis,CA2-1-Servo-Params-Rotation,CA2-2-Servo-Params-PartRotation,CA2-2-Servo-Params-ParentOffset,CA2-2-Servo-Params-Axis,CA2-2-Servo-Params-Rotation,CA2-3-Servo-Params-PartRotation,CA2-3-Servo-Params-ParentOffset,CA2-3-Servo-Params-Axis,CA2-3-Servo-Params-Rotation,CA2-4-Servo-Params-PartRotation,CA2-4-Servo-Params-ParentOffset,CA2-4-Servo-Params-Axis,CA2-4-Servo-Params-Rotation,CA2-5-Servo-Params-PartRotation,CA2-5-Servo-Params-ParentOffset,CA2-5-Servo-Params-Axis,CA2-5-Servo-Params-Rotation,CA2-6-Servo-Params-PartRotation,CA2-6-Servo-Params-ParentOffset,CA2-6-Servo-Params-Axis,CA2-6-Servo-Params-Rotation,CA2-7-Servo-Params-PartRotation,CA2-7-Servo-Params-ParentOffset,CA2-7-Servo-Params-Axis,CA2-7-Servo-Params-Rotation,RV2F-IRC-Window-Position,RV2F-0-Servo-Params-PartRotation,RV2F-0-Servo-Params-ParentOffset,RV2F-0-Servo-Params-Axis,RV2F-0-Servo-Params-Rotation,RV2F-1-Servo-Params-PartRotation,RV2F-1-Servo-Params-ParentOffset,RV2F-1-Servo-Params-Axis,RV2F-1-Servo-Params-Rotation,RV2F-2-Servo-Params-PartRotation,RV2F-2-Servo-Params-ParentOffset,RV2F-2-Servo-Params-Axis,RV2F-2-Servo-Params-Rotation,RV2F-3-Servo-Params-PartRotation,RV2F-3-Servo-Params-ParentOffset,RV2F-3-Servo-Params-Axis,RV2F-3-Servo-Params-Rotation,RV2F-4-Servo-Params-PartRotation,RV2F-4-Servo-Params-ParentOffset,RV2F-4-Servo-Params-Axis,RV2F-4-Servo-Params-Rotation,RV2F-5-Servo-Params-PartRotation,RV2F-5-Servo-Params-ParentOffset,RV2F-5-Servo-Params-Axis,RV2F-5-Servo-Params-Rotation,RV2F-6-Servo-Params-PartRotation,RV2F-6-Servo-Params-ParentOffset,RV2F-6-Servo-Params-Axis,RV2F-6-Servo-Params-Rotation</string>
+    <string name="vector2String">CA1-IRC-Window-Position,CA2-IRC-Window-Position,RV2F-IRC-Window-Position,SPDMA1-IRC-Window-Position,SPDMA2-IRC-Window-Position</string>
+    <string name="vector3String">CA1-0-Servo-Params-ParentOffset,CA1-0-Servo-Params-Axis,CA1-1-Servo-Params-ParentOffset,CA1-1-Servo-Params-Axis,CA1-2-Servo-Params-ParentOffset,CA1-2-Servo-Params-Axis,CA1-3-Servo-Params-ParentOffset,CA1-3-Servo-Params-Axis,CA1-4-Servo-Params-ParentOffset,CA1-4-Servo-Params-Axis,CA1-5-Servo-Params-ParentOffset,CA1-5-Servo-Params-Axis,CA1-6-Servo-Params-ParentOffset,CA1-6-Servo-Params-Axis,CA2-0-Servo-Params-ParentOffset,CA2-0-Servo-Params-Axis,CA2-1-Servo-Params-ParentOffset,CA2-1-Servo-Params-Axis,CA2-2-Servo-Params-ParentOffset,CA2-2-Servo-Params-Axis,CA2-3-Servo-Params-ParentOffset,CA2-3-Servo-Params-Axis,CA2-4-Servo-Params-ParentOffset,CA2-4-Servo-Params-Axis,CA2-5-Servo-Params-ParentOffset,CA2-5-Servo-Params-Axis,CA2-6-Servo-Params-ParentOffset,CA2-6-Servo-Params-Axis,CA2-7-Servo-Params-ParentOffset,CA2-7-Servo-Params-Axis,RV2F-0-Servo-Params-ParentOffset,RV2F-0-Servo-Params-Axis,RV2F-1-Servo-Params-ParentOffset,RV2F-1-Servo-Params-Axis,RV2F-2-Servo-Params-ParentOffset,RV2F-2-Servo-Params-Axis,RV2F-3-Servo-Params-ParentOffset,RV2F-3-Servo-Params-Axis,RV2F-4-Servo-Params-ParentOffset,RV2F-4-Servo-Params-Axis,RV2F-5-Servo-Params-ParentOffset,RV2F-5-Servo-Params-Axis,RV2F-6-Servo-Params-ParentOffset,RV2F-6-Servo-Params-Axis,SPDMA1-0-Servo-Params-ParentOffset,SPDMA1-0-Servo-Params-Axis,SPDMA1-1-Servo-Params-ParentOffset,SPDMA1-1-Servo-Params-Axis,SPDMA1-2-Servo-Params-ParentOffset,SPDMA1-2-Servo-Params-Axis,SPDMA1-3-Servo-Params-ParentOffset,SPDMA1-3-Servo-Params-Axis,SPDMA1-4-Servo-Params-ParentOffset,SPDMA1-4-Servo-Params-Axis,SPDMA1-5-Servo-Params-ParentOffset,SPDMA1-5-Servo-Params-Axis,SPDMA1-6-Servo-Params-ParentOffset,SPDMA1-6-Servo-Params-Axis,SPDMA1-7-Servo-Params-ParentOffset,SPDMA1-7-Servo-Params-Axis,SPDMA2-0-Servo-Params-ParentOffset,SPDMA2-0-Servo-Params-Axis,SPDMA2-1-Servo-Params-ParentOffset,SPDMA2-1-Servo-Params-Axis,SPDMA2-2-Servo-Params-ParentOffset,SPDMA2-2-Servo-Params-Axis,SPDMA2-3-Servo-Params-ParentOffset,SPDMA2-3-Servo-Params-Axis,SPDMA2-4-Servo-Params-ParentOffset,SPDMA2-4-Servo-Params-Axis,SPDMA2-5-Servo-Params-ParentOffset,SPDMA2-5-Servo-Params-Axis,SPDMA2-6-Servo-Params-ParentOffset,SPDMA2-6-Servo-Params-Axis,SPDMA2-7-Servo-Params-ParentOffset,SPDMA2-7-Servo-Params-Axis</string>
+    <string name="quaternionString">CA1-0-Servo-Params-PartRotation,CA1-0-Servo-Params-Rotation,CA1-1-Servo-Params-PartRotation,CA1-1-Servo-Params-Rotation,CA1-2-Servo-Params-PartRotation,CA1-2-Servo-Params-Rotation,CA1-3-Servo-Params-PartRotation,CA1-3-Servo-Params-Rotation,CA1-4-Servo-Params-PartRotation,CA1-4-Servo-Params-Rotation,CA1-5-Servo-Params-PartRotation,CA1-5-Servo-Params-Rotation,CA1-6-Servo-Params-PartRotation,CA1-6-Servo-Params-Rotation,CA2-0-Servo-Params-PartRotation,CA2-0-Servo-Params-Rotation,CA2-1-Servo-Params-PartRotation,CA2-1-Servo-Params-Rotation,CA2-2-Servo-Params-PartRotation,CA2-2-Servo-Params-Rotation,CA2-3-Servo-Params-PartRotation,CA2-3-Servo-Params-Rotation,CA2-4-Servo-Params-PartRotation,CA2-4-Servo-Params-Rotation,CA2-5-Servo-Params-PartRotation,CA2-5-Servo-Params-Rotation,CA2-6-Servo-Params-PartRotation,CA2-6-Servo-Params-Rotation,CA2-7-Servo-Params-PartRotation,CA2-7-Servo-Params-Rotation,RV2F-0-Servo-Params-PartRotation,RV2F-0-Servo-Params-Rotation,RV2F-1-Servo-Params-PartRotation,RV2F-1-Servo-Params-Rotation,RV2F-2-Servo-Params-PartRotation,RV2F-2-Servo-Params-Rotation,RV2F-3-Servo-Params-PartRotation,RV2F-3-Servo-Params-Rotation,RV2F-4-Servo-Params-PartRotation,RV2F-4-Servo-Params-Rotation,RV2F-5-Servo-Params-PartRotation,RV2F-5-Servo-Params-Rotation,RV2F-6-Servo-Params-PartRotation,RV2F-6-Servo-Params-Rotation,SPDMA1-0-Servo-Params-PartRotation,SPDMA1-0-Servo-Params-Rotation,SPDMA1-1-Servo-Params-PartRotation,SPDMA1-1-Servo-Params-Rotation,SPDMA1-2-Servo-Params-PartRotation,SPDMA1-2-Servo-Params-Rotation,SPDMA1-3-Servo-Params-PartRotation,SPDMA1-3-Servo-Params-Rotation,SPDMA1-4-Servo-Params-PartRotation,SPDMA1-4-Servo-Params-Rotation,SPDMA1-5-Servo-Params-PartRotation,SPDMA1-5-Servo-Params-Rotation,SPDMA1-6-Servo-Params-PartRotation,SPDMA1-6-Servo-Params-Rotation,SPDMA1-7-Servo-Params-PartRotation,SPDMA1-7-Servo-Params-Rotation,SPDMA2-0-Servo-Params-PartRotation,SPDMA2-0-Servo-Params-Rotation,SPDMA2-1-Servo-Params-PartRotation,SPDMA2-1-Servo-Params-Rotation,SPDMA2-2-Servo-Params-PartRotation,SPDMA2-2-Servo-Params-Rotation,SPDMA2-3-Servo-Params-PartRotation,SPDMA2-3-Servo-Params-Rotation,SPDMA2-4-Servo-Params-PartRotation,SPDMA2-4-Servo-Params-Rotation,SPDMA2-5-Servo-Params-PartRotation,SPDMA2-5-Servo-Params-Rotation,SPDMA2-6-Servo-Params-PartRotation,SPDMA2-6-Servo-Params-Rotation,SPDMA2-7-Servo-Params-PartRotation,SPDMA2-7-Servo-Params-Rotation</string>
+    <string name="variableSequence">CA1-IRC-Window-Position,CA1-0-Servo-Params-PartRotation,CA1-0-Servo-Params-ParentOffset,CA1-0-Servo-Params-Axis,CA1-0-Servo-Params-Rotation,CA1-1-Servo-Params-PartRotation,CA1-1-Servo-Params-ParentOffset,CA1-1-Servo-Params-Axis,CA1-1-Servo-Params-Rotation,CA1-2-Servo-Params-PartRotation,CA1-2-Servo-Params-ParentOffset,CA1-2-Servo-Params-Axis,CA1-2-Servo-Params-Rotation,CA1-3-Servo-Params-PartRotation,CA1-3-Servo-Params-ParentOffset,CA1-3-Servo-Params-Axis,CA1-3-Servo-Params-Rotation,CA1-4-Servo-Params-PartRotation,CA1-4-Servo-Params-ParentOffset,CA1-4-Servo-Params-Axis,CA1-4-Servo-Params-Rotation,CA1-5-Servo-Params-PartRotation,CA1-5-Servo-Params-ParentOffset,CA1-5-Servo-Params-Axis,CA1-5-Servo-Params-Rotation,CA1-6-Servo-Params-PartRotation,CA1-6-Servo-Params-ParentOffset,CA1-6-Servo-Params-Axis,CA1-6-Servo-Params-Rotation,CA2-IRC-Window-Position,CA2-0-Servo-Params-PartRotation,CA2-0-Servo-Params-ParentOffset,CA2-0-Servo-Params-Axis,CA2-0-Servo-Params-Rotation,CA2-1-Servo-Params-PartRotation,CA2-1-Servo-Params-ParentOffset,CA2-1-Servo-Params-Axis,CA2-1-Servo-Params-Rotation,CA2-2-Servo-Params-PartRotation,CA2-2-Servo-Params-ParentOffset,CA2-2-Servo-Params-Axis,CA2-2-Servo-Params-Rotation,CA2-3-Servo-Params-PartRotation,CA2-3-Servo-Params-ParentOffset,CA2-3-Servo-Params-Axis,CA2-3-Servo-Params-Rotation,CA2-4-Servo-Params-PartRotation,CA2-4-Servo-Params-ParentOffset,CA2-4-Servo-Params-Axis,CA2-4-Servo-Params-Rotation,CA2-5-Servo-Params-PartRotation,CA2-5-Servo-Params-ParentOffset,CA2-5-Servo-Params-Axis,CA2-5-Servo-Params-Rotation,CA2-6-Servo-Params-PartRotation,CA2-6-Servo-Params-ParentOffset,CA2-6-Servo-Params-Axis,CA2-6-Servo-Params-Rotation,CA2-7-Servo-Params-PartRotation,CA2-7-Servo-Params-ParentOffset,CA2-7-Servo-Params-Axis,CA2-7-Servo-Params-Rotation,RV2F-IRC-Window-Position,RV2F-0-Servo-Params-PartRotation,RV2F-0-Servo-Params-ParentOffset,RV2F-0-Servo-Params-Axis,RV2F-0-Servo-Params-Rotation,RV2F-1-Servo-Params-PartRotation,RV2F-1-Servo-Params-ParentOffset,RV2F-1-Servo-Params-Axis,RV2F-1-Servo-Params-Rotation,RV2F-2-Servo-Params-PartRotation,RV2F-2-Servo-Params-ParentOffset,RV2F-2-Servo-Params-Axis,RV2F-2-Servo-Params-Rotation,RV2F-3-Servo-Params-PartRotation,RV2F-3-Servo-Params-ParentOffset,RV2F-3-Servo-Params-Axis,RV2F-3-Servo-Params-Rotation,RV2F-4-Servo-Params-PartRotation,RV2F-4-Servo-Params-ParentOffset,RV2F-4-Servo-Params-Axis,RV2F-4-Servo-Params-Rotation,RV2F-5-Servo-Params-PartRotation,RV2F-5-Servo-Params-ParentOffset,RV2F-5-Servo-Params-Axis,RV2F-5-Servo-Params-Rotation,RV2F-6-Servo-Params-PartRotation,RV2F-6-Servo-Params-ParentOffset,RV2F-6-Servo-Params-Axis,RV2F-6-Servo-Params-Rotation,SPDMA1-IRC-Window-Position,SPDMA1-0-Servo-Params-PartRotation,SPDMA1-0-Servo-Params-ParentOffset,SPDMA1-0-Servo-Params-Axis,SPDMA1-0-Servo-Params-Rotation,SPDMA1-1-Servo-Params-PartRotation,SPDMA1-1-Servo-Params-ParentOffset,SPDMA1-1-Servo-Params-Axis,SPDMA1-1-Servo-Params-Rotation,SPDMA1-2-Servo-Params-PartRotation,SPDMA1-2-Servo-Params-ParentOffset,SPDMA1-2-Servo-Params-Axis,SPDMA1-2-Servo-Params-Rotation,SPDMA1-3-Servo-Params-PartRotation,SPDMA1-3-Servo-Params-ParentOffset,SPDMA1-3-Servo-Params-Axis,SPDMA1-3-Servo-Params-Rotation,SPDMA1-4-Servo-Params-PartRotation,SPDMA1-4-Servo-Params-ParentOffset,SPDMA1-4-Servo-Params-Axis,SPDMA1-4-Servo-Params-Rotation,SPDMA1-5-Servo-Params-PartRotation,SPDMA1-5-Servo-Params-ParentOffset,SPDMA1-5-Servo-Params-Axis,SPDMA1-5-Servo-Params-Rotation,SPDMA1-6-Servo-Params-PartRotation,SPDMA1-6-Servo-Params-ParentOffset,SPDMA1-6-Servo-Params-Axis,SPDMA1-6-Servo-Params-Rotation,SPDMA1-7-Servo-Params-PartRotation,SPDMA1-7-Servo-Params-ParentOffset,SPDMA1-7-Servo-Params-Axis,SPDMA1-7-Servo-Params-Rotation,SPDMA2-IRC-Window-Position,SPDMA2-0-Servo-Params-PartRotation,SPDMA2-0-Servo-Params-ParentOffset,SPDMA2-0-Servo-Params-Axis,SPDMA2-0-Servo-Params-Rotation,SPDMA2-1-Servo-Params-PartRotation,SPDMA2-1-Servo-Params-ParentOffset,SPDMA2-1-Servo-Params-Axis,SPDMA2-1-Servo-Params-Rotation,SPDMA2-2-Servo-Params-PartRotation,SPDMA2-2-Servo-Params-ParentOffset,SPDMA2-2-Servo-Params-Axis,SPDMA2-2-Servo-Params-Rotation,SPDMA2-3-Servo-Params-PartRotation,SPDMA2-3-Servo-Params-ParentOffset,SPDMA2-3-Servo-Params-Axis,SPDMA2-3-Servo-Params-Rotation,SPDMA2-4-Servo-Params-PartRotation,SPDMA2-4-Servo-Params-ParentOffset,SPDMA2-4-Servo-Params-Axis,SPDMA2-4-Servo-Params-Rotation,SPDMA2-5-Servo-Params-PartRotation,SPDMA2-5-Servo-Params-ParentOffset,SPDMA2-5-Servo-Params-Axis,SPDMA2-5-Servo-Params-Rotation,SPDMA2-6-Servo-Params-PartRotation,SPDMA2-6-Servo-Params-ParentOffset,SPDMA2-6-Servo-Params-Axis,SPDMA2-6-Servo-Params-Rotation,SPDMA2-7-Servo-Params-PartRotation,SPDMA2-7-Servo-Params-ParentOffset,SPDMA2-7-Servo-Params-Axis,SPDMA2-7-Servo-Params-Rotation</string>
     <vector2 name="CA1-IRC-Window-Position">
         <x>1534</x>
         <y>230</y>
@@ -163,173 +163,173 @@
         <z>-0.328417242</z>
     </quaternion>
     <vector2 name="CA2-IRC-Window-Position">
-        <x>1535</x>
-        <y>267</y>
+        <x>2</x>
+        <y>136</y>
     </vector2>
     <quaternion name="CA2-0-Servo-Params-PartRotation">
-        <w>0.625392318</w>
-        <x>-0.626671016</x>
-        <y>-0.331376851</y>
-        <z>-0.326124787</z>
+        <w>0.625368297</w>
+        <x>-0.626698017</x>
+        <y>-0.331384569</y>
+        <z>-0.326110989</z>
     </quaternion>
     <vector3 name="CA2-0-Servo-Params-ParentOffset">
-        <x>-6.03476728E-05</x>
-        <y>-0.20458661</y>
-        <z>-0.000121069024</z>
+        <x>-7.5429416E-05</x>
+        <y>-0.204592764</y>
+        <z>-0.000147921062</z>
     </vector3>
     <vector3 name="CA2-0-Servo-Params-Axis">
-        <x>0.823240399</x>
-        <y>0.00185213983</y>
-        <z>-0.567690074</z>
+        <x>0.823235035</x>
+        <y>0.00180241466</y>
+        <z>-0.567697883</z>
     </vector3>
     <quaternion name="CA2-0-Servo-Params-Rotation">
-        <w>0.331647962</w>
-        <x>0.326119483</x>
-        <y>0.625571132</y>
-        <z>-0.626351833</z>
+        <w>0.331664681</w>
+        <x>0.326095372</x>
+        <y>0.6255638</y>
+        <z>-0.626362801</z>
     </quaternion>
     <quaternion name="CA2-1-Servo-Params-PartRotation">
-        <w>0.625392318</w>
-        <x>-0.626671016</x>
-        <y>-0.331376851</y>
-        <z>-0.326124787</z>
+        <w>0.625368297</w>
+        <x>-0.626698017</x>
+        <y>-0.331384569</y>
+        <z>-0.326110989</z>
     </quaternion>
     <vector3 name="CA2-1-Servo-Params-ParentOffset">
-        <x>0.46440044</x>
-        <y>-5.79890695E-08</y>
-        <z>7.57394076E-08</z>
+        <x>0.464399636</x>
+        <y>1.74761219E-08</y>
+        <z>4.59815368E-08</z>
     </vector3>
     <vector3 name="CA2-1-Servo-Params-Axis">
-        <x>0.567664027</x>
-        <y>0.00741666555</y>
-        <z>0.823226988</z>
+        <x>0.567671776</x>
+        <y>0.00747716427</y>
+        <z>0.823221028</z>
     </vector3>
     <quaternion name="CA2-1-Servo-Params-Rotation">
-        <w>0.628757775</w>
-        <x>0.328439862</x>
-        <y>-0.329209328</y>
-        <z>-0.623227298</z>
+        <w>0.628779233</w>
+        <x>0.328427404</x>
+        <y>-0.329214245</y>
+        <z>-0.623209596</z>
     </quaternion>
     <quaternion name="CA2-2-Servo-Params-PartRotation">
-        <w>0.625392318</w>
-        <x>-0.626671016</x>
-        <y>-0.331376851</y>
-        <z>-0.326124787</z>
+        <w>0.625368297</w>
+        <x>-0.626698017</x>
+        <y>-0.331384569</y>
+        <z>-0.326110989</z>
     </quaternion>
     <vector3 name="CA2-2-Servo-Params-ParentOffset">
-        <x>0.464429945</x>
-        <y>-9.70157998E-06</y>
-        <z>-0.00140356517</z>
+        <x>0.464451045</x>
+        <y>-1.80572533E-05</y>
+        <z>-0.00141110749</z>
     </vector3>
     <vector3 name="CA2-2-Servo-Params-Axis">
-        <x>-0.00573515892</x>
-        <y>0.999970853</y>
-        <z>-0.00505435467</z>
+        <x>-0.00572860241</x>
+        <y>0.999970436</y>
+        <z>-0.00513228774</z>
     </vector3>
     <quaternion name="CA2-2-Servo-Params-Rotation">
-        <w>0.297160029</w>
-        <x>0.00246941298</x>
-        <y>-0.954819381</y>
-        <z>0.00312440703</z>
+        <w>0.297165722</w>
+        <x>0.00249217101</x>
+        <y>-0.954817533</y>
+        <z>0.00314795319</z>
     </quaternion>
     <quaternion name="CA2-3-Servo-Params-PartRotation">
-        <w>0.625392318</w>
-        <x>-0.626671016</x>
-        <y>-0.331376851</y>
-        <z>-0.326124787</z>
+        <w>0.625368297</w>
+        <x>-0.626698017</x>
+        <y>-0.331384569</y>
+        <z>-0.326110989</z>
     </quaternion>
     <vector3 name="CA2-3-Servo-Params-ParentOffset">
-        <x>4.84990692</x>
-        <y>-5.32230697E-05</y>
-        <z>-2.14656357E-05</z>
+        <x>4.84990788</x>
+        <y>-6.46591725E-05</y>
+        <z>-1.95155662E-05</z>
     </vector3>
     <vector3 name="CA2-3-Servo-Params-Axis">
-        <x>0.00573515892</x>
-        <y>-0.999970853</y>
-        <z>0.00505435467</z>
+        <x>0.00572860241</x>
+        <y>-0.999970436</y>
+        <z>0.00513228774</z>
     </vector3>
     <quaternion name="CA2-3-Servo-Params-Rotation">
-        <w>-0.00310488418</w>
-        <x>-0.95481807</x>
-        <y>-0.0024766922</y>
-        <z>0.297164559</z>
+        <w>-0.00312709063</w>
+        <x>-0.954816103</x>
+        <y>-0.00249745697</y>
+        <z>0.297170311</z>
     </quaternion>
     <quaternion name="CA2-4-Servo-Params-PartRotation">
-        <w>0.625392318</w>
-        <x>-0.626671016</x>
-        <y>-0.331376851</y>
-        <z>-0.326124787</z>
+        <w>0.625368297</w>
+        <x>-0.626698017</x>
+        <y>-0.331384569</y>
+        <z>-0.326110989</z>
     </quaternion>
     <vector3 name="CA2-4-Servo-Params-ParentOffset">
-        <x>4.85111046</x>
-        <y>0.412979215</y>
-        <z>6.96866846E-06</z>
+        <x>4.85107899</x>
+        <y>0.412971556</y>
+        <z>9.75871171E-06</z>
     </vector3>
     <vector3 name="CA2-4-Servo-Params-Axis">
-        <x>0.00573515892</x>
-        <y>-0.999970853</y>
-        <z>0.00505435467</z>
+        <x>0.00572860241</x>
+        <y>-0.999970436</y>
+        <z>0.00513228774</z>
     </vector3>
     <quaternion name="CA2-4-Servo-Params-Rotation">
-        <w>-0.00250277645</w>
-        <x>0.297184527</x>
-        <y>0.00310524506</y>
-        <z>0.954811811</z>
+        <w>-0.00252298266</w>
+        <x>0.297190398</x>
+        <y>0.00312456302</y>
+        <z>0.954809785</z>
     </quaternion>
     <quaternion name="CA2-5-Servo-Params-PartRotation">
-        <w>0.625392318</w>
-        <x>-0.626671016</x>
-        <y>-0.331376851</y>
-        <z>-0.326124787</z>
+        <w>0.625368297</w>
+        <x>-0.626698017</x>
+        <y>-0.331384569</y>
+        <z>-0.326110989</z>
     </quaternion>
     <vector3 name="CA2-5-Servo-Params-ParentOffset">
-        <x>-2.0124512E-06</x>
-        <y>0.46446234</y>
-        <z>-2.98808882E-05</z>
+        <x>-2.24586483E-06</x>
+        <y>0.464455843</y>
+        <z>-2.66122915E-05</z>
     </vector3>
     <vector3 name="CA2-5-Servo-Params-Axis">
-        <x>0.567664027</x>
-        <y>0.00741666555</y>
-        <z>0.823226988</z>
+        <x>0.567671776</x>
+        <y>0.00747716427</y>
+        <z>0.823221028</z>
     </vector3>
     <quaternion name="CA2-5-Servo-Params-Rotation">
-        <w>-0.329128087</w>
-        <x>-0.623201609</x>
-        <y>-0.628795207</y>
-        <z>-0.328498214</z>
+        <w>-0.329124093</w>
+        <x>-0.623183846</x>
+        <y>-0.628816783</y>
+        <z>-0.328494579</z>
     </quaternion>
     <quaternion name="CA2-6-Servo-Params-PartRotation">
-        <w>0.625392318</w>
-        <x>-0.626671016</x>
-        <y>-0.331376851</y>
-        <z>-0.326124787</z>
+        <w>0.625368297</w>
+        <x>-0.626698017</x>
+        <y>-0.331384569</y>
+        <z>-0.326110989</z>
     </quaternion>
     <vector3 name="CA2-6-Servo-Params-ParentOffset">
-        <x>5.06391079E-05</x>
-        <y>0.464534551</y>
-        <z>0.000249004283</z>
+        <x>3.59423684E-05</x>
+        <y>0.464520425</y>
+        <z>0.00025439178</z>
     </vector3>
     <vector3 name="CA2-6-Servo-Params-Axis">
-        <x>0.823240399</x>
-        <y>0.00185213983</y>
-        <z>-0.567690074</z>
+        <x>0.823235035</x>
+        <y>0.00180241466</y>
+        <z>-0.567697883</z>
     </vector3>
     <quaternion name="CA2-6-Servo-Params-Rotation">
-        <w>-0.331609905</w>
-        <x>-0.326016039</x>
-        <y>-0.625683248</y>
-        <z>0.626313865</z>
+        <w>-0.331625521</w>
+        <x>-0.325992644</x>
+        <y>-0.625685215</y>
+        <z>0.626315713</z>
     </quaternion>
     <quaternion name="CA2-7-Servo-Params-PartRotation">
-        <w>0.625392318</w>
-        <x>-0.626671016</x>
-        <y>-0.331376851</y>
-        <z>-0.326124787</z>
+        <w>0.625368297</w>
+        <x>-0.626698017</x>
+        <y>-0.331384569</y>
+        <z>-0.326110989</z>
     </quaternion>
     <vector3 name="CA2-7-Servo-Params-ParentOffset">
-        <x>1.16737983E-05</x>
-        <y>0.567654908</y>
-        <z>2.0609325E-06</z>
+        <x>9.53804283E-06</x>
+        <y>0.567647815</y>
+        <z>2.11356428E-06</z>
     </vector3>
     <vector3 name="CA2-7-Servo-Params-Axis">
         <x>0</x>
@@ -337,14 +337,14 @@
         <z>0</z>
     </vector3>
     <quaternion name="CA2-7-Servo-Params-Rotation">
-        <w>0.00044593215</w>
-        <x>0.88529563</x>
-        <y>0.00395543873</y>
-        <z>0.465011835</z>
+        <w>0.000445961952</w>
+        <x>0.885298371</x>
+        <y>0.00398296118</y>
+        <z>0.465006471</z>
     </quaternion>
     <vector2 name="RV2F-IRC-Window-Position">
-        <x>1606</x>
-        <y>250</y>
+        <x>14</x>
+        <y>89</y>
     </vector2>
     <quaternion name="RV2F-0-Servo-Params-PartRotation">
         <w>0.640120625</w>
@@ -499,5 +499,365 @@
         <x>0.298550487</x>
         <y>-0.63987875</y>
         <z>0.643701673</z>
+    </quaternion>
+    <vector2 name="SPDMA1-IRC-Window-Position">
+        <x>31</x>
+        <y>58</y>
+    </vector2>
+    <quaternion name="SPDMA1-0-Servo-Params-PartRotation">
+        <w>0.21198754</w>
+        <x>-0.209393814</x>
+        <y>-0.677098989</y>
+        <z>-0.672868848</z>
+    </quaternion>
+    <vector3 name="SPDMA1-0-Servo-Params-ParentOffset">
+        <x>0.041702088</x>
+        <y>0.000115005721</y>
+        <z>-4.64023033E-05</z>
+    </vector3>
+    <vector3 name="SPDMA1-0-Servo-Params-Axis">
+        <x>-0.822431087</x>
+        <y>-0.00171893835</y>
+        <z>0.568862259</z>
+    </vector3>
+    <quaternion name="SPDMA1-0-Servo-Params-Rotation">
+        <w>0.212040827</w>
+        <x>-0.209165126</x>
+        <y>-0.677086711</y>
+        <z>-0.672935545</z>
+    </quaternion>
+    <quaternion name="SPDMA1-1-Servo-Params-PartRotation">
+        <w>0.21198754</w>
+        <x>-0.209393814</x>
+        <y>-0.677098989</y>
+        <z>-0.672868848</z>
+    </quaternion>
+    <vector3 name="SPDMA1-1-Servo-Params-ParentOffset">
+        <x>0.266255677</x>
+        <y>-0.173232168</y>
+        <z>0.0235941187</z>
+    </vector3>
+    <vector3 name="SPDMA1-1-Servo-Params-Axis">
+        <x>0.00528395176</x>
+        <y>-0.999975443</y>
+        <z>0.00461762398</z>
+    </vector3>
+    <quaternion name="SPDMA1-1-Servo-Params-Rotation">
+        <w>0.676452219</w>
+        <x>-0.21269986</x>
+        <y>0.208542436</y>
+        <z>-0.673558712</z>
+    </quaternion>
+    <quaternion name="SPDMA1-2-Servo-Params-PartRotation">
+        <w>0.21198754</w>
+        <x>-0.209393814</x>
+        <y>-0.677098989</y>
+        <z>-0.672868848</z>
+    </quaternion>
+    <vector3 name="SPDMA1-2-Servo-Params-ParentOffset">
+        <x>0.231210336</x>
+        <y>-0.172011256</y>
+        <z>0.0236503445</z>
+    </vector3>
+    <vector3 name="SPDMA1-2-Servo-Params-Axis">
+        <x>-0.568840325</x>
+        <y>-0.00680346042</y>
+        <z>-0.822419882</z>
+    </vector3>
+    <quaternion name="SPDMA1-2-Servo-Params-Rotation">
+        <w>-0.327847749</w>
+        <x>0.628722847</x>
+        <y>-0.623774529</y>
+        <z>0.328829378</z>
+    </quaternion>
+    <quaternion name="SPDMA1-3-Servo-Params-PartRotation">
+        <w>0.21198754</w>
+        <x>-0.209393814</x>
+        <y>-0.677098989</y>
+        <z>-0.672868848</z>
+    </quaternion>
+    <vector3 name="SPDMA1-3-Servo-Params-ParentOffset">
+        <x>-2.63052407E-05</x>
+        <y>0.179225713</y>
+        <z>-0.57199502</z>
+    </vector3>
+    <vector3 name="SPDMA1-3-Servo-Params-Axis">
+        <x>-0.568840325</x>
+        <y>-0.00680346042</y>
+        <z>-0.822419882</z>
+    </vector3>
+    <quaternion name="SPDMA1-3-Servo-Params-Rotation">
+        <w>0.327757567</w>
+        <x>-0.628745496</x>
+        <y>0.623825967</y>
+        <z>-0.328778476</z>
+    </quaternion>
+    <quaternion name="SPDMA1-4-Servo-Params-PartRotation">
+        <w>0.21198754</w>
+        <x>-0.209393814</x>
+        <y>-0.677098989</y>
+        <z>-0.672868848</z>
+    </quaternion>
+    <vector3 name="SPDMA1-4-Servo-Params-ParentOffset">
+        <x>-3.10134305E-06</x>
+        <y>-0.167841673</y>
+        <z>-0.670738518</z>
+    </vector3>
+    <vector3 name="SPDMA1-4-Servo-Params-Axis">
+        <x>0.568840325</x>
+        <y>0.00680346042</y>
+        <z>0.822419882</z>
+    </vector3>
+    <quaternion name="SPDMA1-4-Servo-Params-Rotation">
+        <w>0.673604786</w>
+        <x>0.208642438</x>
+        <y>0.212855652</y>
+        <z>0.676326394</z>
+    </quaternion>
+    <quaternion name="SPDMA1-5-Servo-Params-PartRotation">
+        <w>0.21198754</w>
+        <x>-0.209393814</x>
+        <y>-0.677098989</y>
+        <z>-0.672868848</z>
+    </quaternion>
+    <vector3 name="SPDMA1-5-Servo-Params-ParentOffset">
+        <x>-0.00602498604</x>
+        <y>0.173265547</y>
+        <z>0.127409324</z>
+    </vector3>
+    <vector3 name="SPDMA1-5-Servo-Params-Axis">
+        <x>-0.00528395176</x>
+        <y>0.999975443</y>
+        <z>-0.00461762398</z>
+    </vector3>
+    <quaternion name="SPDMA1-5-Servo-Params-Rotation">
+        <w>0.212109834</w>
+        <x>-0.209377393</x>
+        <y>-0.677083254</y>
+        <z>-0.672851324</z>
+    </quaternion>
+    <quaternion name="SPDMA1-6-Servo-Params-PartRotation">
+        <w>0.21198754</w>
+        <x>-0.209393814</x>
+        <y>-0.677098989</y>
+        <z>-0.672868848</z>
+    </quaternion>
+    <vector3 name="SPDMA1-6-Servo-Params-ParentOffset">
+        <x>0.00573979272</x>
+        <y>0.173213512</y>
+        <z>0.201545402</z>
+    </vector3>
+    <vector3 name="SPDMA1-6-Servo-Params-Axis">
+        <x>-0.822431087</x>
+        <y>-0.00171893835</y>
+        <z>0.568862259</z>
+    </vector3>
+    <quaternion name="SPDMA1-6-Servo-Params-Rotation">
+        <w>0.209376082</w>
+        <x>0.212109044</x>
+        <y>-0.672852278</y>
+        <z>0.677082956</z>
+    </quaternion>
+    <quaternion name="SPDMA1-7-Servo-Params-PartRotation">
+        <w>0.21198754</w>
+        <x>-0.209393814</x>
+        <y>-0.677098989</y>
+        <z>-0.672868848</z>
+    </quaternion>
+    <vector3 name="SPDMA1-7-Servo-Params-ParentOffset">
+        <x>0.690216839</x>
+        <y>-1.28677902E-05</y>
+        <z>1.18979578E-05</z>
+    </vector3>
+    <vector3 name="SPDMA1-7-Servo-Params-Axis">
+        <x>0</x>
+        <y>0</y>
+        <z>0</z>
+    </vector3>
+    <quaternion name="SPDMA1-7-Servo-Params-Rotation">
+        <w>-0.00348165538</w>
+        <x>-0.464226693</x>
+        <y>0.000752060616</y>
+        <z>0.885709345</z>
+    </quaternion>
+    <vector2 name="SPDMA2-IRC-Window-Position">
+        <x>5</x>
+        <y>41</y>
+    </vector2>
+    <quaternion name="SPDMA2-0-Servo-Params-PartRotation">
+        <w>0.320160002</w>
+        <x>0.209582373</x>
+        <y>-0.203755096</y>
+        <z>0.901141942</z>
+    </quaternion>
+    <vector3 name="SPDMA2-0-Servo-Params-ParentOffset">
+        <x>0.0420134924</x>
+        <y>6.33730406E-06</y>
+        <z>-0.00118031574</z>
+    </vector3>
+    <vector3 name="SPDMA2-0-Servo-Params-Axis">
+        <x>-0.70714581</x>
+        <y>0.491612256</y>
+        <z>0.5081954</z>
+    </vector3>
+    <quaternion name="SPDMA2-0-Servo-Params-Rotation">
+        <w>0.32053414</w>
+        <x>0.208344549</x>
+        <y>-0.203206241</y>
+        <z>0.901419818</z>
+    </quaternion>
+    <quaternion name="SPDMA2-1-Servo-Params-PartRotation">
+        <w>0.320160002</w>
+        <x>0.209582373</x>
+        <y>-0.203755096</y>
+        <z>0.901141942</z>
+    </quaternion>
+    <vector3 name="SPDMA2-1-Servo-Params-ParentOffset">
+        <x>0.266247481</x>
+        <y>-0.173245147</y>
+        <z>0.0235828608</z>
+    </vector3>
+    <vector3 name="SPDMA2-1-Servo-Params-Axis">
+        <x>-0.247258484</x>
+        <y>0.501424313</y>
+        <z>-0.829118192</z>
+    </vector3>
+    <quaternion name="SPDMA2-1-Servo-Params-Rotation">
+        <w>0.0846469179</w>
+        <x>0.608378947</x>
+        <y>0.496255517</y>
+        <z>-0.613547385</z>
+    </quaternion>
+    <quaternion name="SPDMA2-2-Servo-Params-PartRotation">
+        <w>0.320160002</w>
+        <x>0.209582373</x>
+        <y>-0.203755096</y>
+        <z>0.901141942</z>
+    </quaternion>
+    <vector3 name="SPDMA2-2-Servo-Params-ParentOffset">
+        <x>0.232154682</x>
+        <y>-0.172230497</y>
+        <z>0.0235526673</z>
+    </vector3>
+    <vector3 name="SPDMA2-2-Servo-Params-Axis">
+        <x>0.662426174</x>
+        <y>0.711963117</y>
+        <z>0.233024731</z>
+    </vector3>
+    <quaternion name="SPDMA2-2-Servo-Params-Rotation">
+        <w>0.490771741</w>
+        <x>0.3703067</x>
+        <y>0.784278572</y>
+        <z>-0.0832057372</z>
+    </quaternion>
+    <quaternion name="SPDMA2-3-Servo-Params-PartRotation">
+        <w>0.320160002</w>
+        <x>0.209582373</x>
+        <y>-0.203755096</y>
+        <z>0.901141942</z>
+    </quaternion>
+    <vector3 name="SPDMA2-3-Servo-Params-ParentOffset">
+        <x>0.000629698916</x>
+        <y>0.179317191</y>
+        <z>-0.572276115</z>
+    </vector3>
+    <vector3 name="SPDMA2-3-Servo-Params-Axis">
+        <x>0.662426174</x>
+        <y>0.711963117</y>
+        <z>0.233024731</z>
+    </vector3>
+    <quaternion name="SPDMA2-3-Servo-Params-Rotation">
+        <w>0.490972251</w>
+        <x>0.370393306</x>
+        <y>0.784120202</y>
+        <z>-0.0831304193</z>
+    </quaternion>
+    <quaternion name="SPDMA2-4-Servo-Params-PartRotation">
+        <w>0.320160002</w>
+        <x>0.209582373</x>
+        <y>-0.203755096</y>
+        <z>0.901141942</z>
+    </quaternion>
+    <vector3 name="SPDMA2-4-Servo-Params-ParentOffset">
+        <x>0.000414263661</x>
+        <y>-0.167844549</y>
+        <z>-0.670907855</z>
+    </vector3>
+    <vector3 name="SPDMA2-4-Servo-Params-Axis">
+        <x>-0.662426174</x>
+        <y>-0.711963117</y>
+        <z>-0.233024731</z>
+    </vector3>
+    <quaternion name="SPDMA2-4-Servo-Params-Rotation">
+        <w>-0.613166332</w>
+        <x>-0.495692283</x>
+        <y>0.609140337</y>
+        <z>-0.0852310807</z>
+    </quaternion>
+    <quaternion name="SPDMA2-5-Servo-Params-PartRotation">
+        <w>0.320160002</w>
+        <x>0.209582373</x>
+        <y>-0.203755096</y>
+        <z>0.901141942</z>
+    </quaternion>
+    <vector3 name="SPDMA2-5-Servo-Params-ParentOffset">
+        <x>-0.00605362607</x>
+        <y>0.173251182</y>
+        <z>0.127416149</z>
+    </vector3>
+    <vector3 name="SPDMA2-5-Servo-Params-Axis">
+        <x>0.247258484</x>
+        <y>-0.501424313</y>
+        <z>0.829118192</z>
+    </vector3>
+    <quaternion name="SPDMA2-5-Servo-Params-Rotation">
+        <w>-0.320695966</w>
+        <x>-0.207256988</x>
+        <y>0.203211993</y>
+        <z>-0.901611686</z>
+    </quaternion>
+    <quaternion name="SPDMA2-6-Servo-Params-PartRotation">
+        <w>0.320160002</w>
+        <x>0.209582373</x>
+        <y>-0.203755096</y>
+        <z>0.901141942</z>
+    </quaternion>
+    <vector3 name="SPDMA2-6-Servo-Params-ParentOffset">
+        <x>0.00583194429</x>
+        <y>0.173232272</y>
+        <z>0.201326221</z>
+    </vector3>
+    <vector3 name="SPDMA2-6-Servo-Params-Axis">
+        <x>-0.70714581</x>
+        <y>0.491612256</y>
+        <z>0.5081954</z>
+    </vector3>
+    <quaternion name="SPDMA2-6-Servo-Params-Rotation">
+        <w>0.207235143</w>
+        <x>-0.320703536</x>
+        <y>-0.901615858</y>
+        <z>-0.203203306</z>
+    </quaternion>
+    <quaternion name="SPDMA2-7-Servo-Params-PartRotation">
+        <w>0.320160002</w>
+        <x>0.209582373</x>
+        <y>-0.203755096</y>
+        <z>0.901141942</z>
+    </quaternion>
+    <vector3 name="SPDMA2-7-Servo-Params-ParentOffset">
+        <x>0.690190256</x>
+        <y>-3.42520161E-06</y>
+        <z>-1.42017143E-05</z>
+    </vector3>
+    <vector3 name="SPDMA2-7-Servo-Params-Axis">
+        <x>0</x>
+        <y>0</y>
+        <z>0</z>
+    </vector3>
+    <quaternion name="SPDMA2-7-Servo-Params-Rotation">
+        <w>0.816378534</w>
+        <x>-0.405941546</x>
+        <y>-0.288440615</y>
+        <z>0.292471349</z>
     </quaternion>
 </config>

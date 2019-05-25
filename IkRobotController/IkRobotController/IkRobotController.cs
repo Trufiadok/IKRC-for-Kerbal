@@ -52,6 +52,30 @@ namespace IkRobotController
 
         [KSPField(isPersistant = false)]
         public float workingRange = 8.0f;
+
+        [KSPField(isPersistant = false)]
+        public float MaxPosErr = 10f;
+
+        [KSPField(isPersistant = false)]
+        public float MaxOriErr = 180f;
+
+        [KSPField(isPersistant = false)]
+        public float DistanceThreshold = 0.01f;
+
+        [KSPField(isPersistant = false)]
+        public float AngleThreshold = 0.5f;
+
+        [KSPField(isPersistant = false)]
+        public float SamplingAngle = 0.02f;
+
+        [KSPField(isPersistant = false)]
+        public bool dynamicSamplingAngle = true;
+
+        [KSPField(isPersistant = false)]
+        public bool SLTactive = false;
+
+        [KSPField(isPersistant = false)]
+        public bool NormalizedServoRotation = true;
         #endregion module variable of part.cfg
 
         //private static int counterStart = 0;
@@ -86,6 +110,7 @@ namespace IkRobotController
         private bool ServosIsBaseInited = false;
         private bool DumpEventIsActive = false;
         private bool IsSaveServoStructure = false;
+        private bool SLT1stCycle = false;
 
         private string msgWindowTitle = "";
         private string chkWindowTitle = "";
@@ -129,11 +154,24 @@ namespace IkRobotController
         private bool chkWindowActive = false;
         private bool cfgWindowActive = false;
         private bool emergencyServoStop = false;
+        private bool manualMoveReference = false;
         private bool manageConfig = false;
         private float Yoffset = 0;
         private float servoSpeed = 0.25f;
         private float transStep = 0.25f;
         private float rotStep = 0.25f;
+
+        //private bool AdjustEnable = false;
+
+        private int SLTposition = 0;
+        private Vector3 saveGlobalPosition = new Vector3();
+        private float SLTdistance;
+        private float SLTelementDistance;
+        VectorSM SLTactualState;
+        private float SLTdivider;
+        private bool SLTBreaking = true;
+        private bool SLTBreakingActive = true;
+        private bool moveTarget = false;
 
         private float ArmMaxLength = 8.0f;
 
@@ -1139,6 +1177,7 @@ namespace IkRobotController
         public bool IsForceRoll = false;
         public bool IKsuccess = false;
         public bool Bug = true;
+        public bool SubIterate = false;
 
         public Vector3 globalPosition;
         public Quaternion globalQuaternion;
@@ -1152,17 +1191,17 @@ namespace IkRobotController
         public float forceRollNumberY = 0.0f;
         public float LearningRatePos;
         public float LearningRateOri;
-        public float SamplingAngle = 0.02f;
+        //public float SamplingAngle = 0.02f;
 
-        public float DistanceThreshold = 0.01f;
+        //public float DistanceThreshold = 0.01f;
         public float Distance;
-        public float AngleThreshold = 0.5f;
+        //public float AngleThreshold = 0.5f;
         public float Angle;
 
         public float workingDistance;
 
-        public float MaxPosErr = 10f;
-        public float MaxOriErr = 180f;
+        //public float MaxPosErr = 10f;
+        //public float MaxOriErr = 180f;
 
         public float DinLearningRatePos;
         public float DinLearningRateOri;
@@ -1603,7 +1642,12 @@ namespace IkRobotController
             ridbtList = new List<BoolText>();
 
             ArmMaxLength = workingRange;
-            ArmMaxLengthString = String.Format("{0}", workingRange, "0.0");
+            ArmMaxLengthString = workingRange.ToString();
+            MaxPosErrString = MaxPosErr.ToString();
+            MaxOriErrString = MaxOriErr.ToString();
+            DistanceThresholdString = DistanceThreshold.ToString();
+            AngleThresholdString = AngleThreshold.ToString();
+            samplingAngleString = SamplingAngle.ToString();
 
             if (robotArmID == "")
             {
@@ -1733,6 +1777,7 @@ namespace IkRobotController
         // Update is called once per frame
         public void Update()
         {
+            #region 1st cycle after module inited 
             if (HighLogic.LoadedSceneIsFlight && IsInitedModule && IsInitedModule1st)
             {
                 IsInitedModule1st = false;
@@ -1781,9 +1826,12 @@ namespace IkRobotController
                 //    k++;
                 //}
             }
+            #endregion 1st cycle after module inited
 
+            #region default cycle
             if (ircWindowActive && HighLogic.LoadedSceneIsFlight && IsInitedModule)
             {
+                #region set aim object
                 // Set Aim Object (PDGFx)
                 //Debug.Log(string.Format("[TRF] Update() - // Set Aim Object (PDGFx)"));
                 GameObject mouseObject = CheckForObjectUnderCursor();
@@ -1807,7 +1855,9 @@ namespace IkRobotController
                     dockingNodeObject = null;
                     hoverObject = null;
                 }
+                #endregion set aim object
 
+                #region emergency servo stop
                 // emergency servo stop
                 //Debug.Log(string.Format("[TRF] Update() - // emergency servo stop"));
                 if (emergencyServoStop)
@@ -1817,7 +1867,9 @@ namespace IkRobotController
                     globalPosition = SortIkServo[SortIkServo.Count - 1].ServoTransform.position;
                     globalQuaternion = SortIkServo[SortIkServo.Count - 1].ServoTransform.rotation;
                 }
+                #endregion emergency servo stop
 
+                #region set base state
                 // set base state
                 //Debug.Log(string.Format("[TRF] Update() - // set base state"));
                 if (baseStateBool)
@@ -1831,9 +1883,14 @@ namespace IkRobotController
                     IK_active = false;
 
                     // implement angle of joints
-                    Bug = !ImplementServoRotation(SortIkServo, theta, servoSpeed);
+                    if (!NormalizedServoRotation)
+                        Bug = !ImplementServoRotation(SortIkServo, theta, servoSpeed);
+                    else
+                        Bug = !ImplementNormalServoRotation(SortIkServo, currentTheta, theta, servoSpeed);
                 }
+                #endregion set base state
 
+                #region actual state
                 // set actual state
                 //Debug.Log(string.Format("[TRF] Update() - // set actual state"));
                 if (actualStateBool)
@@ -1844,6 +1901,7 @@ namespace IkRobotController
 
                     IK_active = false;
                 }
+                #endregion actual state
 
                 //Debug.Log(string.Format("[TRF] Update() - #region PdgfAimObject"));
                 #region PdgfAimObject
@@ -1952,6 +2010,16 @@ namespace IkRobotController
                     }
                 }
                 #endregion PdgfAimObject
+
+                #region set targetball than aim
+                if (pdgfStateBool && moveTarget)
+                {
+                    globalQuaternion = global.transform.rotation;
+                    globalPosition = global.transform.position;
+                    IK_active = false;
+                }
+                #endregion set targetball than aim
+
                 //Debug.Log(string.Format("[TRF] Update() - #region VirtualEndEffector"));
                 #region VirtualEndEffector
                 // set selected part than virtual endeffector
@@ -2027,29 +2095,86 @@ namespace IkRobotController
                     globalQuaternion = SortIkServo[SortIkServo.Count - 1].ServoTransform.rotation;
                 }
                 #endregion VirtualEndEffector
+                
                 //Debug.Log(string.Format("[TRF] Update() - #region RobotArm MovingButtons"));
                 #region RobotArm MovingButtons
                 // detect button activity
                 IKButton_active = !ButtonsIsReleased();
 
-                // Kiterjesztett endeffektor esetén ez a funkció tiltott kell, hogy legyen !!! ???
-                // if rotate only servo of LEE then not IK only rotate servo to direct
-                if ((buttons.Rotation == Quaternion.Euler(0f, 0f, 0.5f * rotStep) || buttons.Rotation == Quaternion.Euler(0f, 0f, -0.5f * rotStep)) && robotArmID == "CA2")
+                if (!moveTarget)
                 {
-                    theta[6] += (360f - buttons.Rotation.eulerAngles.z) > 180f ? buttons.Rotation.eulerAngles.z : (buttons.Rotation.eulerAngles.z - 360f);
-                    // implement angle of joints
-                    Bug = !ImplementServoRotation(SortIkServo, theta, servoSpeed);
+                    // Kiterjesztett endeffektor esetén ez a funkció tiltott kell, hogy legyen !!! ???
+                    // if rotate only servo of LEE then not IK only rotate servo to direct
+                    if ((buttons.Rotation == Quaternion.Euler(0f, 0f, 0.5f * rotStep) || buttons.Rotation == Quaternion.Euler(0f, 0f, -0.5f * rotStep)) && robotArmID == "CA2")
+                    {
+                        theta[SortIkServo.Count - 2] += (360f - buttons.Rotation.eulerAngles.z) > 180f ? buttons.Rotation.eulerAngles.z : (buttons.Rotation.eulerAngles.z - 360f);
+                        // implement angle of joints
+                        if (!NormalizedServoRotation)
+                            Bug = !ImplementServoRotation(SortIkServo, theta, servoSpeed);
+                        else
+                            Bug = !ImplementNormalServoRotation(SortIkServo, currentTheta, theta, servoSpeed);
+                    }
+                    // calculate global position of aim from buttons command
+                    // global orientation
+                    globalQuaternion = globalQuaternion * buttons.Rotation;
+                    // global position
+                    globalPosition = globalPosition + globalQuaternion * buttons.Translation;
                 }
-                #endregion RobotArm MovingButtons
-
-                // calculate global position of aim from buttons command
-                // global orientation
-                globalQuaternion = globalQuaternion * buttons.Rotation;
-                // global position
-                globalPosition = globalPosition + globalQuaternion * buttons.Translation;
+                else
+                {
+                    global.transform.rotation = global.transform.rotation * buttons.Rotation;
+                    global.transform.position = global.transform.position + globalQuaternion * buttons.Translation;
+                }
 
                 // clear buttons.Translation & .Rotation
                 ButtonsReleased();
+                #endregion RobotArm MovingButtons
+
+                #region Straight Line Trajectory
+                if (SLTactive && IK_active)
+                {
+                    if (SLT1stCycle)
+                    {
+                        //Debug.Log(string.Format("[TRF] Update() - STL1stCycle"));
+                        SLT1stCycle = false;
+                        SLTposition = 1;
+                        saveGlobalPosition = globalPosition;
+                        if (!SLTBreakingActive)
+                            SLTBreaking = false;
+                        else
+                            SLTBreaking = true;
+
+                        SLTactualState = ForwardKinematics(theta, SortIkServo);
+                        SLTdistance = Vector3.Distance(saveGlobalPosition, SLTactualState.Translation);
+                        //Debug.Log(string.Format("[TRF] Update() -STLdistance: {0}", STLdistance));
+                        SLTdivider = (float)Mathf.RoundToInt(SLTdistance / 0.5f);
+                        //Debug.Log(string.Format("[TRF] Update() - STLdivider: {0}", STLdivider));
+                        SLTelementDistance = SLTdistance / SLTdivider;
+                        //Debug.Log(string.Format("[TRF] Update() - STLelementDistance: {0}", STLelementDistance));
+
+                        globalPosition = Vector3.Lerp(SLTactualState.Translation, saveGlobalPosition, (SLTelementDistance * (float)SLTposition) / SLTdistance);
+                        //Debug.Log(string.Format("[TRF] Update() - (STLelementDistance * (float)STLposition) / STLdistance): {0}", (STLelementDistance * (float)STLposition) / STLdistance));
+                        Success = false;
+                    }
+                    else if (Success && (SLTposition < SLTdivider))
+                    {
+                        //Debug.Log(string.Format("[TRF] Update() - IKsuccess && (STLposition < STLdivider)"));
+                        Success = false;
+                        SLTposition++;
+                        if (SLTposition >= SLTdivider)
+                            SLTBreaking = true;
+
+                        globalPosition = Vector3.Lerp(SLTactualState.Translation, saveGlobalPosition, (SLTelementDistance * (float)SLTposition) / SLTdistance);
+                        //Debug.Log(string.Format("[TRF] Update() - STLposition: {0}", STLposition));
+                        //Debug.Log(string.Format("[TRF] Update() - (STLelementDistance * (float)STLposition) / STLdistance): {0}", (STLelementDistance * (float)STLposition) / STLdistance));
+                    }
+                }
+                else
+                {
+                    SLT1stCycle = true;
+                    SLTBreaking = true;
+                }
+                #endregion Straight Line Trajectory
 
                 #region Active Inverse Kinematics
                 if (IK_active || IKButton_active)
@@ -2059,9 +2184,15 @@ namespace IkRobotController
                     distance = Vector3.Distance(SortIkServo[SortIkServo.Count - 1].ServoTransform.position, globalPosition);
                     angle = Quaternion.Angle(Quaternion.Euler(SortIkServo[SortIkServo.Count - 1].ServoTransform.rotation.eulerAngles), globalQuaternion);
 
+                    //Debug.Log(string.Format("[TRF] Update() - distance = {0} ; {1}", distance, DistanceThreshold));
+                    //Debug.Log(string.Format("[TRF] Update() - angle = {0} ; {1}", angle, AngleThreshold));
+
                     // if differents over the threshold then calculate IK
+                    #region endeffector out of tresholds
                     if (distance > DistanceThreshold || angle > AngleThreshold)
+                    //if (distance > DistanceThreshold * 10f || angle > AngleThreshold * 10f)
                     {
+                        //Debug.Log(string.Format("[TRF] Update() - Success = false"));
                         Success = false;
 
                         // start iterate from zero thetas
@@ -2081,74 +2212,107 @@ namespace IkRobotController
                         {
                             IKsuccess = InverseKinematics(globalPosition, globalQuaternion, theta);
 
+                            // drawing diagram
                             errorData.Add(Distance / 2f * (gradientDiagramRectangle.height - 30f));
                             if (errorData.Count > (int)(gradientDiagramRectangle.width - 10f))
                                 errorData.RemoveAt(0);
 
                             if (IKsuccess)
+                            {
                                 break;
+                            }
                         }
 
+                        // drawing diagram
                         iterateData.Add((float)j / (float)iterateNumber * (diagramRectangle.height - 20f));
                         if (iterateData.Count > (int)(diagramRectangle.width - 10f))
                             iterateData.RemoveAt(0);
 
+                        #region dinamic SamplingAngle
                         if (!nearPDGFBool)
                         {
                             if (j == iterateNumber)
                             {
                                 failedIterateCycle++;
-                                SamplingAngle = 0.005f;
+                                if (dynamicSamplingAngle)
+                                {
+                                    SamplingAngle = 0.005f;
+                                }
                             }
                             else
                             {
                                 failedIterateCycle = 0;
                                 if (j > (iterateNumber / 2))
                                 {
-                                    SamplingAngle = 0.01f;
+                                    if (dynamicSamplingAngle)
+                                    {
+                                        SamplingAngle = 0.01f;
+                                    }
                                 }
                                 else
                                 {
-                                    SamplingAngle = 0.02f;
+                                    if (dynamicSamplingAngle)
+                                    {
+                                        SamplingAngle = 0.02f;
+                                    }
                                 }
                             }
                         }
                         else
                         {
-                            SamplingAngle = 0.005f;
+                            if (dynamicSamplingAngle)
+                            {
+                                SamplingAngle = 0.005f;
+                            }
                             servoSpeed = 0.031f;
                         }
-
-
+                        #endregion dinamic SamplingAngle
 
                         samplingAngleString = SamplingAngle.ToString();
 
+                        // drawing diagram
                         sampleAngleData.Add(SamplingAngle / 0.02f * (diagramRectangle.height - 30f));
                         if (sampleAngleData.Count > (int)(diagramRectangle.width - 10f))
                             sampleAngleData.RemoveAt(0);
 
+                        // drawing diagram
                         distanceData.Add(distance / 2f * (diagramRectangle.height - 30f));
                         if (distanceData.Count > (int)(diagramRectangle.width - 10f))
                             distanceData.RemoveAt(0);
 
-                        if (failedIterateCycle > iterateThreshold)
+                        if ((failedIterateCycle > iterateThreshold) && IK_active)
                         {
                             failedIterateCycle = 0;
 
+                            // ??? mi a hiba a manuális mozgatásnál ???
                             for (int i = 0; i < JointList.Length; i++)
                                 theta[i] = 0f;
                         }
 
+                        //if (manualMoveReference && IKButton_active)
+                        //{
+                        //    FKvector = ForwardKinematics(theta, SortIkServo);
+                        //    globalPosition = FKvector.Translation;
+                        //    globalQuaternion = FKvector.Rotation;
+                        //}
+
                         // implement angle of joints
-                        Bug = !ImplementServoRotation(SortIkServo, theta, servoSpeed);
+                        if (!NormalizedServoRotation)
+                            Bug = !ImplementServoRotation(SortIkServo, theta, servoSpeed);
+                        else
+                            Bug = !ImplementNormalServoRotation(SortIkServo, currentTheta, theta, servoSpeed);
                     }
+                    #endregion endeffector out of tresholds
+                    #region endeffector in tresholds
                     else
                     {
+                        //Debug.Log(string.Format("[TRF] Update() - Success = true"));
                         Success = true;
                         // if IK success then turn off IK activity or switchable ???
-                        if (!refreshPDGFBool)
+                        if (!refreshPDGFBool && !IKButton_active && !SLTactive)
                             IK_active = false;
                     }
+                    #endregion endeffector in tresholds
                     //Debug.Log(string.Format("[TRF] {0} - Update() END ", 107));
                 }
                 #endregion Active Inverse Kinematics
@@ -2163,7 +2327,10 @@ namespace IkRobotController
                     //Debug.Log(string.Format("[TRF] {0} - ForwardKinematics(..)", 101));
 
                     // implement angle of joints
-                    Bug = !ImplementServoRotation(SortIkServo, theta, servoSpeed);
+                    if (!NormalizedServoRotation)
+                        Bug = !ImplementServoRotation(SortIkServo, theta, servoSpeed);
+                    else
+                        Bug = !ImplementNormalServoRotation(SortIkServo, currentTheta, theta, servoSpeed);
 
                     //for (int i = 0; i < (JointList.Length - 1); i++)
                     //{
@@ -2181,6 +2348,7 @@ namespace IkRobotController
                 }
                 #endregion Inactive Inverse Kinematics
                 //Debug.Log(string.Format("[TRF] Update() - #region Refresh LineDiagram Data"));
+                
                 #region Refresh LineDiagram Data
                 // Refresh data List of LineDiagram
                 if (data != null)
@@ -2198,12 +2366,16 @@ namespace IkRobotController
                 }
                 #endregion Refresh LineDiagram Data
 
-                global.transform.position = globalPosition;
-                global.transform.rotation = globalQuaternion;
+                if (!moveTarget)
+                {
+                    global.transform.position = globalPosition;
+                    global.transform.rotation = globalQuaternion;
+                }
 
                 currentTheta = GetActualServoRotation(SortIkServo);
                 workingDistance = ArmWorkingDistance();
             }
+            #endregion default cycle
         }
 
         #region get part transform by mouse
@@ -3001,18 +3173,17 @@ namespace IkRobotController
                     #region IK display of parameters
                     // IK values
                     Yoffset = 0;
-                    //inputRect = new Rect(320, 395, 40, 20);
-                    inputRect = new Rect(320, 15, 40, 20);
+                    inputRect = new Rect(320, 20, 55, 20);
                     AddInputValue(inputRect, iterateString, out iterateString, "IK_iterate", out iterateNumber, 150f);
                     AddInputValue(inputRect, samplingAngleString, out samplingAngleString, "IK_samplingAngle", out SamplingAngle, 150f);
                     AddInputValue(inputRect, DistanceThresholdString, out DistanceThresholdString, "IK_DistanceThreshold", out DistanceThreshold, 150f);
-                    AddOutputValue(inputRect, "IK_Distance", Distance, 150f);
+                    AddOutputValue(inputRect, "IK_Distance", Distance, 150f, "0.0000");
                     AddInputValue(inputRect, AngleThresholdString, out AngleThresholdString, "IK_AngleThreshold", out AngleThreshold, 150f);
-                    AddOutputValue(inputRect, "IK_Angle", Angle, 150f);
+                    AddOutputValue(inputRect, "IK_Angle", Angle, 150f, "0.0000");
                     AddInputValue(inputRect, MaxPosErrString, out MaxPosErrString, "IK_MaxPosErr", out MaxPosErr, 150f);
                     AddInputValue(inputRect, MaxOriErrString, out MaxOriErrString, "IK_MaxOriErr", out MaxOriErr, 150f);
-                    AddOutputValue(inputRect, "IK_DinLearningRatePos", DinLearningRatePos, 150f);
-                    AddOutputValue(inputRect, "IK_DinLearningRateOri", DinLearningRateOri, 150f);
+                    AddOutputValue(inputRect, "IK_DinLearningRatePos", DinLearningRatePos, 150f, "0.0000");
+                    AddOutputValue(inputRect, "IK_DinLearningRateOri", DinLearningRateOri, 150f, "0.0000");
                     #endregion IK display of parameters
 
                     //// MinMax values
@@ -3028,6 +3199,21 @@ namespace IkRobotController
                     //{
                     //    AddOutputValue(inputRect, "max[" + i.ToString() + "]", SortIkServo[i].MaxAngle, 4f);
                     //}
+
+                    // Move target toggle
+                    moveTarget = GUI.Toggle(new Rect(gradientDiagramRectangle.x, gradientDiagramRectangle.y - 90, 110, 20), moveTarget, " MoveTarget");
+
+                    // Normalized servo rotation toggle
+                    NormalizedServoRotation = GUI.Toggle(new Rect(gradientDiagramRectangle.x, gradientDiagramRectangle.y - 70, 110, 20), NormalizedServoRotation, " NormServRot");
+
+                    // SLT active toggle
+                    SLTactive = GUI.Toggle(new Rect(gradientDiagramRectangle.x, gradientDiagramRectangle.y - 50, 100, 20), SLTactive, " STL active");
+
+                    //// SLT breaking active toggle
+                    //SLTBreakingActive = GUI.Toggle(new Rect(gradientDiagramRectangle.x + 100, gradientDiagramRectangle.y - 50, 100, 20), SLTBreakingActive, " STL breaking");
+
+                    // Enable adjust parameters toggle
+                    dynamicSamplingAngle = GUI.Toggle(new Rect(gradientDiagramRectangle.x, gradientDiagramRectangle.y - 30, 100, 20), dynamicSamplingAngle, " Dyn.SAngle");
 
                     Color[] debugColor = { Color.red, Color.yellow, Color.magenta };
                     LineDiagram(gradientDiagramRectangle, gradientData, debugColor);
@@ -3130,7 +3316,8 @@ namespace IkRobotController
                 GUI.Toggle(new Rect(225, 340, 80, 20), Bug, " Bug");
 
                 // slider of servo speed
-                float[] speedSliderValues = { 0.0f, 0.031f, 0.063f, 0.125f, 0.25f, 0.5f, 1.0f, 2.0f, 4.0f };
+                //float[] speedSliderValues = { 0.0f, 0.031f, 0.063f, 0.125f, 0.25f, 0.5f, 1.0f, 2.0f, 4.0f };
+                float[] speedSliderValues = { 0.0f, 0.031f, 0.063f, 0.125f, 0.25f, 0.5f, 1.0f, 2.0f, 4.0f, 8.0f };
                 servoSpeed = FixValuesLogSlider(new Rect(10, 140, 150, 20), 50f, "speed", servoSpeed, speedSliderValues);
                 // slider of control button translation's step
                 float[] transSliderValues = { 0.0f, 0.0375f, 0.075f, 0.125f, 0.25f, 0.5f, 1.0f, 2.0f };
@@ -3145,6 +3332,8 @@ namespace IkRobotController
                 LineDiagram(diagramRectangle, data, color);
 
                 manageConfig = GUI.Button(new Rect(225, 495, 70, 20), "manCfg");
+
+                //manualMoveReference = GUI.Toggle(new Rect(225, 470, 90, 20), manualMoveReference, " ManMovRef");
 
                 if (manageConfig)
                 {
@@ -3445,6 +3634,13 @@ namespace IkRobotController
             Yoffset += 20f;
         }
 
+        public void AddOutputValue(Rect rectangle, string name, float valueFloat, float labelLength, string format)
+        {
+            GUI.Label(new Rect(rectangle.x, rectangle.y + Yoffset, labelLength, rectangle.height), name);
+            GUI.TextField(new Rect(rectangle.x + labelLength, rectangle.y + Yoffset, rectangle.width, rectangle.height), valueFloat.ToString(format));
+            Yoffset += 20f;
+        }
+
         public void AddOutputValue(Rect rectangle, string name, float valueFloat, float labelLength, float fieldLength)
         {
             GUI.Label(new Rect(rectangle.x, rectangle.y + Yoffset, labelLength, rectangle.height), name);
@@ -3676,10 +3872,51 @@ namespace IkRobotController
                     else
                         servoTheta = theta[j];
 
+                    //SortIkServo[j].iservo.SetModulo(SLTBreaking);
                     SortIkServo[j].iservo.MoveTo(servoTheta, speed);
                 }
                 else
                     success = false;
+            return success;
+        }
+
+        private bool ImplementNormalServoRotation(List<IKservo> Servos, float[] currentTheta, float[] theta, float maxspeed)
+        {
+            bool success = true;
+            float[] servoTheta;
+            float[] diffTheta;
+            float speed = 0f;
+
+            diffTheta = new float[SortIkServo.Count];
+            servoTheta = new float[SortIkServo.Count];
+
+            for (int j = 0; j < SortIkServo.Count - 1; j++)
+            {
+                if (!double.IsNaN(theta[j]))
+                {
+                    // blocking fullrotate of servo
+                    if (theta[j] > 180f)
+                        servoTheta[j] = theta[j] - 360f;
+                    else if (theta[j] < -180f)
+                        servoTheta[j] = theta[j] + 360f;
+                    else
+                        servoTheta[j] = theta[j];
+
+                    diffTheta[j] = Math.Abs(theta[j] - currentTheta[j]);
+                }
+                else
+                    success = false;
+            }
+
+            float maxTheta = diffTheta.Max();
+
+            for (int j = 0; j < SortIkServo.Count - 1; j++)
+            {
+                speed = diffTheta[j] / maxTheta * maxspeed;
+                //SortIkServo[j].iservo.SetModulo(SLTBreaking);
+                SortIkServo[j].iservo.MoveTo(servoTheta[j], speed);
+            }
+
             return success;
         }
 
