@@ -8,3 +8,9 @@ H:\_Trufiadok\KSP\TRF_Base\_Unity Projects\Unity Project 2017\IkRobotController\
 H:\_Trufiadok\KSP\TRF_Base\_Unity Projects\Unity Project 2017\IkRobotController\IkRobotController\IkRobotController\obj\Debug\IkRobotController.dll
 H:\_Trufiadok\KSP\TRF_Base\_Unity Projects\Unity Project 2017\IkRobotController\IkRobotController\IkRobotController\obj\Debug\IkRobotController.pdb
 H:\_Trufiadok\KSP\TRF_Base\_Unity Projects\Unity Project 2017\IkRobotController\IkRobotController\IkRobotController\obj\Debug\IkRobotController.csprojResolveAssemblyReference.cache
+H:\_Trufiadok\KSP\TRF_Base\_Unity Projects\Unity Project 2017\IkRobotController\IKRC-for-Kerbal\IkRobotController\IkRobotController\bin\Debug\IkRobotController.dll
+H:\_Trufiadok\KSP\TRF_Base\_Unity Projects\Unity Project 2017\IkRobotController\IKRC-for-Kerbal\IkRobotController\IkRobotController\bin\Debug\IkRobotController.pdb
+H:\_Trufiadok\KSP\TRF_Base\_Unity Projects\Unity Project 2017\IkRobotController\IKRC-for-Kerbal\IkRobotController\IkRobotController\obj\Debug\IkRobotController.csprojAssemblyReference.cache
+H:\_Trufiadok\KSP\TRF_Base\_Unity Projects\Unity Project 2017\IkRobotController\IKRC-for-Kerbal\IkRobotController\IkRobotController\obj\Debug\IkRobotController.csproj.CoreCompileInputs.cache
+H:\_Trufiadok\KSP\TRF_Base\_Unity Projects\Unity Project 2017\IkRobotController\IKRC-for-Kerbal\IkRobotController\IkRobotController\obj\Debug\IkRobotController.dll
+H:\_Trufiadok\KSP\TRF_Base\_Unity Projects\Unity Project 2017\IkRobotController\IKRC-for-Kerbal\IkRobotController\IkRobotController\obj\Debug\IkRobotController.pdb

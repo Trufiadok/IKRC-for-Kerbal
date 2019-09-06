@@ -1380,7 +1380,17 @@ namespace IkRobotController
                         {
                             Debug.Log(string.Format("[TRF] CheckExistArm() - JointList[{0}] = " + JointList[i] + " " + ((part.FindChildPart(JointList[i], true) != null) ? "exist" : "not exist"), i));
                             if (part.FindChildPart(JointList[i], true) == null)
+                            {
+                                Part[] allChidPart = part.FindChildParts<Part>();
+                                foreach (Part element in allChidPart)
+                                {
+                                    if (element != null)
+                                        Debug.Log(string.Format("[TRF] CheckExistArm() - allChidPart - {0}", part.name));
+                                    else
+                                        break;
+                                }
                                 return false;
+                            }
                         }
                         else
                             Debug.Log(string.Format("[TRF] CheckExistArm() - JointList[{0}] = " + JointList[i] + " " + ((part.name == JointList[0]) ? "exist" : "not exist"), i));
@@ -1388,8 +1398,17 @@ namespace IkRobotController
                     else
                     {
                         Debug.Log(string.Format("[TRF] CheckExistArm() - JointList[{0}] = " + JointList[i] + " " + ((part.FindChildPart(JointList[i], true) != null) ? "exist" : "not exist"), i));
-                        if (part.FindChildPart(JointList[i], true) == null)
+                        {
+                            Part[] allChidPart = part.FindChildParts<Part>();
+                            foreach (Part element in allChidPart)
+                            {
+                                if (element != null)
+                                    Debug.Log(string.Format("[TRF] CheckExistArm() - allChidPart - {0}", part.name));
+                                else
+                                    break;
+                            }
                             return false;
+                        }
                     }
                 }
 
