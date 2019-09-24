@@ -1,23 +1,27 @@
 ship = mitsubishi RV-2F robot
-version = 1.6.1
+version = 1.7.3
 description = No Description.
 type = None
-size = 0.924968719,3.12720346,3.30301809
+size = 3.3030076,3.12720203,0.924967766
 steamPublishedFileId = 0
-persistentId = 853883713
+persistentId = 837216618
 rot = 0,0,0,0
 missionFlag = 
 vesselType = Debris
+OverrideDefault = False,False,False,False
+OverrideActionControl = 0,0,0,0
+OverrideAxisControl = 0,0,0,0
+OverrideGroupNames = ,,,
 PART
 {
-	part = RV-2F.BASE_4294141912
+	part = RV-2FBASE_4294346428
 	partName = Part
-	persistentId = 2394723483
-	pos = -2.45983791,0.914589643,1.66860235
+	persistentId = 3805832070
+	pos = 0.658229411,15.9284849,0.991324425
 	attPos = 0,0,0
-	attPos0 = -2.45983791,0.914589643,1.66860235
-	rot = 0,0.707106769,0,-0.707106769
-	attRot = 0,0.707106709,0,-0.707106709
+	attPos0 = 0.658229411,15.9284849,0.991324425
+	rot = 0,0,0,1
+	attRot = 0,0,0,1
 	attRot0 = 0,0,0,1
 	mir = 1,1,1
 	symMethod = Radial
@@ -30,11 +34,13 @@ PART
 	sqor = -1
 	sepI = -1
 	attm = 0
+	sameVesselCollision = False
 	modCost = 0
 	modMass = 0
 	modSize = 0,0,0
-	link = RV-2F.SHOULDER_4294140482
-	attN = connect,RV-2F.SHOULDER_4294140482_0|0.8975|0
+	link = RV-2FSHOULDER_4294343644
+	attN = base,Null_0_0|0|0_0|-5|0_0|0|0_0|-5|0
+	attN = connect,RV-2FSHOULDER_4294343644_0|0.897499979|0_0|0|5_0|0.897499979|0_0|0|5
 	EVENTS
 	{
 	}
@@ -100,14 +106,14 @@ PART
 }
 PART
 {
-	part = RV-2F.SHOULDER_4294140482
+	part = RV-2FSHOULDER_4294343644
 	partName = Part
-	persistentId = 4292142583
-	pos = -2.45983791,1.81208968,1.66860235
+	persistentId = 2757212340
+	pos = 0.658229411,16.825985,0.991324425
 	attPos = 0,0,0
 	attPos0 = 0,0.897500038,0
-	rot = 0,0.707106769,0,-0.707106769
-	attRot = 0,0.707106709,0,-0.707106709
+	rot = 0,0,0,1
+	attRot = 0,0,0,1
 	attRot0 = 0,0,0,1
 	mir = 1,1,1
 	symMethod = Radial
@@ -120,12 +126,13 @@ PART
 	sqor = -1
 	sepI = -1
 	attm = 0
+	sameVesselCollision = False
 	modCost = 0
 	modMass = 0
 	modSize = 0,0,0
-	link = RV-2F.NO1ARM_4294140442
-	attN = rotate,RV-2F.BASE_4294141912_0|0|0
-	attN = connect,RV-2F.NO1ARM_4294140442_0|0.5875|0
+	link = RV-2FNO1ARM_4294341320
+	attN = rotate,RV-2FBASE_4294346428_0|0|0_0|0|-5_0|0|0_0|0|-5
+	attN = connect,RV-2FNO1ARM_4294341320_0|0.587499976|0_0|0|5_0|0.587499976|0_0|0|5
 	EVENTS
 	{
 	}
@@ -204,14 +211,14 @@ PART
 }
 PART
 {
-	part = RV-2F.NO1ARM_4294140442
+	part = RV-2FNO1ARM_4294341320
 	partName = Part
-	persistentId = 4104487635
-	pos = -2.45983791,2.39958978,1.66860235
+	persistentId = 3182229819
+	pos = 0.658229411,17.4134865,0.991324425
 	attPos = 0,0,0
-	attPos0 = 0,0.587500095,0
-	rot = 0,0.707106769,0,-0.707106769
-	attRot = 0,0.707106709,0,-0.707106709
+	attPos0 = 0,0.587500572,0
+	rot = 0,0,0,1
+	attRot = 0,0,0,1
 	attRot0 = 0,0,0,1
 	mir = 1,1,1
 	symMethod = Radial
@@ -224,12 +231,13 @@ PART
 	sqor = -1
 	sepI = -1
 	attm = 0
+	sameVesselCollision = False
 	modCost = 0
 	modMass = 0
 	modSize = 0,0,0
-	link = RV-2F.ELBOW_4294140402
-	attN = rotate,RV-2F.SHOULDER_4294140482_0|0|0
-	attN = connect,RV-2F.ELBOW_4294140402_0|1.15|0
+	link = RV-2FELBOW_4294336334
+	attN = rotate,RV-2FSHOULDER_4294343644_0|0|0_0|0|-5_0|0|0_0|0|-5
+	attN = connect,RV-2FELBOW_4294336334_0|1.14999998|0_0|0|5_0|1.14999998|0_0|0|5
 	EVENTS
 	{
 	}
@@ -308,14 +316,14 @@ PART
 }
 PART
 {
-	part = RV-2F.ELBOW_4294140402
+	part = RV-2FELBOW_4294336334
 	partName = Part
-	persistentId = 1566610161
-	pos = -2.45983791,3.54958987,1.66860235
+	persistentId = 3558105229
+	pos = 0.658229411,18.5634842,0.991324425
 	attPos = 0,0,0
-	attPos0 = 0,1.1500001,0
-	rot = 0,0.707106769,0,-0.707106769
-	attRot = 0,0.707106709,0,-0.707106709
+	attPos0 = 0,1.14999962,0
+	rot = 0,0,0,1
+	attRot = 0,0,0,1
 	attRot0 = 0,0,0,1
 	mir = 1,1,1
 	symMethod = Radial
@@ -328,12 +336,13 @@ PART
 	sqor = -1
 	sepI = -1
 	attm = 0
+	sameVesselCollision = False
 	modCost = 0
 	modMass = 0
 	modSize = 0,0,0
-	link = RV-2F.NO2ARM_4294140362
-	attN = rotate,RV-2F.NO1ARM_4294140442_0|0|0
-	attN = connect,RV-2F.NO2ARM_4294140362_-0.37|0.25|0
+	link = RV-2FNO2ARM_4294329922
+	attN = rotate,RV-2FNO1ARM_4294341320_0|0|0_0|0|-5_0|0|0_0|0|-5
+	attN = connect,RV-2FNO2ARM_4294329922_-0.370000005|0.25|0_5|0|0_-0.370000005|0.25|0_5|0|0
 	EVENTS
 	{
 	}
@@ -412,14 +421,14 @@ PART
 }
 PART
 {
-	part = RV-2F.NO2ARM_4294140362
+	part = RV-2FNO2ARM_4294329922
 	partName = Part
-	persistentId = 1586332622
-	pos = -2.45983791,3.79958987,1.29860198
+	persistentId = 2352370634
+	pos = 0.288229406,18.8134842,0.991324425
 	attPos = 0,0,0
-	attPos0 = -0.370000213,0.25,2.98023259E-08
-	rot = 0,0.707106769,0,-0.707106769
-	attRot = 0,0.707106709,0,-0.707106709
+	attPos0 = -0.370000005,0.25,0
+	rot = 0,0,0,1
+	attRot = 0,0,0,1
 	attRot0 = 0,0,0,1
 	mir = 1,1,1
 	symMethod = Radial
@@ -432,12 +441,13 @@ PART
 	sqor = -1
 	sepI = -1
 	attm = 0
+	sameVesselCollision = False
 	modCost = 0
 	modMass = 0
 	modSize = 0,0,0
-	link = RV-2F.WRIST_4294140322
-	attN = rotate,RV-2F.ELBOW_4294140402_0|0|0
-	attN = connect,RV-2F.WRIST_4294140322_-0.96|0|0
+	link = RV-2FWRIST_4294328678
+	attN = rotate,RV-2FELBOW_4294336334_0|0|0_-5|0|0_0|0|0_-5|0|0
+	attN = connect,RV-2FWRIST_4294328678_-0.960000038|0|0_5|0|0_-0.960000038|0|0_5|0|0
 	EVENTS
 	{
 	}
@@ -516,14 +526,14 @@ PART
 }
 PART
 {
-	part = RV-2F.WRIST_4294140322
+	part = RV-2FWRIST_4294328678
 	partName = Part
-	persistentId = 2951073792
-	pos = -2.45983791,3.79958987,0.338598371
+	persistentId = 3839973996
+	pos = -0.671770632,18.8134842,0.991324425
 	attPos = 0,0,0
-	attPos0 = -0.960000157,0,-2.98023259E-08
-	rot = 0,0.707106769,0,-0.707106769
-	attRot = 0,0.707106709,0,-0.707106709
+	attPos0 = -0.960000038,0,0
+	rot = 0,0,0,1
+	attRot = 0,0,0,1
 	attRot0 = 0,0,0,1
 	mir = 1,1,1
 	symMethod = Radial
@@ -536,12 +546,13 @@ PART
 	sqor = -1
 	sepI = -1
 	attm = 0
+	sameVesselCollision = False
 	modCost = 0
 	modMass = 0
 	modSize = 0,0,0
-	link = RV-2F.HAND.FLANGE_4294140282
-	attN = rotate,RV-2F.NO2ARM_4294140362_0|0|0
-	attN = connect,RV-2F.HAND.FLANGE_4294140282_-0.245|0|0
+	link = RV-2FHANDFLANGE_4294326858
+	attN = rotate,RV-2FNO2ARM_4294329922_0|0|0_-5|0|0_0|0|0_-5|0|0
+	attN = connect,RV-2FHANDFLANGE_4294326858_-0.24499999|0|0_5|0|0_-0.24499999|0|0_5|0|0
 	EVENTS
 	{
 	}
@@ -620,14 +631,14 @@ PART
 }
 PART
 {
-	part = RV-2F.HAND.FLANGE_4294140282
+	part = RV-2FHANDFLANGE_4294326858
 	partName = Part
-	persistentId = 2342342045
-	pos = -2.45983791,3.79958987,0.0935946703
+	persistentId = 2048178761
+	pos = -0.916770637,18.8134842,0.991324425
 	attPos = 0,0,0
-	attPos0 = -0.245000601,0,0
-	rot = 0,0.707106769,0,-0.707106769
-	attRot = 0,0.707106709,0,-0.707106709
+	attPos0 = -0.245000005,0,0
+	rot = 0,0,0,1
+	attRot = 0,0,0,1
 	attRot0 = 0,0,0,1
 	mir = 1,1,1
 	symMethod = Radial
@@ -640,12 +651,13 @@ PART
 	sqor = -1
 	sepI = -1
 	attm = 0
+	sameVesselCollision = False
 	modCost = 0
 	modMass = 0
 	modSize = 0,0,0
-	link = TRF.CA2.LEE.wCam_4294140242
-	attN = rotate,RV-2F.WRIST_4294140322_0|0|0
-	attN = connect,TRF.CA2.LEE.wCam_4294140242_-0.105|0|0
+	link = TRFCA2LEEwCam_4294317592
+	attN = rotate,RV-2FWRIST_4294328678_0|0|0_-5|0|0_0|0|0_-5|0|0
+	attN = connect,TRFCA2LEEwCam_4294317592_-0.104999997|0|0_5|0|0_-0.104999997|0|0_5|0|0
 	EVENTS
 	{
 	}
@@ -724,15 +736,15 @@ PART
 }
 PART
 {
-	part = TRF.CA2.LEE.wCam_4294140242
+	part = TRFCA2LEEwCam_4294317592
 	partName = Part
-	persistentId = 2103710750
-	pos = -2.45983791,3.79958987,-0.0114067793
+	persistentId = 101674414
+	pos = -1.02177072,18.8134842,0.991324425
 	attPos = 0,0,0
-	attPos0 = -0.105000615,0,0
-	rot = 0.499999732,0.500000179,-0.49999997,-0.500000179
-	attRot = 0.499999762,0.500000179,-0.49999997,-0.500000179
-	attRot0 = 1.49011612E-07,0,0.70710659,0.707107067
+	attPos0 = -0.105000019,0,0
+	rot = -3.09086197E-08,-3.09086197E-08,-0.707106888,-0.707106769
+	attRot = -3.09086161E-08,-3.09086161E-08,-0.707106829,-0.707106709
+	attRot0 = -3.09086197E-08,-3.09086197E-08,-0.707106888,-0.707106769
 	mir = 1,1,1
 	symMethod = Radial
 	autostrutMode = Off
@@ -744,10 +756,12 @@ PART
 	sqor = -1
 	sepI = 0
 	attm = 0
+	sameVesselCollision = False
 	modCost = 0
 	modMass = 0
 	modSize = 0,0,0
-	attN = bottom,RV-2F.HAND.FLANGE_4294140282_0|0|0
+	attN = top,Null_0_0|0.361199975|0_0|1.03199995|0_0|0.361199975|0_0|1.03199995|0
+	attN = bottom,RV-2FHANDFLANGE_4294326858_0|0|0_0|-1.03199995|0_0|0|0_0|-1.03199995|0
 	EVENTS
 	{
 	}
@@ -767,6 +781,14 @@ PART
 		}
 		ACTIONS
 		{
+			actionWireSnareLock
+			{
+				actionGroup = None
+			}
+			actionDockingPort
+			{
+				actionGroup = None
+			}
 		}
 		UPGRADESAPPLIED
 		{
@@ -818,6 +840,7 @@ PART
 	{
 		name = ModuleDockingNode
 		isEnabled = True
+		acquireForceTweak = 100
 		crossfeed = True
 		stagingEnabled = False
 		state = Ready
@@ -876,6 +899,19 @@ PART
 			ToggleAction
 			{
 				actionGroup = None
+			}
+		}
+		AXISGROUPS
+		{
+			deployPercent
+			{
+				axisGroup = None
+				axisIncremental = Pitch, Yaw, Roll, TranslateX, TranslateY, TranslateZ, WheelSteer, WheelThrottle, Custom01, Custom02, Custom03, Custom04
+				axisInverted = None
+				overrideIncremental0 = Pitch, Yaw, Roll, TranslateX, TranslateY, TranslateZ, WheelSteer, WheelThrottle, Custom01, Custom02, Custom03, Custom04
+				overrideIncremental1 = Pitch, Yaw, Roll, TranslateX, TranslateY, TranslateZ, WheelSteer, WheelThrottle, Custom01, Custom02, Custom03, Custom04
+				overrideIncremental2 = Pitch, Yaw, Roll, TranslateX, TranslateY, TranslateZ, WheelSteer, WheelThrottle, Custom01, Custom02, Custom03, Custom04
+				overrideIncremental3 = Pitch, Yaw, Roll, TranslateX, TranslateY, TranslateZ, WheelSteer, WheelThrottle, Custom01, Custom02, Custom03, Custom04
 			}
 		}
 		UPGRADESAPPLIED

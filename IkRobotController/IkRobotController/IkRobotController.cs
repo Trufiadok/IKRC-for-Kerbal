@@ -1370,40 +1370,52 @@ namespace IkRobotController
 
         private bool CheckExistArm()
         {
+            // if part exist
             if (part != null)
             {
+                // checking list of joint exist, step by step
                 for (int i = 0; i < JointList.Length; i++)
                 {
+                    // 1st element in list of joint
                     if (i == 0)
                     {
+                        // if base part is not the 1st joint in the list
                         if (part.name != JointList[0])
                         {
+                            // write log: joint is child of the part or not
                             Debug.Log(string.Format("[TRF] CheckExistArm() - JointList[{0}] = " + JointList[i] + " " + ((part.FindChildPart(JointList[i], true) != null) ? "exist" : "not exist"), i));
+                            // if not then list all child element and return by false
                             if (part.FindChildPart(JointList[i], true) == null)
                             {
-                                Part[] allChidPart = part.FindChildParts<Part>();
+                                Part[] allChidPart = part.FindChildParts<Part>(true);
                                 foreach (Part element in allChidPart)
                                 {
                                     if (element != null)
-                                        Debug.Log(string.Format("[TRF] CheckExistArm() - allChidPart - {0}", part.name));
+                                        Debug.Log(string.Format("[TRF] CheckExistArm() - allChidPart - {0}", element.name));
                                     else
                                         break;
                                 }
                                 return false;
                             }
                         }
+                        // if base part is the 1st joint in the list
                         else
+                            // write log: exist
                             Debug.Log(string.Format("[TRF] CheckExistArm() - JointList[{0}] = " + JointList[i] + " " + ((part.name == JointList[0]) ? "exist" : "not exist"), i));
                     }
+                    // not 1st element in list of joint
                     else
                     {
+                        // write log: joint is child of the part or not
                         Debug.Log(string.Format("[TRF] CheckExistArm() - JointList[{0}] = " + JointList[i] + " " + ((part.FindChildPart(JointList[i], true) != null) ? "exist" : "not exist"), i));
+                        // if not then list all child element and return by false
+                        if (part.FindChildPart(JointList[i], true) == null)
                         {
-                            Part[] allChidPart = part.FindChildParts<Part>();
+                            Part[] allChidPart = part.FindChildParts<Part>(true);
                             foreach (Part element in allChidPart)
                             {
                                 if (element != null)
-                                    Debug.Log(string.Format("[TRF] CheckExistArm() - allChidPart - {0}", part.name));
+                                    Debug.Log(string.Format("[TRF] CheckExistArm() - allChidPart - {0}", element.name));
                                 else
                                     break;
                             }
@@ -1414,6 +1426,7 @@ namespace IkRobotController
 
                 return true;
             }
+            // if part don't exist
             else
                 return false;
         }
@@ -2760,8 +2773,8 @@ namespace IkRobotController
             }
             else
             {
-                Debug.Log(string.Format("[TRF] - OnLoad() HighLogic.LoadedSceneIsFlight = {0}", HighLogic.LoadedSceneIsFlight.ToString()));
-                Debug.Log(string.Format("[TRF] - OnLoad() IsInitedModule = {0}", IsInitedModule.ToString()));
+                Debug.Log(string.Format("[TRF] - OnSave() HighLogic.LoadedSceneIsFlight = {0}", HighLogic.LoadedSceneIsFlight.ToString()));
+                Debug.Log(string.Format("[TRF] - OnSave() IsInitedModule = {0}", IsInitedModule.ToString()));
             }
 
             Debug.Log(string.Format("[TRF] - OnSave() " + HighLogic.LoadedScene.ToString()));
