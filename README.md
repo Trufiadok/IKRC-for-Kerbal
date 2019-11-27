@@ -13,3 +13,5 @@ The WireSnareLock plugin can disable TRF_CA2_LEE_wCam dockingNode and activate t
 I changed the IKRC control display.
 
 The IKRC plugin expanded with Virtual EndEffector function (VEE).
+
+License - GNU GPL version 3, 29 July 2007
