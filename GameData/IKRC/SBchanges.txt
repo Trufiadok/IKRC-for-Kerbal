@@ -1,0 +1,36 @@
+- Renamed all files & folders that had spaces in the names, replaced spaces with _
+
+- Restructured model/texture files to a new IKRC/Assets folder, sounds to IKRC/Sounds, and parts to IKRC/Parts
+
+- Removed duplicate/old unused model files (46 files/7.32MB)
+
+- Moved shared textures (those identical textures used by two or moar models), to /Assets/Shared. Same thing can be done with any duplicate .mu's, as long as model URLs are edited to match
+
+- Removed duplicate .mbm from some Asset filenames, edited .mu's to reflect changes
+
+- Downsized all single-color color placeholder textures to 8x8, to reduce filesize
+
+- Converted all /Asset textures to .DDS format
+
+- Moved all plugins to /Plugin (except modified InfernalRoboticsMod stuff)
+
+- Combined /Canadarm2 and /Canadarm2_0.5_size, /RV-2F and /RV-2F_in_white folders, respectively
+- Added _0.5 to Canadarm2 0.5 size filenames, added _W to RV-2F white filenames, added _DX to Dextre filenames
+
+- Cleaned up part .cfg files (removed extraneous comments, whitespace, ConnectedLivingSpace and KIS modules (deleted KIS modules, added CLS modules to seperate MM patch file and /MM_Patches folder))
+
+- Updated deprecated model/texture definitions (mesh =), with newer MODEL{} nodes
+
+- Updated all asset URLs in .cfgs to reflect new folder structure: /Assets, /Sounds
+
+Notes:
+I see many of the part .cfgs (those that are identified by "1" and "2"), are practically duplicates. These might be able to be combined using the stock variant system, or B9 PartSwitch. Combining them with one of these methods would cut the number of config files almost in half, and moar importantly for the end-user, could cut the 80 part icons in the hangar lists, almost in half.
+
+I'm also getting lots of errors and nullrefs. Possibly related to restructuring the folder layout of basically the whole mod?... I imagine this could happen if there are hard-coded file URL references in any of the plugins?.. vOv
+I notice there is an /AssetBundles/ folder in /MagicSmokeIndustries, and I am not sure if that is supposed to be present when only the /InfernalRoboticsMod folder is used, and /MagicSmokeIndustries is *NOT* installed vOv
+
+I havent come up with a definitive way to handle the modified IRMod folder, or the MagicSmokeIndustries folders.
+All I can suggest, is maybe try to integrate the IRMod folder into /IKRC/Plugins, if possible, and then maybe just have end users delete 
+
+I also dont see the source files for the WireSnareLock and the Ca2LeeCam plugins in the master repo? vOv
+If they truly arent there, they need to be added per KSP forum add-on rules (ie all code source files must be publicly available)
